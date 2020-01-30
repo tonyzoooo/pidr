@@ -1,5 +1,6 @@
 from numpy import linspace, size, zeros, pi, array, exp, arange, heaviside
 from numpy.linalg import norm
+from matplotlib.pyplot import figure, subplot, plot, show
 
 
 def morphofiltd(re, ordre, r0, r1, rN, rD=None, Cs=1):
@@ -16,17 +17,17 @@ def morphofiltd(re, ordre, r0, r1, rN, rD=None, Cs=1):
         rD = r1
     cond = 0.33
     M = size(re, 0)
-    rk = [
+    rk = array([
         linspace(r1[0], rN[0], ordre-1),
         linspace(r1[1], rN(1), ordre-1),
         linspace(r1[2], rN[2], ordre-1)
-    ]
+    ]).H
     w = zeros(M, ordre)
     for iel in range(M):
         for ik in range(1, ordre-1):
             w[iel, ik] = (
                 - (re[iel, :]-rk[ik-1, :])
-                * (rk[ik, :] - rk[ik-1, :])
+                * (rk[ik, :] - rk[ik-1, :]).H
                 / (4*pi*cond*norm(re[iel, :]-rk[ik-1, :])**3)
             )
         w[iel, ordre] = (
@@ -35,7 +36,7 @@ def morphofiltd(re, ordre, r0, r1, rN, rD=None, Cs=1):
             / (4*pi*cond*norm(re[iel, :]-rk[ordre-1, :])**3)
         )
         w[iel, 1] = (
-            -Cs*(re[iel, :]-r0)*(rD-r0)
+            -Cs*(re[iel, :]-r0)*(rD-r0).H
             / (4*pi*cond*norm(re[iel, :]-r0)**3)
         )
     return w
@@ -128,6 +129,9 @@ def hhrun(I, t):
     m = zeros(t.size+1)
     n = zeros(t.size+1)
     h = zeros(t.size+1)
+    INa = zeros(t.size+1)
+    IK = zeros(t.size+1)
+    Il = zeros(t.size+1)
 
     # Cm = 0.01  # Membrane Capcitance uF/cm**2
     # ENa = 55.17  # mv Na reversal potential
@@ -184,7 +188,7 @@ def hhrun(I, t):
     # FEn=n;
     # FEh=h;
     # clear V m n h;
-    return [V, m, n, h, INa, IK, Il]
+    return array([V, m, n, h, INa, IK, Il])
 
 
 # Programme principal
@@ -206,7 +210,11 @@ icur = 1
 # pot membrane, proportionnel au courant des canaux ioniques (http://www.bem.fi/book/03/03.htm, 3.14)
 [Vm, m, n, h, INa, IK, Il] = hhrun(I, t)
 Im = (INa+IK+Il)*(2*pi*12.5*25)/10**8*10**3
-[MVm, inMVm] = max(Vm)
+
+MVm = max(Vm)
+inMVm = 0
+while Vm[inMVm] != MVm:
+    inMVm += 1
 
 # BS neuron morphology
 
@@ -220,50 +228,50 @@ DD = 2  # dendrite diameter
 phi = pi/2  # angle avec Oz
 theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
 
-# load LFPy simulation result
-"""
-Vlfpy=dlmread(['../Python/Vlfpy_BS_LA',num2str(LA),'_DA',num2str(DA),'_LD',num2str(LD),'_DD',num2str(DD),'demo.txt']);
-Vmlfpy=dlmread(['../Python/Vm_BS_LA',num2str(LA),'_DA',num2str(DA),'_LD',num2str(LD),'_DD',num2str(DD),'demo.txt']);
-Imlfpy=dlmread(['../Python/Im_BS_LA',num2str(LA),'_DA',num2str(DA),'_LD',num2str(LD),'_DD',num2str(DD),'demo.txt']);
 
-%% figure check
-figure
-subplot(2,1,1)
-plot(Vm([inMVm-inmvm+1:inMVm-inmvm+lVLFPy]))
-hold on
+def readMatrix(file: str):
+    with open(file, "r") as f:
+        M = array([[float(num) for num in line.split(" ")] for line in f])
+    return M
+
+
+# load LFPy simulation result
+Vlfpy = readMatrix('../Neural-AP-morphofilt/JCN_demo/Python/Vlfpy_BS_LA' + str(LA) + '_DA' + str(DA) +
+                   '_LD' + str(LD) + '_DD' + str(DD) + 'demo.txt')
+Vmlfpy = readMatrix('../Neural-AP-morphofilt/JCN_demo/Python/Vm_BS_LA' + str(LA) + '_DA'
+                    + str(DA) + '_LD' + str(LD) + '_DD' + str(DD) + 'demo.txt')
+Imlfpy = readMatrix('../Neural-AP-morphofilt/JCN_demo/Python/Im_BS_LA' + str(LA) + '_DA' +
+                    str(DA) + '_LD' + str(LD) + '_DD' + str(DD) + 'demo.txt')
+
+# figure check
+figure()
+subplot(2, 1, 1)
+values = arange(inMVm-inmvm, inMVm-inmvm+lVLFPy)
+plot(Vm[values])
 plot(Vmlfpy)
 
-subplot(2,1,2)
-plot(Im([inMVm-inmvm+1:inMVm-inmvm+lVLFPy]))
-hold on
+subplot(2, 1, 2)
+plot(Im[values])
 plot(Imlfpy)
-
+show()
 """
-# filter parameters
-dk = 10
-# axonal spatial sampling(~ nb of segments)
-ordre = LA/dk+1
-r0 = array([0, 0, 0])
-# soma position
-r1 = array([SL/2, 0, 0])
-# axon start position
-rN = array([SL/2+LA-dk, 0, 0])
-# axon stop position(start of the last segment)
-rd = norm(r1-r0) * array([sin(phi)*cos(theta), sin(phi)*sin(theta), cos(phi)])
-# dendrite end position, normalized
-Cs = 2
-# somatic equivalent dipole amplitude
-taus = 23
-# subsampling of the membrane current dk/taus = speed v)
+%% filter parameters
+dk=10; % axonal spatial sampling (~ nb of segments)
+ordre=LA/dk+1;
+r0=[0 0 0]; % soma position
+r1=[SL/2 0 0]; % axon start position
+rN=[SL/2+LA-dk 0 0]; % axon stop position (start of the last segment)
+rd=norm(r1-r0)*[sin(phi)*cos(theta) sin(phi)*sin(theta) cos(phi)]; % dendrite end position, normalized
+Cs=2; % somatic equivalent dipole amplitude
+taus=23; % subsampling of the membrane current dk/taus = speed v)
 
-# electrodes
-X = arange(-250, 1250+125, 125).H
-Y = arange(250, 50-50, -50).H
-Z = 0
+%% electrodes
+X=[-250:125:1250]';
+Y=[250:-50:50]';
+Z=0;
 
-"""
-eplosy, elposx, elposz = meshgrid(Y, X, Z)
-elpos = [elposx(:), eplosy(:), elposz(:)]
+[eplosy,elposx,elposz]=meshgrid(Y,X,Z);
+elpos=[elposx(:),eplosy(:),elposz(:)]
 
 # simulation
 w = morphofiltd(elpos, ordre, r0, r1, rN, rd, Cs)
