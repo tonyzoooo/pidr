@@ -40,20 +40,22 @@ def morphofiltd(re: ndarray, order: int, r0: ndarray, r1: ndarray,
         linspace(r1[2], rN[2], order-1)
     ]).transpose()
     w = zeros([M, order])
+    print(w.shape)
+    print(rk.shape)
     for iel in range(M):
         for ik in range(1, order-1):
             w[iel][ik] = (
-                - (re[iel][:]-rk[ik-1][:])
-                * (rk[ik][:]-rk[ik-1][:]).transpose()
-                / (4*pi*cond*norm(re[iel][:]-rk[ik-1][:])**3)
+                - (re[iel]-rk[ik-1])
+                * (rk[ik]-rk[ik-1]).transpose()
+                / (4*pi*cond*norm(re[iel]-rk[ik-1])**3)
             )
         w[iel][order] = (
-            - (re[iel][:]-rk[order-1][:])
-            * (rk[order-1][:] - rk[order-2][:])
-            / (4*pi*cond*norm(re[iel][:]-rk[order-1][:])**3)
+            - (re[iel]-rk[order-1])
+            * (rk[order-1] - rk[order-2])
+            / (4*pi*cond*norm(re[iel]-rk[order-1])**3)
         )
         w[iel][1] = (
-            -Cs*(re[iel][:]-r0)*(rD-r0).transpose()
-            / (4*pi*cond*norm(re[iel][:]-r0)**3)
+            -Cs*(re[iel]-r0)*(rD-r0).transpose()
+            / (4*pi*cond*norm(re[iel]-r0)**3)
         )
     return w

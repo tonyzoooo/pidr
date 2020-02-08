@@ -16,14 +16,14 @@ lVLFPy = 8000   # signal length in LFPy
 dt = 10**(-3)   # in ms
 Nt = 2**15
 D = Nt*dt
-t = arange(dt, D, dt)-dt
+t = arange(dt, D+dt, dt)-dt
 n = len(t)
 
 fe = 1/dt
-f = arange(0, fe/2-fe/Nt, fe/Nt)
+f = arange(0, fe/2, fe/Nt)
 
 I = (heaviside(t-1, 1/2)-heaviside(t-31, 1/2)) * 0.044 / (2*pi*12.5*25) * \
-    10**8*10**-3  # *5.093 # 0.15/(pi*12.5*12.5*2+2*pi*12.5*25)*10**8;
+    10**8*10**-3  # *5.093 # 0.15/(pi*12.5*12.5*2+2*pi*12.5*25)*10**8 
 icur = 1
 # pot membrane, proportionnel au courant des canaux ioniques (http://www.bem.fi/book/03/03.htm, 3.14)
 [Vm, m, n, h, INa, IK, Il] = hhrun(I, t)
@@ -65,7 +65,7 @@ subplot(2, 1, 2)
 plot(Im[values])
 plot(Imlfpy)
 
-show()
+# show()
 
 # filter parameters
 dk = 10

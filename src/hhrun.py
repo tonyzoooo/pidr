@@ -123,9 +123,9 @@ def hhrun(I, t):
     V[0] = -65      # Initial Membrane voltage
 
     m[0] = am(V[0])/(am(V[0])+bm(V[0]))  # Initial m-value
-    n[1] = an(V[0])/(an(V[1])+bn(V[0]))  # Initial n-value
-    h[1] = ah(V[0])/(ah(V[0])+bh(V[0]))  # Initial h-value
-    for i in range(len(t)):
+    n[0] = an(V[0])/(an(V[0])+bn(V[0]))  # Initial n-value
+    h[0] = ah(V[0])/(ah(V[0])+bh(V[0]))  # Initial h-value
+    for i in range(len(t)-1):
         # Euler method to find the next m/n/h value
         m[i+1] = m[i]+dt*((am(V[i])*(1-m[i]))-(bm(V[i])*m[i]))
         n[i+1] = n[i]+dt*((an(V[i])*(1-n[i]))-(bn(V[i])*n[i]))
