@@ -7,7 +7,7 @@ from numpy.linalg import norm
 
 from hhrun import hhrun
 from morphofiltd import morphofiltd
-from util import readMatrix, upsample
+from util import readMatrix, upsample, reshapeMeshgrid
 
 # Programme principal
 # HH
@@ -47,7 +47,7 @@ phi = pi/2  # angle avec Oz
 theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
 
 # load LFPy simulation result
-data = Path('src/data/')  # os independent path
+data = Path('data/')  # os independent path
 Vlfpy = readMatrix(data / f'Vlfpy_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
 Vmlfpy = readMatrix(data / f'Vm_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
 Imlfpy = readMatrix(data / f'Im_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
@@ -89,15 +89,18 @@ X = arange(-250, 1250+125, 125).transpose()
 Y = arange(250, 50-50, -50).transpose()
 Z = 0
 
-elpos = meshgrid(Y, X, Z)
+
+elpos = reshapeMeshgrid(meshgrid(Y, X, Z)).transpose()
+
 
 # simulation
 w = morphofiltd(elpos, order, r0, r1, rN, rd, Cs)
-wup = upsample(w.transpose(), taus).transpose()
+wup = upsample(w.transpose(), taus).transpose()#wup pas bon ><
 
-Vel = zeros(len(w), len(Im))
-for iel in range(w):
-    Vel[iel][:] = convolve(Im, wup[iel][:], 'same')
+Vel = zeros((len(w), len(Im)))
+
+for iel in range(len(w)):
+    Vel[iel] = convolve(Im, wup[iel], 'same')
 
 # cut
 rangeStart = inMVm - inmvm - fix(size(wup, 2)/2) + 1

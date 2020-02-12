@@ -1,4 +1,4 @@
-from numpy import array, linspace, ndarray, pi, zeros
+from numpy import array, linspace, ndarray, pi, zeros, dot
 from numpy.linalg import norm
 
 
@@ -33,29 +33,27 @@ def morphofiltd(re: ndarray, order: int, r0: ndarray, r1: ndarray,
     if rD is None:
         rD = r1
     cond = 0.33
-    M = len(re)
+    M = re.shape[0]
     rk = array([
         linspace(r1[0], rN[0], order-1),
         linspace(r1[1], rN[1], order-1),
         linspace(r1[2], rN[2], order-1)
     ]).transpose()
     w = zeros([M, order])
-    print(w.shape)
-    print(rk.shape)
     for iel in range(M):
-        for ik in range(1, order-1):
-            w[iel][ik] = (
-                - (re[iel]-rk[ik-1])
-                * (rk[ik]-rk[ik-1]).transpose()
+        w[iel, order-1] = (  
+                dot( - (re[iel]-rk[order-2]) ,(rk[order-2] - rk[order-3]))
+                / (4*pi*cond*norm(re[iel]-rk[order-2])**3)
+                )
+        w[iel, 0] = (
+                -Cs*dot((re[iel]-r0),(rD-r0))
+                / (4*pi*cond*norm(re[iel]-r0)**3)
+                )
+        for ik in range(1, order-1):            
+            w[iel, ik] = (
+                dot(-(re[iel]-rk[ik-1]), (rk[ik]-rk[ik-1]))
                 / (4*pi*cond*norm(re[iel]-rk[ik-1])**3)
             )
-        w[iel][order] = (
-            - (re[iel]-rk[order-1])
-            * (rk[order-1] - rk[order-2])
-            / (4*pi*cond*norm(re[iel]-rk[order-1])**3)
-        )
-        w[iel][1] = (
-            -Cs*(re[iel]-r0)*(rD-r0).transpose()
-            / (4*pi*cond*norm(re[iel]-r0)**3)
-        )
+                       
+        
     return w

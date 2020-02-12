@@ -46,7 +46,7 @@ def hhrun(I, t):
         # Beta for variable m
         v = v+65
         b = 4*exp(-v/18)
-        return b
+        return b 
 
     def an(v):
         # Alpha for variable n
@@ -84,7 +84,7 @@ def hhrun(I, t):
     dt = t[1]-t[0]
 
     # Array initializations
-    arraySize = len(t) + 1
+    arraySize = len(t)
     V = zeros(arraySize)
     m = zeros(arraySize)
     n = zeros(arraySize)
