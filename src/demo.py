@@ -103,8 +103,8 @@ for iel in range(len(w)):
     Vel[iel] = convolve(Im, wup[iel], 'same')
 
 # cut
-rangeStart = inMVm - inmvm - fix(size(wup, 2)/2) + 1
-rangeEnd = inMVm - inmvm - fix(size(wup, 2)/2) + lVLFPy
+rangeStart = inMVm - inmvm - fix(wup.shape[1]/2) + 1
+rangeEnd = inMVm - inmvm - fix(wup.shape[1]/2) + lVLFPy
 intervVm = arange(rangeStart, rangeEnd + 1)
 Vel2 = Vel[:][intervVm]
 # normalize
