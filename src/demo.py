@@ -23,7 +23,7 @@ fe = 1/dt
 f = arange(0, fe/2, fe/Nt)
 
 I = (heaviside(t-1, 1/2)-heaviside(t-31, 1/2)) * 0.044 / (2*pi*12.5*25) * \
-    10**8*10**-3  # *5.093 # 0.15/(pi*12.5*12.5*2+2*pi*12.5*25)*10**8 
+    10**8*10**-3  # *5.093 # 0.15/(pi*12.5*12.5*2+2*pi*12.5*25)*10**8
 icur = 1
 # pot membrane, proportionnel au courant des canaux ioniques (http://www.bem.fi/book/03/03.htm, 3.14)
 [Vm, m, n, h, INa, IK, Il] = hhrun(I, t)
@@ -89,13 +89,21 @@ X = arange(-250, 1250+125, 125).transpose()
 Y = arange(250, 50-50, -50).transpose()
 Z = 0
 
-
 elpos = reshapeMeshgrid(meshgrid(Y, X, Z)).transpose()
-
 
 # simulation
 w = morphofiltd(elpos, order, r0, r1, rN, rd, Cs)
-wup = upsample(w.transpose(), taus).transpose()#wup pas bon ><
+
+# w is of the correct size (65x101)
+
+# but value at [0, 0] is 3.410289076352674e-05
+# but should be -3.4103e-05
+
+# and value at [19, 19] is 5.045248610418316e-05
+# but should be -1.5023e-05
+
+
+wup = upsample(w.transpose(), taus).transpose()  # wup pas bon ><
 
 Vel = zeros((len(w), len(Im)))
 
@@ -103,9 +111,13 @@ for iel in range(len(w)):
     Vel[iel] = convolve(Im, wup[iel], 'same')
 
 # cut
-rangeStart = inMVm - inmvm - fix(wup.shape[1]/2) + 1
-rangeEnd = inMVm - inmvm - fix(wup.shape[1]/2) + lVLFPy
+commonPart = inMVm - inmvm - fix(wup.shape[1]/2)
+rangeStart = commonPart + 1
+rangeEnd = commonPart + lVLFPy
 intervVm = arange(rangeStart, rangeEnd + 1)
+# intervVm should be a vector of 8000 values :
+# values : [4930, 4931, ..., 12928, 12929]
+
 Vel2 = Vel[:][intervVm]
 # normalize
 elsync = 56
