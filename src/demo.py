@@ -85,25 +85,15 @@ taus = 23
 # subsampling of the membrane current dk/taus = speed v)
 
 # electrodes
-X = arange(-250, 1250+125, 125).transpose()
-Y = arange(250, 50-50, -50).transpose()
+X = arange(-250, 1250+125, 125)
+Y = arange(250, 50-50, -50)
 Z = 0
 
-elpos = reshapeMeshgrid(meshgrid(Y, X, Z)).transpose()
+elpos = reshapeMeshgrid(meshgrid(X, Y, Z)).transpose()
 
 # simulation
 w = morphofiltd(elpos, order, r0, r1, rN, rd, Cs)
-
-# w is of the correct size (65x101)
-
-# but value at [0, 0] is 3.410289076352674e-05
-# but should be -3.4103e-05
-
-# and value at [19, 19] is 5.045248610418316e-05
-# but should be -1.5023e-05
-
-
-wup = upsample(w.transpose(), taus).transpose()  # wup pas bon ><
+wup = upsample(w.transpose(), taus).transpose()
 
 Vel = zeros((len(w), len(Im)))
 
