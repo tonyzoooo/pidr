@@ -1,4 +1,4 @@
-from numpy import array, linspace, ndarray, pi, zeros, dot
+from numpy import array, dot, linspace, ndarray, pi, zeros
 from numpy.linalg import norm
 
 

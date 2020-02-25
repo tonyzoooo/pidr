@@ -1,4 +1,4 @@
-from numpy import array, empty, zeros, reshape
+from numpy import array, empty, reshape, zeros
 
 
 def upsample(arr: array, n: int) -> array:

@@ -7,7 +7,7 @@ from numpy.linalg import norm
 
 from hhrun import hhrun
 from morphofiltd import morphofiltd
-from util import readMatrix, upsample, reshapeMeshgrid
+from util import readMatrix, reshapeMeshgrid, upsample
 
 # Programme principal
 # HH
@@ -101,17 +101,17 @@ for iel in range(len(w)):
     Vel[iel] = convolve(Im, wup[iel], 'same')
 
 # cut
-commonPart = inMVm - inmvm - fix(wup.shape[1]/2)
+commonPart = inMVm - inmvm - int(fix(wup.shape[1]/2))
 rangeStart = commonPart + 1
 rangeEnd = commonPart + lVLFPy
-intervVm = arange(rangeStart, rangeEnd + 1)
-# intervVm should be a vector of 8000 values :
-# values : [4930, 4931, ..., 12928, 12929]
+intervVm = slice(rangeStart, rangeEnd + 1)
+# intervVm is a slice of 8000 values  [4930 ... 12929]
 
-Vel2 = Vel[:][intervVm]
+Vel2 = Vel[:, intervVm]
+
 # normalize
 elsync = 56
-Vel2 = Vel2 / norm(Vel2[elsync][:]) * norm(Vlfpy[:][elsync])
+Vel2 = Vel2 / norm(Vel2[elsync, :]) * norm(Vlfpy[:, elsync])
 # plot grid
 cc = zeros(1, size(elpos, 1))
 t = arange(dt, dt*size(Vel2, 2) + dt, dt)

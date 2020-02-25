@@ -46,7 +46,7 @@ def hhrun(I, t):
         # Beta for variable m
         v = v+65
         b = 4*exp(-v/18)
-        return b 
+        return b
 
     def an(v):
         # Alpha for variable n
