@@ -1,17 +1,38 @@
-from numpy import linspace, size, zeros, pi, array, exp, arange, heaviside
+from matplotlib.pyplot import figure, plot, show, subplot
+from numpy import (arange, array, cos, exp, heaviside, linspace, meshgrid,
+                   ndarray, pi, sin, size, zeros)
 from numpy.linalg import norm
-from matplotlib.pyplot import figure, subplot, plot, show
+
+from util import upsample
 
 
-def morphofiltd(re, ordre, r0, r1, rN, rD=None, Cs=1):
-    """inputs:
-        elpos = electrode positions (M x 3)
-        ordre = filter length (N+1 = nb of compartments on the axon + soma)
-        r0 = soma position (1 x 3) (center)
-        r1 = axon hillock position (1 x 3) (begining)
-        rN = last axon compartment position (1 x 3) (begining)
-        rD = tip of the equivalent dendrite
-        Cs = amplitude of the somatic dipole"""
+def morphofiltd(re: ndarray, ordre: int, r0: ndarray, r1: ndarray,
+                rN: ndarray, rD: ndarray = None, Cs=1) -> ndarray:
+    """
+    Computes the morphofiltd
+
+    Parameters
+    ----------
+    re : ndarray
+        electrode positions (M x 3)
+    ordre : int
+        filter length (N+1 = nb of compartments on the axon + soma)
+    r0 : ndarray
+        soma position (1 x 3) (center)
+    r1 : ndarray
+        axon hillock position (1 x 3) (begining)
+    rN : ndarray
+        last axon compartment position (1 x 3) (begining)
+    rD : ndarray
+        tip of the equivalent dendrite (default: None)
+    Cs : number
+        amplitude of the somatic dipole (default: 1)
+
+    Returns
+    -------
+    result : ndarray
+
+    """
 
     if rD is None:
         rD = r1
@@ -43,35 +64,35 @@ def morphofiltd(re, ordre, r0, r1, rN, rD=None, Cs=1):
 
 
 def hhrun(I, t):
-    # function a=am(v)
-    # #Alpha for Variable m
-    # a=0.1*(v+35)/(1-exp(-(v+35)/10));
-    # end
-    #
-    # function b=bm(v)
-    # #Beta for variable m
-    # b=4.0*exp(-0.0556*(v+60));
-    # end
-    #
-    # function a=an(v)
-    # #Alpha for variable n
-    # a=0.01*(v+50)/(1-exp(-(v+50)/10));
-    # end
-    #
-    # function b=bn(v)
-    # #Beta for variable n
-    # b=0.125*exp(-(v+60)/80);
-    # end
-    #
-    # function a=ah(v)
-    # #Alpha value for variable h
-    # a=0.07*exp(-0.05*(v+60));
-    # end
-    #
-    # function b =bh(v)
-    # #beta value for variable h
-    # b=1/(1+exp(-(0.1)*(v+30)));
-    # end
+    # def am(v):
+    #     # Alpha for Variable m
+    #     a = 0.1*(v+35)/(1-exp(-(v+35)/10))
+    #     return a
+
+    # def bm(v):
+    #     # Beta for variable m
+    #     b = 4.0*exp(-0.0556*(v+60))
+    #     return b
+
+    # def an(v):
+    #     # Alpha for variable n
+    #     a = 0.01*(v+50)/(1-exp(-(v+50)/10))
+    #     return a
+
+    # def bn(v):
+    #     # Beta for variable n
+    #     b = 0.125*exp(-(v+60)/80)
+    #     return b
+
+    # def ah(v):
+    #     # Alpha value for variable h
+    #     a = 0.07*exp(-0.05*(v+60))
+    #     return a
+
+    # def bh(v):
+    #     # beta value for variable h
+    #     b = 1/(1+exp(-(0.1)*(v+30)))
+    #     return b
 
     # Gerstner page EPFL
     def am(v):
@@ -182,12 +203,11 @@ def hhrun(I, t):
     IK[i+1] = gK*(V[i+1]-EK)
     Il[i+1] = gl*(V[i+1]-El)
 
-    # #Store variables for graphing later
-    # FE=V;
-    # FEm=m;
-    # FEn=n;
-    # FEh=h;
-    # clear V m n h;
+    # # Store variables for graphing later
+    # FE = V
+    # FEm = m
+    # FEn = n
+    # FEh = h
     return array([V, m, n, h, INa, IK, Il])
 
 
@@ -236,65 +256,79 @@ def readMatrix(file: str):
 
 
 # load LFPy simulation result
-Vlfpy = readMatrix('../Neural-AP-morphofilt/JCN_demo/Python/Vlfpy_BS_LA' + str(LA) + '_DA' + str(DA) +
+rootPath = '../Neural-AP-morphofilt/JCN_demo/Python/'
+Vlfpy = readMatrix('Vlfpy_BS_LA' + str(LA) + '_DA' + str(DA) +
                    '_LD' + str(LD) + '_DD' + str(DD) + 'demo.txt')
-Vmlfpy = readMatrix('../Neural-AP-morphofilt/JCN_demo/Python/Vm_BS_LA' + str(LA) + '_DA'
-                    + str(DA) + '_LD' + str(LD) + '_DD' + str(DD) + 'demo.txt')
-Imlfpy = readMatrix('../Neural-AP-morphofilt/JCN_demo/Python/Im_BS_LA' + str(LA) + '_DA' +
-                    str(DA) + '_LD' + str(LD) + '_DD' + str(DD) + 'demo.txt')
+Vmlfpy = readMatrix('Vm_BS_LA' + str(LA) + '_DA' + str(DA) +
+                    '_LD' + str(LD) + '_DD' + str(DD) + 'demo.txt')
+Imlfpy = readMatrix('Im_BS_LA' + str(LA) + '_DA' + str(DA) +
+                    '_LD' + str(LD) + '_DD' + str(DD) + 'demo.txt')
 
 # figure check
-figure()
-subplot(2, 1, 1)
 values = arange(inMVm-inmvm, inMVm-inmvm+lVLFPy)
+
+figure()
+
+subplot(2, 1, 1)
 plot(Vm[values])
 plot(Vmlfpy)
 
 subplot(2, 1, 2)
 plot(Im[values])
 plot(Imlfpy)
+
 show()
-"""
-%% filter parameters
-dk=10; % axonal spatial sampling (~ nb of segments)
-ordre=LA/dk+1;
-r0=[0 0 0]; % soma position
-r1=[SL/2 0 0]; % axon start position
-rN=[SL/2+LA-dk 0 0]; % axon stop position (start of the last segment)
-rd=norm(r1-r0)*[sin(phi)*cos(theta) sin(phi)*sin(theta) cos(phi)]; % dendrite end position, normalized
-Cs=2; % somatic equivalent dipole amplitude
-taus=23; % subsampling of the membrane current dk/taus = speed v)
 
-%% electrodes
-X=[-250:125:1250]';
-Y=[250:-50:50]';
-Z=0;
+# filter parameters
+dk = 10
+# axonal spatial sampling(~ nb of segments)
+ordre = LA/dk+1
+r0 = array([0, 0, 0])
+# soma position
+r1 = array([SL/2, 0, 0])
+# axon start position
+rN = array([SL/2+LA-dk, 0, 0])
+# axon stop position(start of the last segment)
+rd = norm(r1-r0) * array([sin(phi)*cos(theta), sin(phi)*sin(theta), cos(phi)])
+# dendrite end position, normalized
+Cs = 2
+# somatic equivalent dipole amplitude
+taus = 23
+# subsampling of the membrane current dk/taus = speed v)
 
-[eplosy,elposx,elposz]=meshgrid(Y,X,Z);
-elpos=[elposx(:),eplosy(:),elposz(:)]
+# electrodes
+X = arange(-250, 1250+125, 125).H
+Y = arange(250, 50-50, -50).H
+Z = 0
+
+elpos = meshgrid(Y, X, Z)
 
 # simulation
 w = morphofiltd(elpos, ordre, r0, r1, rN, rd, Cs)
-wup = upsample(w',taus)'
+wup = upsample(w.H, taus).H
 
-Vel=zeros(size(w, 1), length(Im))
-for iel=1:
+Vel = zeros(size(w, 1), Im.size)
+"""
+for iel = 1:
     size(w, 1),
     Vel(iel, :) = conv(Im, wup(iel, : ), 'same')
 end
+"""
 # cut
-intervVm=[inMVm-inmvm-fix(size(wup, 2)/2)+1:inMVm-inmvm-fix(size(wup, 2)/2)+lVLFPy]
+rangeStart = inMVm - inmvm - fix(size(wup, 2)/2) + 1
+rangeEnd = inMVm - inmvm - fix(size(wup, 2)/2) + lVLFPy
+"""
+intervVm = arange(rangeStart, rangeEnd + 1)
 Vel2 = Vel(: , intervVm)
 # normalize
-elsync=56
+elsync = 56
 Vel2 = Vel2/norm(Vel2(elsync, : ))*norm(Vlfpy(: , elsync))
 # plot grid
-
-cc=zeros(1, size(elpos, 1))
-t=dt: dt: dt*size(Vel2, 2)
+cc = zeros(1, size(elpos, 1))
+t = dt: dt: dt*size(Vel2, 2)
 figure
-cmap=colormap
-for ifil=1:
+cmap = colormap
+for ifil = 1:
     size(elpos, 1),
     subplot(5, 13, ifil)
     plot(t, Vel2(ifil, :)-Vel2(ifil, 1), 'LineWidth', 2)
