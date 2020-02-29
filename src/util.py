@@ -9,9 +9,9 @@ def upsample(arr: array, n: int) -> array:
         cols = arr.shape[1]
         result = empty((rows*n, cols), dtype=arr.dtype)
         for i in range(rows):
-            result[i*n] = arr[i]
+            result[i * n] = arr[i]
             for j in range(1, n):
-                result[i*n+j] = zeros(cols, dtype=arr.dtype)
+                result[i * n + j] = zeros(cols, dtype=arr.dtype)
         return result
     elif arr.ndim == 1:
         result = zeros(len(arr) * n)

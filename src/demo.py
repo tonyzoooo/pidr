@@ -1,8 +1,9 @@
 from pathlib import Path
 
-from matplotlib.pyplot import figure, plot, show, subplot
-from numpy import (arange, array, convolve, cos, fix, heaviside, linspace,
-                   meshgrid, ndarray, pi, sin, size, zeros)
+from matplotlib.pyplot import (axis, colorbar, colormaps, figure, plot,
+                               scatter, show, subplot, text, ylim)
+from numpy import (arange, array, convolve, correlate, cos, fix, heaviside,
+                   linspace, mean, meshgrid, ndarray, pi, sin, size, zeros)
 from numpy.linalg import norm
 
 from hhrun import hhrun
@@ -104,40 +105,37 @@ for iel in range(len(w)):
 commonPart = inMVm - inmvm - int(fix(wup.shape[1]/2))
 rangeStart = commonPart + 1
 rangeEnd = commonPart + lVLFPy
-intervVm = slice(rangeStart, rangeEnd + 1)
-# intervVm is a slice of 8000 values  [4930 ... 12929]
-
+intervVm = arange(rangeStart, rangeEnd + 1)
 Vel2 = Vel[:, intervVm]
 
 # normalize
-elsync = 56
+elsync = 55
 Vel2 = Vel2 / norm(Vel2[elsync, :]) * norm(Vlfpy[:, elsync])
+
 # plot grid
-cc = zeros(1, size(elpos, 1))
-t = arange(dt, dt*size(Vel2, 2) + dt, dt)
+cc = zeros((1, elpos.shape[0]))
+t = arange(dt-1, dt * Vel2.shape[1] + dt, dt)
 
-"""
-figure
+# TODO: initialize cc array here
+
+figure()
+# TODO: figure out how to use colormaps and colorbarin python
 cmap = colormap
-for ifil = 1:
-    size(elpos, 1),
+for ifil in range(elpos.shape[0]):
     subplot(5, 13, ifil)
-    plot(t, Vel2(ifil, :)-Vel2(ifil, 1), 'LineWidth', 2)
-    hold on
-    plot(t, Vlfpy(:, ifil)-Vlfpy(1, ifil), 'LineWidth', 2)
-    cc(ifil) = corr(Vel2(ifil, :)', Vlfpy(: , ifil))
-    scatter(4, -2*10**-3, 100, cmap(1+fix(size(cmap, 1)*cc(ifil)), : ), 'filled')
-    ylim([-5 5]*10**-3)
-    if ifil > 52
-    text(2, -12*10**-3, [num2str((ifil-53)*125-250), '\mu', 'm'])
-    end
-    if rem(ifil, 13) == 1,
-    text(-8, 0*10**-3, [num2str(-fix(ifil/13)*50+250), '\mu', 'm'])
-    end
-    axis off
-end
-colorbar('Position', [0.93 0.3 0.007 0.6], 'FontSize', 14)
+    plot(t, Vel2[ifil]-Vel2[ifil, 0], 'LineWidth', 2)
+    plot(t, Vlfpy[:, ifil]-Vlfpy[0, ifil], 'LineWidth', 2)
+    cc[ifil] = correlate(Vel2[ifil].transpose(), Vlfpy[:, ifil])
+    scatter(4, -2 * 10**-3, 100, cmap[fix(cmap.shape[0]*cc(ifil))], 'filled')
+    ylim(array([-5, 5]) * 10**-3)
+    if ifil > 51:
+        text(2, -12*10**-3, str((ifil-53)*125-250) + '\u03BCm')
+    if ifil % 13 == 0:
+        text(-8, 0*10**-3, str(-fix(ifil/13)*50+250) + '\u03BCm')
+    axis('off')
 
-fprintf('\n Mean correlation = %1.2f \n Min correlation = %1.2f  \n Max correlation = %1.2f \n',
-        mean(cc), min(cc), max(cc))
-"""
+colorbar('Position', array([0.93, 0.3, 0.007, 0.6]), 'FontSize', 14)
+
+print('Mean correlation = %1.2f, %1.2f' % mean(cc))
+print('Min correlation = %1.2f' % min(cc))
+print('Max correlation = %1.2f' % max(cc))
