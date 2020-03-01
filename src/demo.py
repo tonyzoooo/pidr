@@ -1,9 +1,9 @@
 from pathlib import Path
 
 from matplotlib.pyplot import (axis, colorbar, colormaps, figure, plot,
-                               scatter, show, subplot, text, ylim)
+                               scatter, show, subplot, text, ylim, cm, colorbar)
 from numpy import (arange, array, convolve, correlate, cos, fix, heaviside,
-                   linspace, mean, meshgrid, ndarray, pi, sin, size, zeros)
+                   linspace, mean, meshgrid, ndarray, pi, sin, size, zeros, min, max)
 from numpy.linalg import norm
 
 from hhrun import hhrun
@@ -48,7 +48,7 @@ phi = pi/2  # angle avec Oz
 theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
 
 # load LFPy simulation result
-data = Path('data/')  # os independent path
+data = Path('src/data/')  # os independent path
 Vlfpy = readMatrix(data / f'Vlfpy_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
 Vmlfpy = readMatrix(data / f'Vm_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
 Imlfpy = readMatrix(data / f'Im_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
@@ -114,19 +114,21 @@ Vel2 = Vel2 / norm(Vel2[elsync, :]) * norm(Vlfpy[:, elsync])
 
 # plot grid
 cc = zeros((1, elpos.shape[0]))
-t = arange(dt-1, dt * Vel2.shape[1] + dt, dt)
-
-# TODO: initialize cc array here
+t = arange(0, dt * Vel2.shape[1], dt)
 
 figure()
-# TODO: figure out how to use colormaps and colorbarin python
-cmap = colormap
+
+
+cmap = cm.get_cmap('jet')
+
 for ifil in range(elpos.shape[0]):
-    subplot(5, 13, ifil)
-    plot(t, Vel2[ifil]-Vel2[ifil, 0], 'LineWidth', 2)
-    plot(t, Vlfpy[:, ifil]-Vlfpy[0, ifil], 'LineWidth', 2)
-    cc[ifil] = correlate(Vel2[ifil].transpose(), Vlfpy[:, ifil])
-    scatter(4, -2 * 10**-3, 100, cmap[fix(cmap.shape[0]*cc(ifil))], 'filled')
+    subplot(5, 13, ifil+1)
+    plot(t, Vel2[ifil]-Vel2[ifil, 0], linewidth=2 )
+    plot(t, Vlfpy[:, ifil]-Vlfpy[0, ifil], linewidth=2)
+    cc[0, ifil] = correlate(Vel2[ifil].transpose(), Vlfpy[:, ifil])
+    rgba = cmap(cc[0, ifil])
+    color = array([[rgba[i] for i in range(3)]])
+    scatter(4, -2 * 10**-3, 50, color , 'o', cmap )
     ylim(array([-5, 5]) * 10**-3)
     if ifil > 51:
         text(2, -12*10**-3, str((ifil-53)*125-250) + '\u03BCm')
@@ -134,8 +136,12 @@ for ifil in range(elpos.shape[0]):
         text(-8, 0*10**-3, str(-fix(ifil/13)*50+250) + '\u03BCm')
     axis('off')
 
-colorbar('Position', array([0.93, 0.3, 0.007, 0.6]), 'FontSize', 14)
 
-print('Mean correlation = %1.2f, %1.2f' % mean(cc))
-print('Min correlation = %1.2f' % min(cc))
-print('Max correlation = %1.2f' % max(cc))
+cbar = colorbar()
+cbar.set_label('Position')
+
+show()
+
+print('Mean correlation =' +  '{0:.2f}'.format(mean(cc)))
+print('Min correlation =' +  '{0:.2f}'.format(min(cc)))
+print('Max correlation =' +  '{0:.2f}'.format(max(cc)))
