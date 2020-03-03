@@ -1,10 +1,11 @@
 from pathlib import Path
 
 from matplotlib.pyplot import (axis, colorbar, colormaps, figure, plot,
-                               scatter, show, subplot, text, ylim, cm, colorbar)
-from numpy import (arange, array, convolve, correlate, cos, fix, heaviside,
+                               scatter, show, subplot, text, ylim, cm, savefig, imshow, subplots)
+from numpy import (arange, array, convolve, corrcoef, cos, fix, heaviside,
                    linspace, mean, meshgrid, ndarray, pi, sin, size, zeros, min, max)
 from numpy.linalg import norm
+from matplotlib.image import imread
 
 from hhrun import hhrun
 from morphofiltd import morphofiltd
@@ -48,7 +49,7 @@ phi = pi/2  # angle avec Oz
 theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
 
 # load LFPy simulation result
-data = Path('src/data/')  # os independent path
+data = Path('data/')  # os independent path
 Vlfpy = readMatrix(data / f'Vlfpy_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
 Vmlfpy = readMatrix(data / f'Vm_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
 Imlfpy = readMatrix(data / f'Im_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
@@ -116,8 +117,8 @@ Vel2 = Vel2 / norm(Vel2[elsync, :]) * norm(Vlfpy[:, elsync])
 cc = zeros((1, elpos.shape[0]))
 t = arange(0, dt * Vel2.shape[1], dt)
 
-figure()
 
+fig, ax = subplots()
 
 cmap = cm.get_cmap('jet')
 
@@ -125,7 +126,8 @@ for ifil in range(elpos.shape[0]):
     subplot(5, 13, ifil+1)
     plot(t, Vel2[ifil]-Vel2[ifil, 0], linewidth=2 )
     plot(t, Vlfpy[:, ifil]-Vlfpy[0, ifil], linewidth=2)
-    cc[0, ifil] = correlate(Vel2[ifil].transpose(), Vlfpy[:, ifil])
+    a= corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
+    cc[0, ifil] = corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
     rgba = cmap(cc[0, ifil])
     color = array([[rgba[i] for i in range(3)]])
     scatter(4, -2 * 10**-3, 50, color , 'o', cmap )
@@ -136,11 +138,16 @@ for ifil in range(elpos.shape[0]):
         text(-8, 0*10**-3, str(-fix(ifil/13)*50+250) + '\u03BCm')
     axis('off')
 
+fig.savefig('simulation_results.png', bbox_inches='tight')
+im = imread('simulation_results.png')
 
-cbar = colorbar()
-cbar.set_label('Position')
+pos = fig.add_axes([0.93,0.1,0.02,0.8]) 
 
-show()
+
+im = ax.imshow(im, cmap = cmap)
+fig.colorbar(im, cax=pos, orientation='vertical')
+
+fig.savefig('simulation_results.png', bbox_inches='tight')
 
 print('Mean correlation =' +  '{0:.2f}'.format(mean(cc)))
 print('Min correlation =' +  '{0:.2f}'.format(min(cc)))

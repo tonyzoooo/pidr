@@ -1,4 +1,4 @@
-from numpy import array, empty, reshape, zeros
+from numpy import array, empty, reshape, zeros, cov, mean
 
 
 def upsample(arr: array, n: int) -> array:
@@ -36,3 +36,4 @@ def reshapeMeshgrid(lst: list):
         element = lst[i]
         l.append(reshape(element, size))
     return array(l)
+
