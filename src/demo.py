@@ -133,7 +133,7 @@ for ifil in range(elpos.shape[0]):
     scatter(4, -2 * 10**-3, 50, color , 'o', cmap )
     ylim(array([-5, 5]) * 10**-3)
     if ifil > 51:
-        text(2, -12*10**-3, str((ifil-53)*125-250) + '\u03BCm')
+        text(2, -12*10**-3, str((ifil-53)*125-250+125) + '\u03BCm')
     if ifil % 13 == 0:
         text(-8, 0*10**-3, str(-fix(ifil/13)*50+250) + '\u03BCm')
     axis('off')
