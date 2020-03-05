@@ -32,7 +32,10 @@ def hhrun(I, t):
     #     b = 1/(1+exp(-(0.1)*(v+30)))
     #     return b
 
+    # -------------------------------------------------------
     # Gerstner page EPFL
+    # -------------------------------------------------------
+    
     def am(v):
         # Alpha for Variable m
         v = v+65
@@ -78,9 +81,9 @@ def hhrun(I, t):
         return b
 
     # Constants set for all Methods
-    # dt = 0.04       # Time Step ms
-    # t = 0: dt: 25   # Time Array ms
-    # I = 0.1         # External Current Applied
+    # dt = 0.04                 # Time Step ms
+    # t = arange(0, 25+dt, dt)  # Time Array ms
+    # I = 0.1                   # External Current Applied
     dt = t[1]-t[0]
 
     # Array initializations

@@ -29,11 +29,11 @@ def readMatrix(file: str):
 
 
 def reshapeMeshgrid(lst: list):
-    l = list()
-    element = lst[0]
-    size = element.size
-    for i in range(len(lst)):
-        element = lst[i]
-        l.append(reshape(element, size))
-    return array(l)
-
+    if len(lst) == 0:
+        raise ValueError('list lst cannot be empty')
+    rows = len(lst)
+    cols = lst[0].size
+    result = empty((rows, cols))
+    for i in range(rows):
+        result[i] = reshape(lst[i], cols)
+    return result

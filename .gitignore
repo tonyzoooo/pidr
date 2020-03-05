@@ -1,3 +1,4 @@
 ./Neural-AP-morphofilt
 __pycache__
 .vscode
+*.png

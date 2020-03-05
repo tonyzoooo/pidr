@@ -1,18 +1,22 @@
 from pathlib import Path
 
-from matplotlib.pyplot import (axis, colorbar, colormaps, figure, plot,
-                               scatter, show, subplot, text, ylim, cm, savefig, imshow, subplots)
-from numpy import (arange, array, convolve, corrcoef, cos, fix, heaviside,
-                   linspace, mean, meshgrid, ndarray, pi, sin, size, zeros, min, max)
-from numpy.linalg import norm
 from matplotlib.image import imread
+from matplotlib.pyplot import (axis, cm, colorbar, colormaps, figure, imshow,
+                               plot, savefig, scatter, show, subplot, subplots,
+                               text, ylim)
+from numpy import (arange, argmax, array, convolve, corrcoef, cos, fix,
+                   heaviside, linspace, max, mean, meshgrid, min, ndarray, pi,
+                   sin, size, zeros)
+from numpy.linalg import norm
 
 from hhrun import hhrun
 from morphofiltd import morphofiltd
 from util import readMatrix, reshapeMeshgrid, upsample
 
-# Programme principal
-# HH
+# -----------------------------------------------------------
+# HH (Hodgkin–Huxley model)
+# -----------------------------------------------------------
+
 inmvm = 3000    # index max on Vm in LFPy (3000 for synchronisation)
 lVLFPy = 8000   # signal length in LFPy
 dt = 10**(-3)   # in ms
@@ -24,19 +28,24 @@ n = len(t)
 fe = 1/dt
 f = arange(0, fe/2, fe/Nt)
 
-I = (heaviside(t-1, 1/2)-heaviside(t-31, 1/2)) * 0.044 / (2*pi*12.5*25) * \
-    10**8*10**-3  # *5.093 # 0.15/(pi*12.5*12.5*2+2*pi*12.5*25)*10**8
+I = (
+    (heaviside(t-1, 1/2)-heaviside(t-31, 1/2))
+    * 0.044 / (2*pi*12.5*25) * 10**8*10**-3
+    # * 5.093 # 0.15/(pi*12.5*12.5*2+2*pi*12.5*25)*10**8
+)
 icur = 1
-# pot membrane, proportionnel au courant des canaux ioniques (http://www.bem.fi/book/03/03.htm, 3.14)
+
+# pot membrane, proportional to ion channels electric current
+# (http://www.bem.fi/book/03/03.htm, 3.14)
 [Vm, m, n, h, INa, IK, Il] = hhrun(I, t)
-Im = (INa+IK+Il)*(2*pi*12.5*25)/10**8*10**3
 
-MVm = max(Vm)
-inMVm = 0
-while Vm[inMVm] != MVm:
-    inMVm += 1
+Im = (INa+IK+Il) * (2*pi*12.5*25) / 10**8 * 10**3
+inMVm = argmax(Vm)
+MVm = Vm[inMVm]
 
+# -----------------------------------------------------------
 # BS neuron morphology
+# -----------------------------------------------------------
 
 SL = 25     # soma length (cylinder with the same diameter)
 
@@ -48,13 +57,19 @@ DD = 2      # dendrite diameter
 phi = pi/2  # angle avec Oz
 theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
 
+# -----------------------------------------------------------
 # load LFPy simulation result
+# -----------------------------------------------------------
+
 data = Path('data/')  # os independent path
 Vlfpy = readMatrix(data / f'Vlfpy_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
 Vmlfpy = readMatrix(data / f'Vm_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
 Imlfpy = readMatrix(data / f'Im_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
 
+# -----------------------------------------------------------
 # figure check
+# -----------------------------------------------------------
+
 values = arange(inMVm-inmvm, inMVm-inmvm+lVLFPy)
 
 figure()
@@ -67,33 +82,40 @@ subplot(2, 1, 2)
 plot(Im[values])
 plot(Imlfpy)
 
-# show()
+show()
 
+# -----------------------------------------------------------
 # filter parameters
-dk = 10
-# axonal spatial sampling(~ nb of segments)
-order = int(LA/dk+1)
-r0 = array([0, 0, 0])
-# soma position
-r1 = array([SL/2, 0, 0])
-# axon start position
-rN = array([SL/2+LA-dk, 0, 0])
-# axon stop position(start of the last segment)
-rd = norm(r1-r0) * array([sin(phi)*cos(theta), sin(phi)*sin(theta), cos(phi)])
-# dendrite end position, normalized
-Cs = 2
-# somatic equivalent dipole amplitude
-taus = 23
-# subsampling of the membrane current dk/taus = speed v)
+# -----------------------------------------------------------
 
+dk = 10     # axonal spatial sampling(~ nb of segments)
+
+order = int(LA/dk+1)
+r0 = array([0, 0, 0])           # soma position
+r1 = array([SL/2, 0, 0])        # axon start position
+rN = array([SL/2+LA-dk, 0, 0])  # axon stop position (start of the last segment)
+rd = norm(r1-r0) * array([
+    sin(phi) * cos(theta),
+    sin(phi) * sin(theta),
+    cos(phi)
+])          # dendrite end position, normalized
+Cs = 2      # somatic equivalent dipole amplitude
+taus = 23   # subsampling of the membrane current dk/taus = speed v)
+
+# -----------------------------------------------------------
 # electrodes
+# -----------------------------------------------------------
+
 X = arange(-250, 1250+125, 125)
 Y = arange(250, 50-50, -50)
 Z = 0
 
 elpos = reshapeMeshgrid(meshgrid(X, Y, Z)).transpose()
 
+# -----------------------------------------------------------
 # simulation
+# -----------------------------------------------------------
+
 w = morphofiltd(elpos, order, r0, r1, rN, rd, Cs)
 wup = upsample(w.transpose(), taus).transpose()
 
@@ -113,24 +135,25 @@ Vel2 = Vel[:, intervVm]
 elsync = 55
 Vel2 = Vel2 / norm(Vel2[elsync, :]) * norm(Vlfpy[:, elsync])
 
+# -----------------------------------------------------------
 # plot grid
+# -----------------------------------------------------------
+
 cc = zeros((1, elpos.shape[0]))
 t = arange(0, dt * Vel2.shape[1], dt)
 
-
 fig, ax = subplots()
-
 cmap = cm.get_cmap('jet')
 
 for ifil in range(elpos.shape[0]):
     subplot(5, 13, ifil+1)
-    plot(t, Vel2[ifil]-Vel2[ifil, 0], linewidth=2 )
+    plot(t, Vel2[ifil]-Vel2[ifil, 0], linewidth=2)
     plot(t, Vlfpy[:, ifil]-Vlfpy[0, ifil], linewidth=2)
-    a= corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
+    a = corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
     cc[0, ifil] = corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
     rgba = cmap(cc[0, ifil])
     color = array([[rgba[i] for i in range(3)]])
-    scatter(4, -2 * 10**-3, 50, color , 'o', cmap )
+    scatter(4, -2 * 10**-3, 50, color, 'o', cmap)
     ylim(array([-5, 5]) * 10**-3)
     if ifil > 51:
         text(2, -12*10**-3, str((ifil-53)*125-250+125) + '\u03BCm')
@@ -140,15 +163,13 @@ for ifil in range(elpos.shape[0]):
 
 fig.savefig('simulation_results.png', bbox_inches='tight')
 im = imread('simulation_results.png')
-
-pos = fig.add_axes([0.93,0.1,0.02,0.8]) 
-
-
-im = ax.imshow(im, cmap = cmap)
+pos = fig.add_axes([0.93, 0.1, 0.02, 0.8])
+im = ax.imshow(im, cmap=cmap)
 fig.colorbar(im, cax=pos, orientation='vertical')
-
 fig.savefig('simulation_results.png', bbox_inches='tight')
 
-print('Mean correlation =' +  '{0:.2f}'.format(mean(cc)))
-print('Min correlation =' +  '{0:.2f}'.format(min(cc)))
-print('Max correlation =' +  '{0:.2f}'.format(max(cc)))
+show()
+
+print('Mean correlation = ' + '{0:.2f}'.format(mean(cc)))
+print('Min correlation = ' + '{0:.2f}'.format(min(cc)))
+print('Max correlation = ' + '{0:.2f}'.format(max(cc)))

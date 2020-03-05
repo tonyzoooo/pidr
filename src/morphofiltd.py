@@ -5,8 +5,7 @@ from numpy.linalg import norm
 def morphofiltd(re: ndarray, order: int, r0: ndarray, r1: ndarray,
                 rN: ndarray, rD: ndarray = None, Cs=1) -> ndarray:
     """
-    Computes the morphofiltd
-
+    
     Parameters
     ----------
     re : ndarray
