@@ -1,14 +1,15 @@
+import math
+import os
+
 import LFPy
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import pylab as pl
 from matplotlib.collections import PolyCollection
 #import scipy
 #from scipy.signal import butter, lfilter
 #import matplotlib.animation as animation
 from neuron import h
-import os
-import math
 
 
 def PolyArea(x, y):
@@ -50,14 +51,16 @@ def getStimulationResult():
     # ================================= MORPHOLOGY ================================
     # =============================================================================
 
-    LA = "1000"
-    DA = "2"
-    LD = "50"
-    DD = "2"
+    # LA = "1000"
+    # DA = "2"
+    # LD = "50" 
+    # DD = "2"
 
     st = 1/1000
 
-    filename = "./BSR_LA"+LA+"_DA"+DA+"_LD"+LD+"_DD"+DD+"_demo.hoc"
+    # filename = f'../resources/BSR_LA{LA}_DA{DA}_LD{LD}_DD{DD}_demo.hoc'
+    filename = '../resources/L5_Mainen_ax600_phi1.hoc'
+    # filename = '../resources/stel_Mainen_ax200.hoc'
     cell_parameters = {
         'morphology': filename,
         'v_init': -65,

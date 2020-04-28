@@ -187,7 +187,7 @@ pos = fig.add_axes([0.93, 0.1, 0.02, 0.8])
 im = ax.imshow(im, cmap=cmap)
 fig.colorbar(im, cax=pos, orientation='vertical')
 
-# plt.show()
+plt.show()
 
 print('Mean correlation = ' + '{0:.2f}'.format(np.mean(cc)))
 print('Min correlation = ' + '{0:.2f}'.format(np.min(cc)))
