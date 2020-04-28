@@ -1,13 +1,14 @@
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.image import imread
 from numpy import pi
 from numpy.linalg import norm
 
-from demo_github import getStimulationResult, plotStimulation
+import util
+from demo_github import getStimulationResult, plotStimulation, plotNeuron
 from hhrun import hhrun
 from morphofiltd import morphofiltd
-from util import readMatrix, reshapeMeshgrid, upsample
 
 # -----------------------------------------------------------
 # HH (Hodgkin–Huxley model)
@@ -58,9 +59,9 @@ theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
 # -----------------------------------------------------------
 
 # data = Path('data/')  # os independent path
-# Vlfpy = readMatrix(data / f'Vlfpy_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
-# Vmlfpy = readMatrix(data / f'Vm_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
-# Imlfpy = readMatrix(data / f'Im_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
+# Vlfpy = util.readMatrix(data / f'Vlfpy_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
+# Vmlfpy = util.readMatrix(data / f'Vm_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
+# Imlfpy = util.readMatrix(data / f'Im_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
 
 result = getStimulationResult()
 
@@ -68,13 +69,19 @@ Vlfpy = result.Vlfpy
 Vmlfpy = result.Vmlfpy
 Imlfpy = result.Imlfpy
 
+cell = result.cell
+timeind = result.timeind
+stimulus = result.stimulus
+meshgrid_electrodes = result.meshgrid_electrodes
+
 # -----------------------------------------------------------
 # figure check
 # -----------------------------------------------------------
 
 values = np.arange(inMVm-inmvm, inMVm-inmvm+lVLFPy)
 
-plt.figure(3)
+fig = plt.figure()
+fig.canvas.set_window_title('Simulation result')
 
 plt.subplot(2, 1, 1)
 plt.plot(Vm[values])
@@ -113,14 +120,14 @@ X = np.arange(-250, 1250+125, 125)
 Y = np.arange(250, 50-50, -50)
 Z = 0
 
-elpos = reshapeMeshgrid(np.meshgrid(X, Y, Z)).transpose()
+elpos = util.reshapeMeshgrid(np.meshgrid(X, Y, Z)).transpose()
 
 # -----------------------------------------------------------
 # simulation
 # -----------------------------------------------------------
 
 w = morphofiltd(elpos, order, r0, r1, rN, rd, Cs)
-wup = upsample(w.transpose(), taus).transpose()
+wup = util.upsample(w.transpose(), taus).transpose()
 
 Vel = np.zeros((len(w), len(Im)))
 
@@ -139,39 +146,48 @@ elsync = 55
 Vel2 = Vel2 / norm(Vel2[elsync, :]) * norm(Vlfpy[:, elsync])
 
 # -----------------------------------------------------------
-# plot grid
+# plot grid potato
 # -----------------------------------------------------------
 
 cc = np.zeros((1, elpos.shape[0]))
 t = np.arange(0, dt * Vel2.shape[1], dt)
 
 fig, ax = plt.subplots()
+gs = fig.add_gridspec(5, 13)
+
+fig.canvas.set_window_title('Grid')
+ax.set_visible(False)
+
+fig = plotNeuron(cell, meshgrid_electrodes, fig)
+
 cmap = plt.cm.get_cmap('jet')
 
-for ifil in range(elpos.shape[0]):
-    plt.subplot(5, 13, ifil+1)
-    plt.plot(t, Vel2[ifil]-Vel2[ifil, 0], linewidth=2)
-    plt.plot(t, Vlfpy[:, ifil]-Vlfpy[0, ifil], linewidth=2)
-    a = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
-    cc[0, ifil] = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
-    rgba = cmap(cc[0, ifil])
-    color = np.array([[rgba[i] for i in range(3)]])
-    plt.scatter(4, -2 * 10**-3, 50, color, 'o', cmap)
-    plt.ylim(np.array([-5, 5]) * 10**-3)
-    if ifil > 51:
-        plt.text(2, -12*10**-3, str((ifil-53)*125-250+125) + '$\mu$m')
-    if ifil % 13 == 0:
-        plt.text(-8, 0*10**-3, str(-np.fix(ifil/13)*50+250) + '$\mu$m')
-    plt.axis('off')
+ifil = 0
+for i in range(5):
+    for j in range(13):
+        ax = fig.add_subplot(gs[i, j])
+        ax.patch.set_visible(False)
+        plt.plot(t, Vel2[ifil]-Vel2[ifil, 0], linewidth=2, alpha = 0.7)
+        plt.plot(t, Vlfpy[:, ifil]-Vlfpy[0, ifil], linewidth=2, alpha = 0.7)
+        a = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
+        cc[0, ifil] = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
+        rgba = cmap(cc[0, ifil])
+        color = np.array([[rgba[i] for i in range(3)]])
+        plt.scatter(4, -2 * 10**-3, 50, color, 'o', cmap, alpha=0.5)
+        plt.ylim(np.array([-5, 5]) * 10**-3)
+        if ifil > 51:
+            plt.text(2, -12*10**-3, str((ifil-53)*125-250+125) + r'$\mu$m')
+        if ifil % 13 == 0:
+            plt.text(-8, 0*10**-3, str(-np.fix(ifil/13)*50+250) + r'$\mu$m')
+        plt.axis('off')
+        ifil += 1
 
-fig.savefig('simulation_results.png', bbox_inches='tight')
-im = imread('simulation_results.png')
+im = util.figToImage()
 pos = fig.add_axes([0.93, 0.1, 0.02, 0.8])
 im = ax.imshow(im, cmap=cmap)
 fig.colorbar(im, cax=pos, orientation='vertical')
-fig.savefig('simulation_results.png', bbox_inches='tight')
 
-plt.show()
+# plt.show()
 
 print('Mean correlation = ' + '{0:.2f}'.format(np.mean(cc)))
 print('Min correlation = ' + '{0:.2f}'.format(np.min(cc)))
@@ -181,9 +197,6 @@ print('Max correlation = ' + '{0:.2f}'.format(np.max(cc)))
 # plot stimulation
 # -----------------------------------------------------------
 
-cell = result.cell
-timeind = result.timeind
-stimulus = result.stimulus
-meshgrid_electrodes = result.meshgrid_electrodes
-
 plotStimulation(cell, timeind, stimulus, meshgrid_electrodes)
+
+plt.show()

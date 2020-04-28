@@ -15,9 +15,10 @@ def PolyArea(x, y):
     return 0.5*np.abs(np.dot(x, np.roll(y, 1))-np.dot(y, np.roll(x, 1)))
 
 
-def plotstuff(cell, electrode):
+def plotNeuron(cell, electrode, fig):
     '''plotting'''
-    fig = plt.figure(2)
+    #fig = plt.figure(2)
+    #fig.canvas.set_window_title('Neuron Morphology')
     plt.plot(electrode.x, electrode.y, '.',  marker='o',
              markersize=3, color='r', zorder=0)
     #    rotation = {'x' : 0, 'y' : math.pi, 'z' : 0} #-math.pi/9 # Mainen
@@ -31,16 +32,18 @@ def plotstuff(cell, electrode):
         if PolyArea(x, y) < 10000:
             zips.append(list(zip(x, y)))
         # END PATCH
-    polycol = PolyCollection(zips, edgecolors='k', facecolors='k')
+    polycol = PolyCollection(zips, edgecolors='k')
     ax = fig.add_subplot(111)
+    ax.patch.set_visible(False)
+    ax.axis('off')
     ax.add_collection(polycol)
     ax.axis(ax.axis('equal'))
-    plt.xlabel('Distance $\mu$m - (Ox)')
-    plt.ylabel('Distance $\mu$m - (0y) ')
-    plt.grid(True)
-    plt.title(r'$Neuron$ $Morphology$')
-    # plt.show()
-    return fig    
+
+    #plt.xlabel(r'Distance $\mu$m - (Ox)')
+    #plt.ylabel(r'Distance $\mu$m - (0y) ')
+    #plt.grid(True)
+    #plt.title(r'$Neuron$ $Morphology$')
+    return fig  
 
 def getStimulationResult():
     # =============================================================================
@@ -174,6 +177,8 @@ class StimulationResult:
 
 def plotStimulation(cell, timeind, stimulus, meshgrid_electrodes):
     fig = plt.figure(1)
+    fig.canvas.set_window_title('Stimulation')
+
     # ================= STIMULATION PLOT ==========================================
     plt.subplot(411)
     pl.plot(cell.tvec[timeind], stimulus.i[timeind])
@@ -202,6 +207,4 @@ def plotStimulation(cell, timeind, stimulus, meshgrid_electrodes):
     plt.ylabel(r'$V_e$ (mV)', va='center')
     plt.xlabel('time (ms)')
     plt.grid(True)
-
-    plotstuff(cell, meshgrid_electrodes)
-    plt.show()
+    return fig
