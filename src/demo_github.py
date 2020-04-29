@@ -20,8 +20,8 @@ def plotNeuron(cell, electrode, fig):
     '''plotting'''
     #fig = plt.figure(2)
     #fig.canvas.set_window_title('Neuron Morphology')
-    plt.plot(electrode.x, electrode.y, '.',  marker='o',
-             markersize=3, color='r', zorder=0)
+    # plt.plot(electrode.x, electrode.y, '.',  marker='o',
+    #          markersize=3, color='r', zorder=0)
     #    rotation = {'x' : 0, 'y' : math.pi, 'z' : 0} #-math.pi/9 # Mainen
     #    cell.set_rotation(**rotation)
     # Plot neuron morphology
@@ -51,10 +51,10 @@ def getStimulationResult():
     # ================================= MORPHOLOGY ================================
     # =============================================================================
 
-    # LA = "1000"
-    # DA = "2"
-    # LD = "50" 
-    # DD = "2"
+    LA = "1000"
+    DA = "2"
+    LD = "50" 
+    DD = "2"
 
     st = 1/1000
 
@@ -75,7 +75,6 @@ def getStimulationResult():
         'lambda_f': 100.,  # frequency where length constants are computed
     }
     cell = LFPy.Cell(**cell_parameters)
-
 
     # =============================================================================
     # ================================= stimulation parameters================================
@@ -179,8 +178,7 @@ class StimulationResult:
     meshgrid_electrodes = None
 
 def plotStimulation(cell, timeind, stimulus, meshgrid_electrodes):
-    fig = plt.figure(1)
-    fig.canvas.set_window_title('Stimulation')
+    fig = plt.figure('Stimulation')
 
     # ================= STIMULATION PLOT ==========================================
     plt.subplot(411)

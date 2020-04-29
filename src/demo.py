@@ -80,8 +80,7 @@ meshgrid_electrodes = result.meshgrid_electrodes
 
 values = np.arange(inMVm-inmvm, inMVm-inmvm+lVLFPy)
 
-fig = plt.figure()
-fig.canvas.set_window_title('Simulation result')
+fig = plt.figure('Simulation result')
 
 plt.subplot(2, 1, 1)
 plt.plot(Vm[values])
@@ -91,7 +90,7 @@ plt.subplot(2, 1, 2)
 plt.plot(Im[values])
 plt.plot(Imlfpy)
 
-plt.show()
+# plt.show()
 
 # -----------------------------------------------------------
 # filter parameters
@@ -152,11 +151,8 @@ Vel2 = Vel2 / norm(Vel2[elsync, :]) * norm(Vlfpy[:, elsync])
 cc = np.zeros((1, elpos.shape[0]))
 t = np.arange(0, dt * Vel2.shape[1], dt)
 
-fig, ax = plt.subplots()
+fig = plt.figure('Grid')
 gs = fig.add_gridspec(5, 13)
-
-fig.canvas.set_window_title('Grid')
-ax.set_visible(False)
 
 fig = plotNeuron(cell, meshgrid_electrodes, fig)
 
@@ -187,7 +183,7 @@ pos = fig.add_axes([0.93, 0.1, 0.02, 0.8])
 im = ax.imshow(im, cmap=cmap)
 fig.colorbar(im, cax=pos, orientation='vertical')
 
-plt.show()
+# plt.show()
 
 print('Mean correlation = ' + '{0:.2f}'.format(np.mean(cc)))
 print('Min correlation = ' + '{0:.2f}'.format(np.min(cc)))
