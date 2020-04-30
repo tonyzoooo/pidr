@@ -33,7 +33,7 @@ def plotNeuron(cell, electrode, fig):
         if PolyArea(x, y) < 10000:
             zips.append(list(zip(x, y)))
         # END PATCH
-    polycol = PolyCollection(zips, edgecolors='k')
+    polycol = PolyCollection(zips, edgecolors='gray')
     ax = fig.add_subplot(111)
     ax.patch.set_visible(False)
     ax.axis('off')
