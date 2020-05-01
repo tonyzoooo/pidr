@@ -33,7 +33,7 @@ def plotNeuron(cell, electrode, fig):
         if PolyArea(x, y) < 10000:
             zips.append(list(zip(x, y)))
         # END PATCH
-    polycol = PolyCollection(zips, edgecolors='gray')
+    polycol = PolyCollection(zips, edgecolors='#999999', facecolors='#666666', linewidths=1.7)
     ax = fig.add_subplot(111)
     ax.patch.set_visible(False)
     ax.axis('off')
@@ -59,7 +59,7 @@ def getStimulationResult():
     st = 1/1000
 
     # filename = f'../resources/BSR_LA{LA}_DA{DA}_LD{LD}_DD{DD}_demo.hoc'
-    filename = '../resources/L5_Mainen_ax600_phi1.hoc'
+    filename = '../resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc'
     # filename = '../resources/stel_Mainen_ax200.hoc'
     cell_parameters = {
         'morphology': filename,

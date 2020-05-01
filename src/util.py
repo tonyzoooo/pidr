@@ -2,6 +2,7 @@ import io
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.image import imread
 from PIL import Image
 
 
@@ -42,9 +43,11 @@ def reshapeMeshgrid(lst: list):
         result[i] = np.reshape(lst[i], cols)
     return result
 
-def figToImage():
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    im = Image.open(buf)
+def figToImage(fig):
+    fig.savefig('.temp.png', bbox_inches='tight')
+    im = imread('.temp.png')
+    # buf = io.BytesIO()
+    # plt.savefig(buf, format='png')
+    # buf.seek(0)
+    # im = Image.open(buf)
     return im
