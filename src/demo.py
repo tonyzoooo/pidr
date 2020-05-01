@@ -1,7 +1,6 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.image import imread
 from numpy import pi
 from numpy.linalg import norm
 
@@ -145,16 +144,17 @@ elsync = 55
 Vel2 = Vel2 / norm(Vel2[elsync, :]) * norm(Vlfpy[:, elsync])
 
 # -----------------------------------------------------------
-# plot grid potato
+# plot grid
 # -----------------------------------------------------------
 
 cc = np.zeros((1, elpos.shape[0]))
 t = np.arange(0, dt * Vel2.shape[1], dt)
 
-fig = plt.figure('Grid')
-gs = fig.add_gridspec(5, 13)
+fig = plt.figure('Simulation & Neuron Morphology')
+plt.title('Simulation & Neuron Morphology')
+gs = fig.add_gridspec(5,  13)
 
-fig = plotNeuron(cell, meshgrid_electrodes, fig)
+plotNeuron(cell, meshgrid_electrodes, fig)
 
 cmap = plt.cm.get_cmap('jet')
 
@@ -163,25 +163,23 @@ for i in range(5):
     for j in range(13):
         ax = fig.add_subplot(gs[i, j])
         ax.patch.set_visible(False)
-        plt.plot(t, Vel2[ifil]-Vel2[ifil, 0], linewidth=2, alpha = 0.7)
-        plt.plot(t, Vlfpy[:, ifil]-Vlfpy[0, ifil], linewidth=2, alpha = 0.7)
-        a = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
+        plt.plot(t, Vel2[ifil]-Vel2[ifil, 0], linewidth=2)
+        plt.plot(t, Vlfpy[:, ifil]-Vlfpy[0, ifil], linewidth=2)
         cc[0, ifil] = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
         rgba = cmap(cc[0, ifil])
-        color = np.array([[rgba[i] for i in range(3)]])
-        plt.scatter(4, -2 * 10**-3, 50, color, 'o', cmap, alpha=0.5)
-        plt.ylim(np.array([-5, 5]) * 10**-3)
+        color = np.array([[rgba[n] for n in range(3)]])
+        plt.scatter(4, -2e-3, 50, color, 'o', cmap)
+        plt.ylim(np.array([-5, 5]) * 1e-3)
         if ifil > 51:
-            plt.text(2, -12*10**-3, str((ifil-53)*125-250+125) + r'$\mu$m')
-        if ifil % 13 == 0:
-            plt.text(-8, 0*10**-3, str(-np.fix(ifil/13)*50+250) + r'$\mu$m')
+           plt.text(1, -9e-3, str((ifil-53)*125-250+125) + r'$\mu$m')
+        if j == 0:
+           plt.text(-10, -2e-3, str(-i*50+250) + r'$\mu$m')
         plt.axis('off')
         ifil += 1
 
-im = util.figToImage()
-pos = fig.add_axes([0.93, 0.1, 0.02, 0.8])
-im = ax.imshow(im, cmap=cmap)
-fig.colorbar(im, cax=pos, orientation='vertical')
+plt.subplots_adjust(right=0.82)
+pos = fig.add_axes([0.88, 0.1, 0.02, 0.8])
+plt.colorbar(plt.cm.ScalarMappable(cmap=cmap), cax = pos, orientation='vertical')
 
 # plt.show()
 
