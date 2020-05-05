@@ -42,12 +42,3 @@ def reshapeMeshgrid(lst: list):
     for i in range(rows):
         result[i] = np.reshape(lst[i], cols)
     return result
-
-def figToImage(fig):
-    fig.savefig('.temp.png', bbox_inches='tight')
-    im = imread('.temp.png')
-    # buf = io.BytesIO()
-    # plt.savefig(buf, format='png')
-    # buf.seek(0)
-    # im = Image.open(buf)
-    return im

@@ -157,7 +157,7 @@ cc = np.zeros((1, elpos.shape[0]))
 t = np.arange(0, dt * Vel2.shape[1], dt)
 
 fig = plt.figure('Simulation & Neuron Morphology')
-plt.title('Simulation & Neuron Morphology')
+# plt.title('Simulation & Neuron Morphology')
 gs = fig.add_gridspec(5,  13)
 
 plotNeuron(cell, meshgrid_electrodes, fig)
@@ -183,9 +183,12 @@ for i in range(5):
         plt.axis('off')
         ifil += 1
 
-plt.subplots_adjust(right=0.82)
-pos = fig.add_axes([0.88, 0.1, 0.02, 0.8])
-plt.colorbar(plt.cm.ScalarMappable(cmap=cmap), cax = pos, orientation='vertical')
+# plt.subplots_adjust(right=0.82)
+# pos = fig.add_axes([0.88, 0.1, 0.02, 0.75])
+# plt.colorbar(plt.cm.ScalarMappable(cmap=cmap), cax = pos, orientation='vertical')
+plt.subplots_adjust(top=0.95, bottom=0.2)
+pos = fig.add_axes([0.7, 0.05, 0.2, 0.02])
+plt.colorbar(plt.cm.ScalarMappable(cmap=cmap), cax = pos, orientation='horizontal')
 
 # plt.show()
 
