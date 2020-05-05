@@ -87,13 +87,23 @@ values = np.arange(inMVm-inmvm, inMVm-inmvm+lVLFPy)
 
 fig = plt.figure('Simulation result')
 
+
 plt.subplot(2, 1, 1)
-plt.plot(Vm[values])
-plt.plot(Vmlfpy)
+plt.plot(Vm[values], label = "Tran")
+plt.plot(Vmlfpy, label ="LFPy")
+plt.xlabel("Time (ms)")
+plt.ylabel("Membrane voltage (mV)")
+plt.legend()
+
+
+
 
 plt.subplot(2, 1, 2)
-plt.plot(Im[values])
-plt.plot(Imlfpy)
+plt.plot(Im[values], label = 'Tran')
+plt.plot(Imlfpy, label = "LFPy")
+plt.xlabel("Time (ms)")
+plt.ylabel("Current (nA)")
+plt.legend()
 
 # plt.show()
 
@@ -163,14 +173,18 @@ gs = fig.add_gridspec(5,  13)
 plotNeuron(cell, meshgrid_electrodes, fig)
 
 cmap = plt.cm.get_cmap('jet')
-
+line_labels = ["Cell", "Tran", "LFPy"]
+line_obj = []
 ifil = 0
 for i in range(5):
     for j in range(13):
         ax = fig.add_subplot(gs[i, j])
         ax.patch.set_visible(False)
-        plt.plot(t, Vel2[ifil]-Vel2[ifil, 0], linewidth=2)
-        plt.plot(t, Vlfpy[:, ifil]-Vlfpy[0, ifil], linewidth=2)
+        l1 = ax.plot(t, Vel2[ifil]-Vel2[ifil, 0], linewidth=2)[0]
+        l2 = ax.plot(t, Vlfpy[:, ifil]-Vlfpy[0, ifil], linewidth=2)[0]
+        if len(line_obj) < 2:
+            line_obj.append(l1)
+            line_obj.append(l2)
         cc[0, ifil] = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
         rgba = cmap(cc[0, ifil])
         color = np.array([[rgba[n] for n in range(3)]])
@@ -182,6 +196,13 @@ for i in range(5):
            plt.text(-10, -2e-3, str(-i*50+250) + r'$\mu$m')
         plt.axis('off')
         ifil += 1
+fig.legend(line_obj,     # The line objects
+           labels=line_labels,   # The labels for each line
+           loc="lower left",   # Position of legend
+           borderaxespad=0.1,    # Small spacing around legend box
+           title="Legend"  # Title for the legend
+           )
+
 
 # plt.subplots_adjust(right=0.82)
 # pos = fig.add_axes([0.88, 0.1, 0.02, 0.75])
