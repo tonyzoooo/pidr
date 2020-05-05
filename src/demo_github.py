@@ -1,5 +1,6 @@
 import math
 import os
+from interface import *
 
 import LFPy
 import matplotlib.pyplot as plt
@@ -57,10 +58,6 @@ def getStimulationResult(filename):
     DD = "2"
 
     st = 1/1000
-
-    # filename = f'../resources/BSR_LA{LA}_DA{DA}_LD{LD}_DD{DD}_demo.hoc'
-    # filename = '../resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc'
-    # filename = '../resources/stel_Mainen_ax200.hoc'
     cell_parameters = {
         'morphology': filename,
         'v_init': -65,
