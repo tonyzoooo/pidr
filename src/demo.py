@@ -1,3 +1,4 @@
+from interface import *
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -62,7 +63,12 @@ theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
 # Vmlfpy = util.readMatrix(data / f'Vm_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
 # Imlfpy = util.readMatrix(data / f'Im_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
 
-result = getStimulationResult()
+root = tk.Tk()
+main = App(root)
+root.mainloop()
+
+
+result = getStimulationResult(main.filename)
 
 Vlfpy = result.Vlfpy
 Vmlfpy = result.Vmlfpy
@@ -194,3 +200,4 @@ print('Max correlation = ' + '{0:.2f}'.format(np.max(cc)))
 plotStimulation(cell, timeind, stimulus, meshgrid_electrodes)
 
 plt.show()
+
