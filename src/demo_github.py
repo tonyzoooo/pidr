@@ -1,8 +1,8 @@
 import math
 import os
-from interface import *
 
 import LFPy
+import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import pylab as pl
@@ -11,6 +11,8 @@ from matplotlib.collections import PolyCollection
 #from scipy.signal import butter, lfilter
 #import matplotlib.animation as animation
 from neuron import h
+
+from interface import *
 
 
 def PolyArea(x, y):
@@ -35,15 +37,20 @@ def plotNeuron(cell, electrode, fig):
             zips.append(list(zip(x, y)))
         # END PATCH
     polycol = PolyCollection(zips, edgecolors='#999999', facecolors='#666666', linewidths=1.7)
-    ax = fig.add_subplot(111)
+    polycol.set_clip_on(False)
+    ax = fig.add_axes([0.15, 0.24, 0.725, 0.62]) # match sensors grid
+    # ax = fig.add_axes([0, -0.2, 1, 1]) # translate down
+    ax.set_xlim(-250, 1250)
+    ax.set_ylim(50, 250)
+
     ax.patch.set_visible(False)
     ax.axis('off')
     ax.add_collection(polycol)
-    ax.axis(ax.axis('equal'))
+    # ax.axis(ax.axis('equal'))
 
-    #plt.xlabel(r'Distance $\mu$m - (Ox)')
-    #plt.ylabel(r'Distance $\mu$m - (0y) ')
-    #plt.grid(True)
+    plt.xlabel(r'Distance $\mu$m - (Ox)')
+    plt.ylabel(r'Distance $\mu$m - (0y) ')
+    # plt.grid(True)
     #plt.title(r'$Neuron$ $Morphology$')
     return fig  
 
