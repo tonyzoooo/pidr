@@ -89,18 +89,16 @@ fig = plt.figure('Simulation result')
 
 
 plt.subplot(2, 1, 1)
-plt.plot(Vm[values], label = "Tran")
-plt.plot(Vmlfpy, label ="LFPy")
+plt.plot(Vm[values], label="Tran")
+plt.plot(Vmlfpy, label="LFPy")
 plt.xlabel("Time (ms)")
 plt.ylabel("Membrane voltage (mV)")
 plt.legend()
 
 
-
-
 plt.subplot(2, 1, 2)
-plt.plot(Im[values], label = 'Tran')
-plt.plot(Imlfpy, label = "LFPy")
+plt.plot(Im[values], label='Tran')
+plt.plot(Imlfpy, label="LFPy")
 plt.xlabel("Time (ms)")
 plt.ylabel("Current (nA)")
 plt.legend()
@@ -179,7 +177,7 @@ ifil = 0
 for i in range(5):
     for j in range(13):
         ax = fig.add_subplot(gs[i, j])
-        ax.patch.set_visible(False)
+        ax.axis('off')
         l1 = ax.plot(t, Vel2[ifil]-Vel2[ifil, 0], linewidth=2)[0]
         l2 = ax.plot(t, Vlfpy[:, ifil]-Vlfpy[0, ifil], linewidth=2)[0]
         if len(line_obj) < 2:
@@ -190,26 +188,29 @@ for i in range(5):
         color = np.array([[rgba[n] for n in range(3)]])
         plt.scatter(4, -2e-3, 50, color, 'o', cmap)
         plt.ylim(np.array([-5, 5]) * 1e-3)
-        if ifil > 51:
-           plt.text(1, -9e-3, str((ifil-53)*125-250+125) + r'$\mu$m')
+        if i == 0:
+            plt.text(1, 6e-3, str(j*125-250) + r'$\mu$m')
         if j == 0:
-           plt.text(-10, -2e-3, str(-i*50+250) + r'$\mu$m')
-        plt.axis('off')
+            plt.text(-10, -2e-3, str(-i*50+250) + r'$\mu$m')
         ifil += 1
-fig.legend(line_obj,     # The line objects
-           labels=line_labels,   # The labels for each line
-           loc="lower left",   # Position of legend
-           borderaxespad=0.1,    # Small spacing around legend box
-           title="Legend"  # Title for the legend
-           )
 
+fig.legend(
+    line_obj,                   # The line objects
+    labels=line_labels,         # The labels for each line
+    loc="lower left",           # Position of legend
+    bbox_to_anchor=(0.1, 0.05), # Anchor
+    borderaxespad=0.1,          # Small spacing around legend box
+    title="Legend"              # Title for the legend
+)
 
 # plt.subplots_adjust(right=0.82)
 # pos = fig.add_axes([0.88, 0.1, 0.02, 0.75])
 # plt.colorbar(plt.cm.ScalarMappable(cmap=cmap), cax = pos, orientation='vertical')
-plt.subplots_adjust(top=0.95, bottom=0.2)
-pos = fig.add_axes([0.7, 0.05, 0.2, 0.02])
-plt.colorbar(plt.cm.ScalarMappable(cmap=cmap), cax = pos, orientation='horizontal')
+plt.subplots_adjust(top=0.90, bottom=0.32)
+pos = fig.add_axes([0.75, 0.1, 0.15, 0.03])
+plt.colorbar(plt.cm.ScalarMappable(cmap=cmap),
+             cax=pos, orientation='horizontal')
+
 
 # plt.show()
 
@@ -224,4 +225,3 @@ print('Max correlation = ' + '{0:.2f}'.format(np.max(cc)))
 plotStimulation(cell, timeind, stimulus, meshgrid_electrodes)
 
 plt.show()
-

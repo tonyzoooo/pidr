@@ -37,13 +37,11 @@ def plotNeuron(cell, electrode, fig):
             zips.append(list(zip(x, y)))
         # END PATCH
     polycol = PolyCollection(zips, edgecolors='#999999', facecolors='#666666', linewidths=1.7)
-    polycol.set_clip_on(False)
-    ax = fig.add_axes([0.15, 0.24, 0.725, 0.62]) # match sensors grid
-    # ax = fig.add_axes([0, -0.2, 1, 1]) # translate down
+    polycol.set_clip_on(False) # draw outside of axes
+    ax = fig.add_axes([0.15, 0.35, 0.725, 0.48]) # match sensors grid
     ax.set_xlim(-250, 1250)
     ax.set_ylim(50, 250)
 
-    ax.patch.set_visible(False)
     ax.axis('off')
     ax.add_collection(polycol)
     # ax.axis(ax.axis('equal'))
