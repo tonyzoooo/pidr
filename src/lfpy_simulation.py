@@ -52,7 +52,7 @@ def plotNeuron(cell, electrode, fig):
     #plt.title(r'$Neuron$ $Morphology$')
     return fig  
 
-def getStimulationResult(filename):
+def runLfpySimulation(filename):
     # =============================================================================
     # ================================= MORPHOLOGY ================================
     # =============================================================================
