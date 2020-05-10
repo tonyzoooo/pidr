@@ -6,7 +6,7 @@ from numpy import pi
 from numpy.linalg import norm
 
 import util
-from demo_github import getStimulationResult, plotStimulation, plotNeuron
+from lfpy_simulation import runLfpySimulation, plotStimulation, plotNeuron
 from hhrun import hhrun
 from morphofiltd import morphofiltd
 
@@ -68,7 +68,7 @@ main = App(root)
 root.mainloop()
 
 
-result = getStimulationResult(main.filename)
+result = runLfpySimulation(main.filename)
 
 Vlfpy = result.Vlfpy
 Vmlfpy = result.Vmlfpy
