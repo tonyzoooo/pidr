@@ -49,7 +49,7 @@ SL = 25     # soma length (cylinder with the same diameter)
 LA = 1000   # axon length
 DA = 2      # axon diameter
 
-LD = 50     # dendrite length
+LD = 200     # dendrite length
 DD = 2      # dendrite diameter
 phi = pi/2  # angle avec Oz
 theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
@@ -183,7 +183,11 @@ for i in range(5):
         if len(line_obj) < 2:
             line_obj.append(l1)
             line_obj.append(l2)
-        cc[0, ifil] = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
+        res = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
+        if (res <=0): 
+            cc[0, ifil] = 0
+        else:
+            cc[0, ifil] = res
         rgba = cmap(cc[0, ifil])
         color = np.array([[rgba[n] for n in range(3)]])
         plt.scatter(4, -2e-3, 50, color, 'o', cmap)

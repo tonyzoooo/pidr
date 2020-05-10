@@ -25,8 +25,8 @@ def plotNeuron(cell, electrode, fig):
     #fig.canvas.set_window_title('Neuron Morphology')
     # plt.plot(electrode.x, electrode.y, '.',  marker='o',
     #          markersize=3, color='r', zorder=0)
-    #    rotation = {'x' : 0, 'y' : math.pi, 'z' : 0} #-math.pi/9 # Mainen
-    #    cell.set_rotation(**rotation)
+    #rotation = {'x' : 0, 'y' : math.pi, 'z' : 0} #-math.pi/9 # Mainen
+    #cell.set_rotation(**rotation)
     # Plot neuron morphology
     zips = []
     for x, y in cell.get_idx_polygons(projection=('x', 'y')):
@@ -57,10 +57,10 @@ def runLfpySimulation(filename):
     # ================================= MORPHOLOGY ================================
     # =============================================================================
 
-    LA = "1000"
-    DA = "2"
-    LD = "50" 
-    DD = "2"
+    # LA = "1000"
+    # DA = "2"
+    # LD = "200" 
+    # DD = "2"
 
     st = 1/1000
     cell_parameters = {
