@@ -189,18 +189,18 @@ for i in range(5):
         plt.scatter(4, -2e-3, 50, color, 'o', cmap)
         plt.ylim(np.array([-5, 5]) * 1e-3)
         if i == 0:
-            plt.text(1, 6e-3, str(j*125-250) + r'$\mu$m')
+            plt.text(1, 6e-3, rf'{j*125-250}$\mu$m')
         if j == 0:
-            plt.text(-10, -2e-3, str(-i*50+250) + r'$\mu$m')
+            plt.text(-10, -2e-3, rf'{-i*50+250}$\mu$m')
         ifil += 1
 
 fig.legend(
     line_obj,                   # The line objects
     labels=line_labels,         # The labels for each line
     loc="lower left",           # Position of legend
-    bbox_to_anchor=(0.1, 0.05), # Anchor
+    bbox_to_anchor=(0.1, 0),    # Anchor
     borderaxespad=0.1,          # Small spacing around legend box
-    title="Legend"              # Title for the legend
+    # title="Legend"            # Title for the legend
 )
 
 # plt.subplots_adjust(right=0.82)
@@ -210,7 +210,6 @@ plt.subplots_adjust(top=0.90, bottom=0.32)
 pos = fig.add_axes([0.75, 0.1, 0.15, 0.03])
 plt.colorbar(plt.cm.ScalarMappable(cmap=cmap),
              cax=pos, orientation='horizontal')
-
 
 # plt.show()
 
