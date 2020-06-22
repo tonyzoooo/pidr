@@ -25,8 +25,8 @@ def plotNeuron(cell, electrode, fig):
     #fig.canvas.set_window_title('Neuron Morphology')
     # plt.plot(electrode.x, electrode.y, '.',  marker='o',
     #          markersize=3, color='r', zorder=0)
-    #rotation = {'x' : 0, 'y' : math.pi, 'z' : 0} #-math.pi/9 # Mainen
-    #cell.set_rotation(**rotation)
+    # rotation = {'x' : 0, 'y' : math.pi, 'z' : 0} #-math.pi/9 # Mainen
+    # cell.set_rotation(**rotation)
     # Plot neuron morphology
     zips = []
     for x, y in cell.get_idx_polygons(projection=('x', 'y')):
@@ -36,21 +36,20 @@ def plotNeuron(cell, electrode, fig):
         if PolyArea(x, y) < 10000:
             zips.append(list(zip(x, y)))
         # END PATCH
-    polycol = PolyCollection(zips, edgecolors='#999999', facecolors='#666666', linewidths=1.7)
-    polycol.set_clip_on(False) # draw outside of axes
-    ax = fig.add_axes([0.15, 0.35, 0.725, 0.48]) # match sensors grid
+    polycol = PolyCollection(zips, edgecolors='#999999',
+                             facecolors='#666666', linewidths=1.7)
+    polycol.set_clip_on(False)  # draw outside of axes
+    ax = fig.add_axes([0.15, 0.35, 0.725, 0.48])  # match sensors grid
     ax.set_xlim(-250, 1250)
     ax.set_ylim(50, 250)
 
     ax.axis('off')
     ax.add_collection(polycol)
-    # ax.axis(ax.axis('equal'))
-
     plt.xlabel(r'Distance $\mu$m - (Ox)')
-    plt.ylabel(r'Distance $\mu$m - (0y) ')
-    # plt.grid(True)
-    #plt.title(r'$Neuron$ $Morphology$')
-    return fig  
+    plt.ylabel(r'Distance $\mu$m - (0y)')
+
+    return fig
+
 
 def runLfpySimulation(filename):
     # =============================================================================
@@ -59,7 +58,7 @@ def runLfpySimulation(filename):
 
     # LA = "1000"
     # DA = "2"
-    # LD = "200" 
+    # LD = "200"
     # DD = "2"
 
     st = 1/1000
@@ -99,18 +98,14 @@ def runLfpySimulation(filename):
         'delay': delay,  # 5
     }
 
-
     stimulus = LFPy.StimIntElectrode(cell, **stim)
-
 
     # =============================================================================
     # ================================= SIMULATION  ===============================
     # =============================================================================
 
-
     cell.simulate(rec_imem=True)
     # cell.imem[np.isnan(cell.imem)]=0.0
-
 
     # =============================================================================
     # ================================= electrodes ================================
@@ -125,7 +120,6 @@ def runLfpySimulation(filename):
     y_elec = np.sort(np.tile(vstep, Ny))[::-1]
     z_elec = np.zeros(x_elec.shape)
 
-
     meshgrid = {
         'sigma': 0.33,
         'x': x_elec,
@@ -137,14 +131,12 @@ def runLfpySimulation(filename):
     meshgrid_electrodes = LFPy.RecExtElectrode(cell, **meshgrid)
     meshgrid_electrodes.calc_lfp()
 
-
     # =============================================================================
     # ================================= plot and save  ===============================
     # =============================================================================
 
     timeind = (cell.tvec > np.argmax(cell.somav)*st -
-            3) & (cell.tvec <= np.argmax(cell.somav)*st+5)
-
+               3) & (cell.tvec <= np.argmax(cell.somav)*st+5)
 
     # fileout="Vlfpy_BS"+"_LA"+LA+"_DA"+DA+"_LD"+LD+"_DD"+DD+"demo.txt"
     # np.savetxt(fileout,meshgrid_electrodes.LFP.T[timeind])
@@ -156,7 +148,7 @@ def runLfpySimulation(filename):
 
     # fileout3="Im_BS"+"_LA"+LA+"_DA"+DA+"_LD"+LD+"_DD"+DD+"demo.txt"
     # np.savetxt(fileout3,cell.imem[0,timeind])
-    Imlfpy = cell.imem[0,timeind]
+    Imlfpy = cell.imem[0, timeind]
 
     # elpos=(x_elec,y_elec,z_elec)
     # np.savetxt("elpos_demo",elpos)
@@ -170,6 +162,7 @@ def runLfpySimulation(filename):
     res.meshgrid_electrodes = meshgrid_electrodes
     return res
 
+
 class StimulationResult:
     Vlfpy = None
     Vmlfpy = None
@@ -178,6 +171,7 @@ class StimulationResult:
     timeind = None
     stimulus = None
     meshgrid_electrodes = None
+
 
 def plotStimulation(cell, timeind, stimulus, meshgrid_electrodes):
     fig = plt.figure('Stimulation')
