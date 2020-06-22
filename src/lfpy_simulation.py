@@ -12,7 +12,7 @@ from matplotlib.collections import PolyCollection
 #import matplotlib.animation as animation
 from neuron import h
 
-from interface import *
+import app
 
 
 def PolyArea(x, y):

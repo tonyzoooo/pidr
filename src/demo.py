@@ -1,4 +1,4 @@
-from interface import *
+import tkinter as tk
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -6,8 +6,9 @@ from numpy import pi
 from numpy.linalg import norm
 
 import util
-from lfpy_simulation import runLfpySimulation, plotStimulation, plotNeuron
+from app import App
 from hhrun import hhrun
+from lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulation
 from morphofiltd import morphofiltd
 
 # -----------------------------------------------------------
@@ -58,17 +59,9 @@ theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
 # load LFPy simulation result
 # -----------------------------------------------------------
 
-# data = Path('data/')  # os independent path
-# Vlfpy = util.readMatrix(data / f'Vlfpy_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
-# Vmlfpy = util.readMatrix(data / f'Vm_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
-# Imlfpy = util.readMatrix(data / f'Im_BS_LA{LA}_DA{DA}_LD{LD}_DD{DD}demo.txt')
+mainApp = App.launch()
 
-root = tk.Tk()
-main = App(root)
-root.mainloop()
-
-
-result = runLfpySimulation(main.filename)
+result = runLfpySimulation(mainApp.filename)
 
 Vlfpy = result.Vlfpy
 Vmlfpy = result.Vmlfpy
@@ -184,7 +177,7 @@ for i in range(5):
             line_obj.append(l1)
             line_obj.append(l2)
         res = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
-        if (res <=0): 
+        if (res <= 0):
             cc[0, ifil] = 0
         else:
             cc[0, ifil] = res
@@ -199,17 +192,13 @@ for i in range(5):
         ifil += 1
 
 fig.legend(
-    line_obj,                   # The line objects
+    handles=line_obj,           # The line objects
     labels=line_labels,         # The labels for each line
     loc="lower left",           # Position of legend
     bbox_to_anchor=(0.1, 0),    # Anchor
     borderaxespad=0.1,          # Small spacing around legend box
-    # title="Legend"            # Title for the legend
 )
 
-# plt.subplots_adjust(right=0.82)
-# pos = fig.add_axes([0.88, 0.1, 0.02, 0.75])
-# plt.colorbar(plt.cm.ScalarMappable(cmap=cmap), cax = pos, orientation='vertical')
 plt.subplots_adjust(top=0.90, bottom=0.32)
 pos = fig.add_axes([0.75, 0.1, 0.15, 0.03])
 plt.colorbar(plt.cm.ScalarMappable(cmap=cmap),
