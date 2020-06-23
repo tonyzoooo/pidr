@@ -11,8 +11,7 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-cd src
-python demo.py
+python src/core/demo.py
 ```
 
 After executing this command, your are prompted to choose a `.hoc` file to specify the morphology of the cell. You can find examples in the `resources` directory.
