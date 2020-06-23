@@ -76,13 +76,13 @@ if __name__ == '__main__':
 
     soma = Node('soma', nseg=1, length=25, diam=25, algorithm='hh')
     axon = Node('axon', **axonSpec)
-    dendrite = Node('dendrite', nseg=5, length=50, diam=2, algorithm='pas')
+    dend = Node('dendrite', nseg=5, length=50, diam=2, algorithm='pas')
 
     hw = HocWriter()
     hw.addNode(soma)
     hw.addNode(axon)
-    hw.addNode(dendrite)
+    hw.addNode(dend)
     hw.connectNodes(axon, 0, soma, 1)
-    hw.connectNodes(dendrite, 1, soma, 0)
+    hw.connectNodes(dend, 1, soma, 0)
 
     print(hw)
