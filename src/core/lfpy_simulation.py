@@ -64,16 +64,16 @@ def runLfpySimulation(filename):
     st = 1/1000
     cell_parameters = {
         'morphology': filename,
-        'v_init': -65,
-        'passive': True,
+        'v_init': -65,      # Initial membrane potential. Defaults to -70 mV
+        'passive': True,    # Passive mechanisms are initialized if True
         'passive_parameters': {'g_pas': 1./30000, 'e_pas': -65},
-        'cm': 1.0,
-        'Ra': 150,
-        'dt': st,
-        'tstart': 0.,
-        'tstop': 20.,
-        'nsegs_method': 'lambda_f',  # spatial discretization method
-        'lambda_f': 100.,  # frequency where length constants are computed
+        'cm': 1.0,          # Membrane capacitance
+        'Ra': 150,          # Axial resistance
+        'dt': st,           # simulation timestep
+        'tstart': 0.,       # Initialization time for simulation <= 0 ms
+        'tstop': 20.,       # Stop time for simulation > 0 ms
+        'nsegs_method': 'lambda_f', # spatial discretization method
+        'lambda_f': 100.,   # frequency where length constants are computed
     }
     cell = LFPy.Cell(**cell_parameters)
 
