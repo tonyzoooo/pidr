@@ -15,16 +15,19 @@ class BallAndStick:
         self._setup_biophysics()
 
     def _setup_morphology(self):
+        self.sectionList = h.SectionList()
         self.soma = h.Section(name='soma', cell=self)
         self.dend = h.Section(name='dend', cell=self)
-        self.all = [self.soma, self.dend]
+        self.sectionList.append(self.soma)
+        self.sectionList.append(self.dend)
+        # self.sectionList.printnames()
         self.dend.connect(self.soma)
         self.soma.L = self.soma.diam = 12.6157
         self.dend.L = 200
         self.dend.diam = 1
 
     def _setup_biophysics(self):
-        for sec in self.all:
+        for sec in self.sectionList:
             sec.Ra = 100    # Axial resistance in Ohm * cm
             sec.cm = 1      # Membrane capacitance in micro Farads / cm^2
         self.soma.insert('hh')
@@ -45,7 +48,7 @@ class BallAndStick:
 
 cell = BallAndStick(0)
 
-print(cell.soma(0.5).area())
+# print(cell.soma(0.5).area())
 h.topology()
 
 # False to use another graphics engine than the built-in one
@@ -56,3 +59,4 @@ ps = h.PlotShape(False)
 
 ps.plot(plt)
 plt.show()
+
