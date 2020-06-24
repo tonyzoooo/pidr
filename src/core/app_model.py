@@ -12,6 +12,15 @@ class AppModel:
     def __init__(self):
         self.filename = ''
         self.sections = []  # h.SectionList()
+        self.selectedSection = None
+
+    def trySelectSection(self, name: str) -> bool:
+        section = self.getSection(name)
+        if (section == None):
+            return False
+
+        self.selectedSection = section
+        return True
 
     def tryAddSection(self, name: str) -> bool:
         if (name == '' or name in self.sectionNames):
