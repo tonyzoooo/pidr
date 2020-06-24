@@ -7,21 +7,21 @@ Created on Tue May  5 21:54:28 2020
 """
 
 import tkinter as tk
-from tkinter import filedialog
-from tkinter import ttk
-import ttkthemes
+from tkinter import filedialog, ttk
+
+from app_model import AppModel
 
 
 class App(tk.Frame):
-    def __init__(self, master):
+    
+    def __init__(self, master: tk.Tk, model: AppModel):
         tk.Frame.__init__(self, master, bg='blue')
         self.master = master
+        self.model = model
+
         master.geometry('500x400')
         master.title('Simulator :)')
         master.bind('<Escape>', lambda e: master.destroy())
-
-        self.filename = ''
-        self.sectionNames = ['soma', 'dend']
 
         sectionsCont = self._createSectionsContainer()
         sectionsCont.grid(row=0, column=0, padx=10)
@@ -48,7 +48,7 @@ class App(tk.Frame):
         sectionLabel = tk.Label(container, text='Sections:', justify='left')
         sectionLabel.grid(row=2, column=0, columnspan=2)
         self.sectionList = tk.Listbox(container)
-        for name in self.sectionNames:
+        for name in self.model.sectionNames:
             self.sectionList.insert('end', name)
         self.sectionList.grid(row=3, column=0, columnspan=2)
 
@@ -56,7 +56,7 @@ class App(tk.Frame):
 
     def _addSection(self):
         name = self.newEntry.get()
-        self.sectionNames.append(name)
+        self.model.sectionNames.append(name)
         self.sectionList.insert('end', name)
 
     def _createConfigContainer(self):
@@ -80,14 +80,14 @@ class App(tk.Frame):
         end0Label = tk.Label(container, text='end 0')
         end0Label.grid(row=2, column=0)
         end0Entry = tk.OptionMenu(
-            container, self.end0Value, '', *self.sectionNames)
+            container, self.end0Value, '', *self.model.sectionNames)
         end0Entry.grid(row=2, column=1)
 
         self.end1Value = tk.StringVar()
         end1Label = tk.Label(container, text='end 1')
         end1Label.grid(row=3, column=0)
         end1Entry = tk.OptionMenu(
-            container, self.end1Value, '', *self.sectionNames)
+            container, self.end1Value, '', *self.model.sectionNames)
         end1Entry.grid(row=3, column=1)
 
         return container
@@ -106,18 +106,21 @@ class App(tk.Frame):
         return container
 
     def _openFile(self):
-        self.filename = filedialog.askopenfilename(
+        self.model.filename = filedialog.askopenfilename(
             initialdir='resources',
             title='Select file',
             filetypes=(('hoc files', '*.hoc'), ('all files', '*.*'))
         )
-        print('Opened: ' + self.filename)
+        print('Opened: ' + self.model.filename)
         self.master.destroy()
 
     @staticmethod
     def launch():
         root = tk.Tk()
-        ttk.Style().theme_use('clam')
-        mainApp = App(root)
+        model = AppModel()
+        app = App(root, model)
         root.mainloop()
-        return mainApp
+        return model
+
+if __name__ == '__main__':
+    App.launch()
