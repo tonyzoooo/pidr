@@ -72,10 +72,12 @@ class App(tk.Frame):
         - the data of the corresponding section in the model (self.model)
         """
         name = self._getSelectedSectionName()
-        if (name == None):
-            return None
+        if (self.model.trySelectSection(name)):
+            self.selectedSectionLabel.configure(text=name)
 
         section = self.model.getSection(name)
+        if (section == None):
+            return
         self.lengthVar.set(section.L)
         self.diamVar.set(section.diam)
 
@@ -90,6 +92,12 @@ class App(tk.Frame):
         index = selected[0]
         return self.sectionList.get(index)
 
+    # def _getSelectedSection(self):
+    #     name = self._getSelectedSectionName()
+    #     if (name == None):
+    #         return None
+    #     return self.model.getSection(name)
+
     def _createConfigContainer(self):
         """
         Container for the configuration of the selected section
@@ -97,37 +105,47 @@ class App(tk.Frame):
         container = tk.Frame(self.master)
         spinArgs = {'from_': 0, 'to': 1000, 'increment': 0.1}
 
+        self.selectedSectionLabel = tk.Label(
+            container, text='<no section selected>')
+        self.selectedSectionLabel.grid(row=0, column=0, columnspan=2)
+
+        def updateConfig():
+            section = self.model.selectedSection
+            if (section != None):
+                section.diam = self.diamVar.get()
+                section.L = self.lengthVar.get()
+
         self.lengthVar = tk.DoubleVar()
         lengthLabel = tk.Label(container, text='L')
-        lengthLabel.grid(row=0, column=0)
-        lengthEntry = tk.Spinbox(container, textvariable=self.lengthVar,
-                                 validate="focusout", **spinArgs
-                                 #  validatecommand=lengthValidation
-                                 )
+        lengthLabel.grid(row=1, column=0)
+        lengthEntry = tk.Spinbox(
+            container, textvariable=self.lengthVar, **spinArgs)
         float_validate(lengthEntry)
-        lengthEntry.grid(row=0, column=1)
+        lengthEntry.grid(row=1, column=1)
+        lengthEntry.bind('<FocusOut>', lambda e: updateConfig())
 
         self.diamVar = tk.DoubleVar()
         dimLabel = tk.Label(container, text='diam')
-        dimLabel.grid(row=1, column=0)
+        dimLabel.grid(row=2, column=0)
         diamEntry = tk.Spinbox(
             container, textvariable=self.diamVar, **spinArgs)
         float_validate(diamEntry)
-        diamEntry.grid(row=1, column=1)
+        diamEntry.grid(row=2, column=1)
+        diamEntry.bind('<FocusOut>', lambda e: updateConfig())
 
         self.end0Value = tk.StringVar()
         end0Label = tk.Label(container, text='end 0')
-        end0Label.grid(row=2, column=0)
+        end0Label.grid(row=3, column=0)
         end0Entry = tk.OptionMenu(
             container, self.end0Value, '', *self.model.sectionNames)
-        end0Entry.grid(row=2, column=1)
+        end0Entry.grid(row=3, column=1)
 
         self.end1Value = tk.StringVar()
         end1Label = tk.Label(container, text='end 1')
-        end1Label.grid(row=3, column=0)
+        end1Label.grid(row=4, column=0)
         end1Entry = tk.OptionMenu(
             container, self.end1Value, '', *self.model.sectionNames)
-        end1Entry.grid(row=3, column=1)
+        end1Entry.grid(row=4, column=1)
 
         return container
 
