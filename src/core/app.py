@@ -7,15 +7,15 @@ Created on Tue May  5 21:54:28 2020
 """
 
 import tkinter as tk
-from tkinter import filedialog, ttk
+from tkinter import filedialog
 
 from app_model import AppModel
 
 
 class App(tk.Frame):
-    
+
     def __init__(self, master: tk.Tk, model: AppModel):
-        tk.Frame.__init__(self, master, bg='blue')
+        tk.Frame.__init__(self, master)
         self.master = master
         self.model = model
 
@@ -23,14 +23,11 @@ class App(tk.Frame):
         master.title('Simulator :)')
         master.bind('<Escape>', lambda e: master.destroy())
 
-        sectionsCont = self._createSectionsContainer()
-        sectionsCont.grid(row=0, column=0, padx=10)
+        pad = {'padx': 10, 'pady': 10}
 
-        configCont = self._createConfigContainer()
-        configCont.grid(row=0, column=1, padx=10)
-
-        openCont = self._createOpenHocFileContainer()
-        openCont.grid(row=1, column=0, columnspan=2, pady=10)
+        self._createSectionsContainer().grid(row=0, column=0, **pad)
+        self._createConfigContainer().grid(row=0, column=1, **pad)
+        self._createOpenHocFileContainer().grid(row=1, column=0, columnspan=2, **pad)
 
     def _createSectionsContainer(self):
         """
@@ -40,10 +37,12 @@ class App(tk.Frame):
 
         newLabel = tk.Label(container, text='New section', justify='left')
         newLabel.grid(row=0, column=0)
-        newButton = tk.Button(container, text='Create', command=self._addSection)
+        newButton = tk.Button(container, text='Create',
+                              command=self._addSection)
         newButton.grid(row=0, column=1)
         self.newEntry = tk.Entry(container)
         self.newEntry.grid(row=1, column=0, columnspan=2)
+        self.newEntry.bind('<Return>', lambda e: self._addSection())
 
         sectionLabel = tk.Label(container, text='Sections:', justify='left')
         sectionLabel.grid(row=2, column=0, columnspan=2)
@@ -55,9 +54,23 @@ class App(tk.Frame):
         return container
 
     def _addSection(self):
+        """
+        Event handler: adds a new section to the model and to the section list
+        """
         name = self.newEntry.get()
-        self.model.sectionNames.append(name)
-        self.sectionList.insert('end', name)
+        if (self.model.tryAddSection(name)):
+            self.sectionList.insert('end', name)
+            self.newEntry.delete(0, 'end')
+            self._refreshConfigView()
+            print(self.model.sectionNames)
+
+    def _refreshConfigView(self):
+        """
+        Refreshes the section configuration view using:
+        - the currently selected section in self.sectionList
+        - the data of the corresponding section in the model (self.model)
+        """
+        pass
 
     def _createConfigContainer(self):
         """
@@ -121,6 +134,7 @@ class App(tk.Frame):
         app = App(root, model)
         root.mainloop()
         return model
+
 
 if __name__ == '__main__':
     App.launch()
