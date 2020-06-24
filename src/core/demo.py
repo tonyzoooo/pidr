@@ -59,9 +59,9 @@ theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
 # load LFPy simulation result
 # -----------------------------------------------------------
 
-mainApp = App.launch()
+appModel = App.launch()
 
-result = runLfpySimulation(mainApp.filename)
+result = runLfpySimulation(appModel.filename)
 
 Vlfpy = result.Vlfpy
 Vmlfpy = result.Vmlfpy
