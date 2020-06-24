@@ -8,6 +8,7 @@ Created on Tue May  5 21:54:28 2020
 
 import tkinter as tk
 from tkinter import filedialog
+from tkvalidate import float_validate
 
 from app_model import AppModel
 
@@ -50,6 +51,8 @@ class App(tk.Frame):
         for name in self.model.sectionNames:
             self.sectionList.insert('end', name)
         self.sectionList.grid(row=3, column=0, columnspan=2)
+        self.sectionList.bind('<<ListboxSelect>>',
+                              lambda e: self._refreshConfigView())
 
         return container
 
@@ -57,12 +60,10 @@ class App(tk.Frame):
         """
         Event handler: adds a new section to the model and to the section list
         """
-        name = self.newEntry.get()
+        name = self.newEntry.get().strip()
         if (self.model.tryAddSection(name)):
             self.sectionList.insert('end', name)
             self.newEntry.delete(0, 'end')
-            self._refreshConfigView()
-            print(self.model.sectionNames)
 
     def _refreshConfigView(self):
         """
@@ -70,24 +71,49 @@ class App(tk.Frame):
         - the currently selected section in self.sectionList
         - the data of the corresponding section in the model (self.model)
         """
-        pass
+        name = self._getSelectedSectionName()
+        if (name == None):
+            return None
+
+        section = self.model.getSection(name)
+        self.lengthVar.set(section.L)
+        self.diamVar.set(section.diam)
+
+    def _getSelectedSectionName(self):
+        if (len(self.model.sections) == 0):
+            return None
+
+        selected = self.sectionList.curselection()
+        if (len(selected) == 0):
+            return None
+
+        index = selected[0]
+        return self.sectionList.get(index)
 
     def _createConfigContainer(self):
         """
         Container for the configuration of the selected section
         """
+        container = tk.Frame(self.master)
         spinArgs = {'from_': 0, 'to': 1000, 'increment': 0.1}
 
-        container = tk.Frame(self.master)
+        self.lengthVar = tk.DoubleVar()
         lengthLabel = tk.Label(container, text='L')
         lengthLabel.grid(row=0, column=0)
-        lengthEntry = tk.Spinbox(container, **spinArgs)
+        lengthEntry = tk.Spinbox(container, textvariable=self.lengthVar,
+                                 validate="focusout", **spinArgs
+                                 #  validatecommand=lengthValidation
+                                 )
+        float_validate(lengthEntry)
         lengthEntry.grid(row=0, column=1)
 
+        self.diamVar = tk.DoubleVar()
         dimLabel = tk.Label(container, text='diam')
         dimLabel.grid(row=1, column=0)
-        dimEntry = tk.Spinbox(container, **spinArgs)
-        dimEntry.grid(row=1, column=1)
+        diamEntry = tk.Spinbox(
+            container, textvariable=self.diamVar, **spinArgs)
+        float_validate(diamEntry)
+        diamEntry.grid(row=1, column=1)
 
         self.end0Value = tk.StringVar()
         end0Label = tk.Label(container, text='end 0')
