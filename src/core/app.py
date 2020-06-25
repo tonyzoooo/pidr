@@ -40,7 +40,7 @@ class App(tk.Frame):
         newLabel.grid(row=0, column=0)
         newButton = tk.Button(container, text='Create',
                               command=self._addSection)
-        newButton.grid(row=0, column=1)
+        newButton.grid(row=0, column=1, sticky='nsew')
         self.newEntry = tk.Entry(container)
         self.newEntry.grid(row=1, column=0, columnspan=2)
         self.newEntry.bind('<Return>', lambda e: self._addSection())
@@ -58,12 +58,21 @@ class App(tk.Frame):
 
     def _addSection(self):
         """
-        Event handler: adds a new section to the model and to the section list
+        Adds a new section to the model and to the section list
         """
         name = self.newEntry.get().strip()
         if (self.model.tryAddSection(name)):
             self.sectionList.insert('end', name)
             self.newEntry.delete(0, 'end')
+
+    def _saveCurrentSection(self):
+        """
+        Saves the current section's data
+        """
+        section = self.model.selectedSection
+        if (section != None):
+            section.diam = self.diamVar.get()
+            section.L = self.lengthVar.get()
 
     def _refreshConfigView(self):
         """
@@ -71,17 +80,24 @@ class App(tk.Frame):
         - the currently selected section in self.sectionList
         - the data of the corresponding section in the model (self.model)
         """
-        name = self._getSelectedSectionName()
-        if (self.model.trySelectSection(name)):
-            self.selectedSectionLabel.configure(text=name)
+        self._saveCurrentSection()
 
-        section = self.model.getSection(name)
+        name = self._getSelectedSectionName()
+        if (not self.model.trySelectSection(name)):
+            return
+
+        self.selectedSectionLabel.configure(text=name)
+        section = self.model.selectedSection
         if (section == None):
             return
+
         self.lengthVar.set(section.L)
         self.diamVar.set(section.diam)
 
     def _getSelectedSectionName(self):
+        """
+        Gets the name of the selected section in the list, or None
+        """
         if (len(self.model.sections) == 0):
             return None
 
@@ -92,12 +108,6 @@ class App(tk.Frame):
         index = selected[0]
         return self.sectionList.get(index)
 
-    # def _getSelectedSection(self):
-    #     name = self._getSelectedSectionName()
-    #     if (name == None):
-    #         return None
-    #     return self.model.getSection(name)
-
     def _createConfigContainer(self):
         """
         Container for the configuration of the selected section
@@ -107,13 +117,7 @@ class App(tk.Frame):
 
         self.selectedSectionLabel = tk.Label(
             container, text='<no section selected>')
-        self.selectedSectionLabel.grid(row=0, column=0, columnspan=2)
-
-        def updateConfig():
-            section = self.model.selectedSection
-            if (section != None):
-                section.diam = self.diamVar.get()
-                section.L = self.lengthVar.get()
+        self.selectedSectionLabel.grid(row=0, column=1)
 
         self.lengthVar = tk.DoubleVar()
         lengthLabel = tk.Label(container, text='L')
@@ -122,7 +126,7 @@ class App(tk.Frame):
             container, textvariable=self.lengthVar, **spinArgs)
         float_validate(lengthEntry)
         lengthEntry.grid(row=1, column=1)
-        lengthEntry.bind('<FocusOut>', lambda e: updateConfig())
+        lengthEntry.bind('<FocusOut>', lambda e: self._saveCurrentSection())
 
         self.diamVar = tk.DoubleVar()
         dimLabel = tk.Label(container, text='diam')
@@ -131,21 +135,21 @@ class App(tk.Frame):
             container, textvariable=self.diamVar, **spinArgs)
         float_validate(diamEntry)
         diamEntry.grid(row=2, column=1)
-        diamEntry.bind('<FocusOut>', lambda e: updateConfig())
+        diamEntry.bind('<FocusOut>', lambda e: self._saveCurrentSection())
 
-        self.end0Value = tk.StringVar()
+        self.end0Var = tk.StringVar()
         end0Label = tk.Label(container, text='end 0')
         end0Label.grid(row=3, column=0)
         end0Entry = tk.OptionMenu(
-            container, self.end0Value, '', *self.model.sectionNames)
-        end0Entry.grid(row=3, column=1)
+            container, self.end0Var, '', *self.model.sectionNames)
+        end0Entry.grid(row=3, column=1, sticky='nsew')
 
-        self.end1Value = tk.StringVar()
+        self.end1Var = tk.StringVar()
         end1Label = tk.Label(container, text='end 1')
         end1Label.grid(row=4, column=0)
         end1Entry = tk.OptionMenu(
-            container, self.end1Value, '', *self.model.sectionNames)
-        end1Entry.grid(row=4, column=1)
+            container, self.end1Var, '', *self.model.sectionNames)
+        end1Entry.grid(row=4, column=1, sticky='nsew')
 
         return container
 
