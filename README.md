@@ -11,8 +11,11 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
-python src/core/demo.py
+# Run main demo
+PYTHONPATH=. python src/core/demo.py
+# Run gui alone
+PYTHONPATH=. python src/gui/app.py
 ```
 
-After executing this command, your are prompted to choose a `.hoc` file to specify the morphology of the cell. You can find examples in the `resources` directory.
+After executing this command, your can load a `.hoc` file for the morphology of the cell. You can find examples in the `resources` directory.
 

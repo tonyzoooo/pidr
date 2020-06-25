@@ -1,15 +1,13 @@
-import tkinter as tk
-
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import pi
 from numpy.linalg import norm
 
 import util
-from app import App
 from hhrun import hhrun
 from lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulation
 from morphofiltd import morphofiltd
+from src.gui.app import App
 
 # -----------------------------------------------------------
 # HH (Hodgkin–Huxley model)

@@ -1,28 +1,22 @@
-import math
-import os
-
 import LFPy
-import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 import pylab as pl
 from matplotlib.collections import PolyCollection
-#import scipy
-#from scipy.signal import butter, lfilter
-#import matplotlib.animation as animation
-from neuron import h
 
-import app
+
+# import scipy
+# from scipy.signal import butter, lfilter
+# import matplotlib.animation as animation
 
 
 def PolyArea(x, y):
-    return 0.5*np.abs(np.dot(x, np.roll(y, 1))-np.dot(y, np.roll(x, 1)))
+    return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
 
 
 def plotNeuron(cell, electrode, fig):
-    '''plotting'''
-    #fig = plt.figure(2)
-    #fig.canvas.set_window_title('Neuron Morphology')
+    # fig = plt.figure(2)
+    # fig.canvas.set_window_title('Neuron Morphology')
     # plt.plot(electrode.x, electrode.y, '.',  marker='o',
     #          markersize=3, color='r', zorder=0)
     # rotation = {'x' : 0, 'y' : math.pi, 'z' : 0} #-math.pi/9 # Mainen
@@ -61,19 +55,19 @@ def runLfpySimulation(filename):
     # LD = "200"
     # DD = "2"
 
-    st = 1/1000
+    st = 1 / 1000
     cell_parameters = {
         'morphology': filename,
-        'v_init': -65,      # Initial membrane potential. Defaults to -70 mV
-        'passive': True,    # Passive mechanisms are initialized if True
-        'passive_parameters': {'g_pas': 1./30000, 'e_pas': -65},
-        'cm': 1.0,          # Membrane capacitance
-        'Ra': 150,          # Axial resistance
-        'dt': st,           # simulation timestep
-        'tstart': 0.,       # Initialization time for simulation <= 0 ms
-        'tstop': 20.,       # Stop time for simulation > 0 ms
-        'nsegs_method': 'lambda_f', # spatial discretization method
-        'lambda_f': 100.,   # frequency where length constants are computed
+        'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
+        'passive': True,  # Passive mechanisms are initialized if True
+        'passive_parameters': {'g_pas': 1. / 30000, 'e_pas': -65},
+        'cm': 1.0,  # Membrane capacitance
+        'Ra': 150,  # Axial resistance
+        'dt': st,  # simulation timestep
+        'tstart': 0.,  # Initialization time for simulation <= 0 ms
+        'tstop': 20.,  # Stop time for simulation > 0 ms
+        'nsegs_method': 'lambda_f',  # spatial discretization method
+        'lambda_f': 100.,  # frequency where length constants are computed
     }
     cell = LFPy.Cell(**cell_parameters)
 
@@ -84,10 +78,10 @@ def runLfpySimulation(filename):
     amp = 0.2
     dur = 10
     delay = 1
-    #                if cell_parameters["passive"]==False:
-    #                    amp=1.95**(int(ida)/1.95)/30+1.6*int(ila)/10000+int(ild)/5000*int(idd)*1.5
-    #                else:
-    #                    amp=1.65**(int(ida)/1.95)/30+0.805*int(ila)/10000+int(ild)/5000*int(idd)*1.1 #-0.4 for Mainen equivalent
+    # if cell_parameters["passive"]==False:
+    #     amp=1.95**(int(ida)/1.95)/30+1.6*int(ila)/10000+int(ild)/5000*int(idd)*1.5
+    # else:
+    #     amp=1.65**(int(ida)/1.95)/30+0.805*int(ila)/10000+int(ild)/5000*int(idd)*1.1 #-0.4 for Mainen equivalent
 
     stim = {
         'idx': cell.get_closest_idx(x=0, y=0, z=0),
@@ -135,8 +129,8 @@ def runLfpySimulation(filename):
     # ================================= plot and save  ===============================
     # =============================================================================
 
-    timeind = (cell.tvec > np.argmax(cell.somav)*st -
-               3) & (cell.tvec <= np.argmax(cell.somav)*st+5)
+    timeind = (cell.tvec > np.argmax(cell.somav) * st -
+               3) & (cell.tvec <= np.argmax(cell.somav) * st + 5)
 
     # fileout="Vlfpy_BS"+"_LA"+LA+"_DA"+DA+"_LD"+LD+"_DD"+DD+"demo.txt"
     # np.savetxt(fileout,meshgrid_electrodes.LFP.T[timeind])
