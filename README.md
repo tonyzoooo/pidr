@@ -12,9 +12,9 @@ pip install -r requirements.txt
 
 ```bash
 # Run main demo
-PYTHONPATH=. python src/core/demo.py
-# Run gui alone
-PYTHONPATH=. python src/gui/app.py
+PYTHONPATH=.:src/code:src/gui python src/core/demo.py
+# Run gui only
+PYTHONPATH=.:src/code:src/gui python src/gui/app.py
 ```
 
 After executing this command, your can load a `.hoc` file for the morphology of the cell. You can find examples in the `resources` directory.

@@ -13,6 +13,12 @@ class AppModel:
         self.sections = []  # h.SectionList()
         self.selectedSection = None
 
+    @property
+    def selectedSectionName(self):
+        if self.selectedSection is None:
+            return None
+        return self.selectedSection.name().split('.')[1]
+
     def trySelectSection(self, name: str) -> bool:
         section = self.getSection(name)
         if section is None:

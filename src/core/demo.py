@@ -4,10 +4,10 @@ from numpy import pi
 from numpy.linalg import norm
 
 import util
+from app import App
 from hhrun import hhrun
 from lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulation
 from morphofiltd import morphofiltd
-from src.gui.app import App
 
 # -----------------------------------------------------------
 # HH (Hodgkin–Huxley model)
@@ -175,7 +175,7 @@ for i in range(5):
             line_obj.append(l1)
             line_obj.append(l2)
         res = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
-        if (res <= 0):
+        if res <= 0:
             cc[0, ifil] = 0
         else:
             cc[0, ifil] = res
