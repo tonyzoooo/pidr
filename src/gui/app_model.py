@@ -3,7 +3,6 @@
 """
 @author: Loïc Bertrand
 """
-
 from neuron import h
 
 
@@ -16,14 +15,14 @@ class AppModel:
 
     def trySelectSection(self, name: str) -> bool:
         section = self.getSection(name)
-        if (section == None):
+        if section is None:
             return False
 
         self.selectedSection = section
         return True
 
     def tryAddSection(self, name: str) -> bool:
-        if (name == '' or name in self.sectionNames):
+        if name == '' or name in self.sectionNames:
             print(f"name '{name}' is invalid")
             return False
 

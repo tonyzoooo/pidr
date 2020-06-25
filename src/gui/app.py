@@ -10,7 +10,7 @@ import tkinter as tk
 from tkinter import filedialog
 from tkvalidate import float_validate
 
-from app_model import AppModel
+from src.gui.app_model import AppModel
 
 
 class App(tk.Frame):
@@ -22,7 +22,8 @@ class App(tk.Frame):
 
         master.geometry('500x400')
         master.title('Simulator :)')
-        master.bind('<Escape>', lambda e: master.destroy())
+        master.bind('<Escape>', lambda e: exit())
+        master.protocol("WM_DELETE_WINDOW", lambda: exit())
 
         pad = {'padx': 10, 'pady': 10}
 
@@ -61,7 +62,7 @@ class App(tk.Frame):
         Adds a new section to the model and to the section list
         """
         name = self.newEntry.get().strip()
-        if (self.model.tryAddSection(name)):
+        if self.model.tryAddSection(name):
             self.sectionList.insert('end', name)
             self.newEntry.delete(0, 'end')
 
@@ -70,7 +71,7 @@ class App(tk.Frame):
         Saves the current section's data
         """
         section = self.model.selectedSection
-        if (section != None):
+        if section is not None:
             section.diam = self.diamVar.get()
             section.L = self.lengthVar.get()
 
@@ -83,12 +84,12 @@ class App(tk.Frame):
         self._saveCurrentSection()
 
         name = self._getSelectedSectionName()
-        if (not self.model.trySelectSection(name)):
+        if not self.model.trySelectSection(name):
             return
 
         self.selectedSectionLabel.configure(text=name)
         section = self.model.selectedSection
-        if (section == None):
+        if section is None:
             return
 
         self.lengthVar.set(section.L)
@@ -98,11 +99,11 @@ class App(tk.Frame):
         """
         Gets the name of the selected section in the list, or None
         """
-        if (len(self.model.sections) == 0):
+        if len(self.model.sections) == 0:
             return None
 
         selected = self.sectionList.curselection()
-        if (len(selected) == 0):
+        if len(selected) == 0:
             return None
 
         index = selected[0]
@@ -159,16 +160,16 @@ class App(tk.Frame):
         """
         container = tk.Frame(self.master)
         titleLabel = tk.Label(
-            container, text='Simulation de potentiels extracellulaires')
+            container, text='Extracellular potential simulation')
         titleLabel.pack()
         openHocButton = tk.Button(
-            container, text='Ouvrir .hoc', command=self._openFile)
+            container, text='Open .hoc', command=self._openFile)
         openHocButton.pack()
         return container
 
     def _openFile(self):
         self.model.filename = filedialog.askopenfilename(
-            initialdir='resources',
+            initialdir='../../resources',
             title='Select file',
             filetypes=(('hoc files', '*.hoc'), ('all files', '*.*'))
         )
