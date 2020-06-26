@@ -3,6 +3,8 @@
 """
 @author: Loïc Bertrand
 """
+from typing import List
+
 from neuron import h
 
 
@@ -17,7 +19,7 @@ class AppModel:
     def selectedSectionName(self):
         if self.selectedSection is None:
             return None
-        return self.selectedSection.name().split('.')[1]
+        return AppModel.simpleName(self.selectedSection)
 
     def trySelectSection(self, name: str) -> bool:
         section = self.getSection(name)
@@ -38,18 +40,40 @@ class AppModel:
 
     def getSection(self, name: str) -> h.Section:
         for sec in self.sections:
-            simpleName = sec.name().split('.')[1]
-            if name == simpleName:
+            if name == AppModel.simpleName(sec):
                 return sec
         return None
 
+    @staticmethod
+    def tryConnect(child: h.Section, cEnd: int, parent: h.Section, pEnd: int) -> bool:
+        if (cEnd not in [0, 1]) or (pEnd not in [0, 1]):
+            print(f'Error: wrong indices: cEnd={cEnd}, pEnd={pEnd}')
+            return False
+        if child is None or parent is None:
+            print(f'Error: child={child}, parent={parent}')
+            return False
+        child.connect(parent(pEnd), cEnd)  # May exit(1) if wrong connection
+        print('connected')
+        return True
+    
+    @staticmethod
+    def disconnect(section: h.Section):
+        if section is not None:
+            h.disconnect(section)
+
     @property
-    def sectionNames(self):
+    def sectionNames(self) -> List[str]:
         """
         Returns the section names in a list
         """
         names = []
         for sec in self.sections:
-            simpleName = sec.name().split('.')[1]
-            names.append(simpleName)
+            names.append(AppModel.simpleName(sec))
         return names
+
+    @staticmethod
+    def simpleName(section: h.Section) -> str:
+        return section.name().split('.')[1]
+
+
+

@@ -21,7 +21,7 @@ class BallAndStick:
         self.sectionList.append(self.soma)
         self.sectionList.append(self.dend)
         # self.sectionList.printnames()
-        self.dend.connect(self.soma)
+        connect(self.soma)
         self.soma.L = self.soma.diam = 12.6157
         self.dend.L = 200
         self.dend.diam = 1
