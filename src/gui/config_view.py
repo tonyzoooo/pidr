@@ -39,14 +39,14 @@ class ConfigView(tk.Frame):
         diamEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
 
         self.end0Var = tk.StringVar()
-        self.end0Var.trace('w', lambda a, b, c: self.saveCurrentSection())
+        self.end0Var.trace_add('write', lambda a, b, c: self.saveCurrentSection())
         end0Label = tk.Label(self, text='end (0)')
         end0Label.grid(row=3, column=0)
         self.end0Menu = tk.OptionMenu(self, self.end0Var, '')
         self.end0Menu.grid(row=3, column=1, sticky='nsew')
 
         self.end1Var = tk.StringVar()
-        self.end1Var.trace('w', lambda a, b, c: self.saveCurrentSection())
+        self.end1Var.trace_add('write', lambda a, b, c: self.saveCurrentSection())
         end1Label = tk.Label(self, text='end (1)')
         end1Label.grid(row=4, column=0)
         self.end1Menu = tk.OptionMenu(self, self.end1Var, '')
@@ -67,6 +67,11 @@ class ConfigView(tk.Frame):
         self.lengthVar.set(section.L)
         self.diamVar.set(section.diam)
 
+        print('---refreshView---')
+        h.topology()
+        print(f"{section}'s parent: {AppModel.getParent(section)}")
+        print('-----------------')
+
         names = self.model.sectionNames
         options = []
         for n in names:
@@ -74,8 +79,8 @@ class ConfigView(tk.Frame):
                 options.append(n + ' (0)')
                 options.append(n + ' (1)')
 
-        _changeMenuOptions(self.end0Menu, self.end0Var, options)
-        _changeMenuOptions(self.end1Menu, self.end1Var, options)
+        self._changeMenuOptions(self.end0Menu, self.end0Var, options)
+        self._changeMenuOptions(self.end1Menu, self.end1Var, options)
 
     def saveCurrentSection(self):
         """
@@ -88,31 +93,37 @@ class ConfigView(tk.Frame):
         section.diam = self.diamVar.get()
         section.L = self.lengthVar.get()
 
-        AppModel.disconnect(section)
+        # self.model.disconnect(section)
+
         end0 = self.end0Var.get()
         if end0 != '':
             (parent, n) = self._parseMenuOption(end0)
-            if not AppModel.tryConnect(section, 0, parent, n):
+            if not self.model.tryConnect(parent, n, section, 0):
                 print("Error: couldn't connect end 0")
 
         end1 = self.end1Var.get()
         if end1 != '':
             (parent, n) = self._parseMenuOption(end1)
-            if not AppModel.tryConnect(section, 0, parent, n):
+            if not self.model.tryConnect(parent, n, section, 1):
                 print("Error: couldn't connect end 1")
 
+        print('---saveCurrentSection---')
+        h.topology()
+        print(f"{section}'s connections: {self.model.getConnections(section)}")
+        print('------------------------')
+
     def _parseMenuOption(self, option: str) -> Tuple[h.Section, int]:
-        parts = option.split(' ')
-        sectionName = parts[0]
-        section = self.model.getSection(sectionName)
-        n = int(parts[1][1:-1])
+        [name, number] = option.split(' ')
+        section = self.model.getSection(name)
+        n = int(number[1:-1])
         return section, n
 
+    def _changeMenuOptions(self, optionMenu: tk.OptionMenu, var: tk.Variable, options: Iterable[str]):
+        valueBefore = var.get()
+        menu = optionMenu['menu']
+        menu.delete(0, 'end')
 
-def _changeMenuOptions(optionMenu: tk.OptionMenu, var: tk.Variable, options: Iterable[str]):
-    valueBefore = var.get()
-    menu = optionMenu['menu']
-    menu.delete(1, 'end')  # keep first item ('')
-    for name in options:
-        menu.add_command(label=name, command=partial(var.set, name))
-    var.set(valueBefore if (valueBefore in options) else '')
+        menu.add_command(label='', command=partial(var.set, ''))
+        for name in options:
+            menu.add_command(label=name, command=partial(var.set, name))
+        var.set(valueBefore if (valueBefore in options) else '')
