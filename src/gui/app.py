@@ -18,7 +18,7 @@ from model import AppModel
 class App(tk.Frame):
 
     def __init__(self, root: tk.Tk, model: AppModel):
-        tk.Frame.__init__(self, root)
+        super().__init__(root)
         self.root = root
         self.model = model
 

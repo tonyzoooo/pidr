@@ -11,12 +11,12 @@ from model import AppModel
 class ConfigView(tk.Frame):
 
     def __init__(self, root: tk.Tk, model: AppModel):
-        tk.Frame.__init__(self, root)
-        self.model = model
-
         """
         Container for the configuration of the selected section
         """
+        super().__init__(root)
+        self.model = model
+
         spinArgs = {'from_': 0, 'to': 1000, 'increment': 0.1}
 
         self.selectedSectionLabel = tk.Label(self, text='<no section>')
@@ -121,11 +121,13 @@ class ConfigView(tk.Frame):
         return section, n
 
     def _setMenuOptions(self, optionMenu: tk.OptionMenu, var: tk.Variable, options: Iterable[str]):
-        # valueBefore = var.get()
+        valueBefore = var.get()
         menu = optionMenu['menu']
         menu.delete(0, 'end')
 
         menu.add_command(label='', command=partial(var.set, ''))
         for name in options:
             menu.add_command(label=name, command=partial(var.set, name))
-        # var.set(valueBefore if (valueBefore in options) else '')
+
+        if valueBefore not in options:
+            var.set('')

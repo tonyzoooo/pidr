@@ -7,13 +7,13 @@ from model import AppModel
 class OpenHocView(tk.Frame):
 
     def __init__(self, root: tk.Tk, model: AppModel):
-        tk.Frame.__init__(self, root)
-        self.model = model
-        self.root = root
-
         """
         Container for file selection
         """
+        super().__init__(root)
+        self.model = model
+        self.root = root
+
         titleLabel = tk.Label(self, text='Extracellular potential simulation')
         titleLabel.pack()
         openHocButton = tk.Button(self, text='Open .hoc', command=self._openFile)
