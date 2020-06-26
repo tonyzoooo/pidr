@@ -44,13 +44,14 @@ class AppModel:
                 return sec
         return None
 
-    def tryConnect(self, child: h.Section, cEnd: int, parent: h.Section, pEnd: int) -> bool:
+    def trySetParent(self, child: h.Section, cEnd: int, parent: h.Section, pEnd: int) -> bool:
         if (cEnd not in [0, 1]) or (pEnd not in [0, 1]):
             print(f'Error: wrong indices: cEnd={cEnd}, pEnd={pEnd}')
             return False
         if child is None or parent is None:
             print(f'Error: child={child}, parent={parent}')
             return False
+        # TODO: Disconnect actual parent (if present) before connecting another
         child.connect(parent(pEnd), cEnd)  # May exit(1) if wrong connection
         return True
     

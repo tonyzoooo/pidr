@@ -19,15 +19,15 @@ class ConfigView(tk.Frame):
         """
         spinArgs = {'from_': 0, 'to': 1000, 'increment': 0.1}
 
-        self.selectedSectionLabel = tk.Label(self, text='<no section selected>')
-        self.selectedSectionLabel.grid(row=0, column=1)
+        self.selectedSectionLabel = tk.Label(self, text='<no section>')
+        self.selectedSectionLabel.grid(row=0, column=1, columnspan=2)
 
         self.lengthVar = tk.DoubleVar()
         lengthLabel = tk.Label(self, text='L')
         lengthLabel.grid(row=1, column=0)
         lengthEntry = tk.Spinbox(self, textvariable=self.lengthVar, **spinArgs)
         float_validate(lengthEntry)
-        lengthEntry.grid(row=1, column=1)
+        lengthEntry.grid(row=1, column=1, columnspan=2)
         lengthEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
 
         self.diamVar = tk.DoubleVar()
@@ -35,22 +35,19 @@ class ConfigView(tk.Frame):
         dimLabel.grid(row=2, column=0)
         diamEntry = tk.Spinbox(self, textvariable=self.diamVar, **spinArgs)
         float_validate(diamEntry)
-        diamEntry.grid(row=2, column=1)
+        diamEntry.grid(row=2, column=1, columnspan=2)
         diamEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
 
-        self.end0Var = tk.StringVar()
-        self.end0Var.trace_add('write', lambda a, b, c: self.saveCurrentSection())
-        end0Label = tk.Label(self, text='end (0)')
-        end0Label.grid(row=3, column=0)
-        self.end0Menu = tk.OptionMenu(self, self.end0Var, '')
-        self.end0Menu.grid(row=3, column=1, sticky='nsew')
-
-        self.end1Var = tk.StringVar()
-        self.end1Var.trace_add('write', lambda a, b, c: self.saveCurrentSection())
-        end1Label = tk.Label(self, text='end (1)')
-        end1Label.grid(row=4, column=0)
-        self.end1Menu = tk.OptionMenu(self, self.end1Var, '')
-        self.end1Menu.grid(row=4, column=1, sticky='nsew')
+        self.parentVar = tk.StringVar()
+        self.parentVar.trace_add('write', lambda a, b, c: self.saveCurrentSection())
+        self.endVar = tk.IntVar(0)
+        self.endVar.trace_add('write', lambda a, b, c: self.saveCurrentSection())
+        parentLabel = tk.Label(self, text='parent')
+        parentLabel.grid(row=3, column=0)
+        endMenu = tk.OptionMenu(self, self.endVar, 0, 1)
+        endMenu.grid(row=3, column=1, sticky='ew')
+        self.parentMenu = tk.OptionMenu(self, self.parentVar, '')
+        self.parentMenu.grid(row=3, column=2, sticky='ew')
 
     def refreshView(self):
         """
@@ -69,18 +66,30 @@ class ConfigView(tk.Frame):
 
         print('---refreshView---')
         h.topology()
-        print(f"{section}'s parent: {AppModel.getParent(section)}")
         print('-----------------')
 
         names = self.model.sectionNames
         options = []
         for n in names:
+            # TODO: add only possible parents (end not taken by another section)
             if n != AppModel.simpleName(section):
                 options.append(n + ' (0)')
                 options.append(n + ' (1)')
+        self._setMenuOptions(self.parentMenu, self.parentVar, options)
 
-        self._changeMenuOptions(self.end0Menu, self.end0Var, options)
-        self._changeMenuOptions(self.end1Menu, self.end1Var, options)
+        # get parent segment of current section
+        parentSeg = section.parentseg()
+        if parentSeg is None:
+            self.parentVar.set('')
+        else:
+            # refresh end index value
+            endIndex = int(section.orientation())
+            self.endVar.set(endIndex)
+            # refresh parent value
+            parentName = AppModel.simpleName(parentSeg.sec)
+            index = int(parentSeg.x)
+            self.parentVar.set(f'{parentName} ({index})')
+
 
     def saveCurrentSection(self):
         """
@@ -93,37 +102,30 @@ class ConfigView(tk.Frame):
         section.diam = self.diamVar.get()
         section.L = self.lengthVar.get()
 
-        # self.model.disconnect(section)
-
-        end0 = self.end0Var.get()
-        if end0 != '':
-            (parent, n) = self._parseMenuOption(end0)
-            if not self.model.tryConnect(parent, n, section, 0):
-                print("Error: couldn't connect end 0")
-
-        end1 = self.end1Var.get()
-        if end1 != '':
-            (parent, n) = self._parseMenuOption(end1)
-            if not self.model.tryConnect(parent, n, section, 1):
-                print("Error: couldn't connect end 1")
+        endIndex = self.endVar.get()
+        parentOption = self.parentVar.get()
+        if parentOption != '':
+            (parent, n) = self._parseParentOption(parentOption)
+            if not self.model.trySetParent(section, endIndex, parent, n):
+                print(f"Error: trySetParent({section}, {endIndex}, {parent}, {n})")
 
         print('---saveCurrentSection---')
         h.topology()
         print(f"{section}'s connections: {self.model.getConnections(section)}")
         print('------------------------')
 
-    def _parseMenuOption(self, option: str) -> Tuple[h.Section, int]:
+    def _parseParentOption(self, option: str) -> Tuple[h.Section, int]:
         [name, number] = option.split(' ')
         section = self.model.getSection(name)
         n = int(number[1:-1])
         return section, n
 
-    def _changeMenuOptions(self, optionMenu: tk.OptionMenu, var: tk.Variable, options: Iterable[str]):
-        valueBefore = var.get()
+    def _setMenuOptions(self, optionMenu: tk.OptionMenu, var: tk.Variable, options: Iterable[str]):
+        # valueBefore = var.get()
         menu = optionMenu['menu']
         menu.delete(0, 'end')
 
         menu.add_command(label='', command=partial(var.set, ''))
         for name in options:
             menu.add_command(label=name, command=partial(var.set, name))
-        var.set(valueBefore if (valueBefore in options) else '')
+        # var.set(valueBefore if (valueBefore in options) else '')
