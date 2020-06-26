@@ -3,7 +3,7 @@
 """
 @author: Loïc Bertrand
 """
-from typing import List
+from typing import List, Optional, Tuple
 
 from neuron import h
 
@@ -44,8 +44,7 @@ class AppModel:
                 return sec
         return None
 
-    @staticmethod
-    def tryConnect(child: h.Section, cEnd: int, parent: h.Section, pEnd: int) -> bool:
+    def tryConnect(self, child: h.Section, cEnd: int, parent: h.Section, pEnd: int) -> bool:
         if (cEnd not in [0, 1]) or (pEnd not in [0, 1]):
             print(f'Error: wrong indices: cEnd={cEnd}, pEnd={pEnd}')
             return False
@@ -53,13 +52,36 @@ class AppModel:
             print(f'Error: child={child}, parent={parent}')
             return False
         child.connect(parent(pEnd), cEnd)  # May exit(1) if wrong connection
-        print('connected')
         return True
     
-    @staticmethod
-    def disconnect(section: h.Section):
+    def disconnect(self, section: h.Section):
         if section is not None:
             h.disconnect(section)
+
+    def getConnections(self, section: h.Section) -> List[Tuple[h.Section, int]]:
+        connections = []
+
+        # Parent section
+        parentSeg = section.parentseg()
+        if parentSeg is not None:
+            connections.append((parentSeg.sec, parentSeg.x))
+
+        # Children sections
+        for potentialChild in self.sections:
+            parentSeg = potentialChild.parentseg()
+            if parentSeg is not None and parentSeg.sec is section:
+                connections.append((parentSeg.sec, parentSeg.x))
+
+        return connections
+
+    @staticmethod
+    def getParent(section: h.Section) -> Optional[h.Section]:
+        # par = section.parentseg()
+        # 'area', 'cm', 'diam', 'node_index', 'point_processes', 'ri', 'sec', 'v', 'volume', 'x'
+        parentSegment = section.parentseg()
+        if parentSegment is None:
+            return None
+        return parentSegment.sec
 
     @property
     def sectionNames(self) -> List[str]:
