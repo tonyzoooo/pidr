@@ -20,13 +20,13 @@ class PlotView(tk.Frame):
         optButton1 = tk.Radiobutton(self, text="2D View 1", variable=self.buttonVar, value=2)
         optButton2 = tk.Radiobutton(self, text="2D View 2", variable=self.buttonVar, value=3)
         optButton3 = tk.Radiobutton(self, text="2D View 3", variable=self.buttonVar, value=4)
-        printButton = tk.Button(self, text="Display")
+        printButton = tk.Button(self, text="Display", command=lambda:self._refresh())
         optButton0.grid(row=0, column=0)
         optButton1.grid(row=1, column=0)
         optButton2.grid(row=2, column=0)
         optButton3.grid(row=3, column=0)
         printButton.grid(row=4, column=0)
-    
+        
     def _refresh(self):
         if self.model.filename != "" :
             value = self.buttonVar.get()
