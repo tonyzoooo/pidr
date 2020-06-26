@@ -7,14 +7,17 @@ from typing import List, Optional, Tuple
 
 from neuron import h
 
-
 class AppModel:
 
     def __init__(self):
         self.filename = ''
         self.sections = []  # h.SectionList()
         self.selectedSection = None
-
+        self.hocObj = h
+        if self.filename != "":
+            self.loadHoc()
+            
+        
     @property
     def selectedSectionName(self):
         if self.selectedSection is None:
@@ -98,5 +101,11 @@ class AppModel:
     def simpleName(section: h.Section) -> str:
         return section.name().split('.')[1]
 
+    #another getter for plotting
+    def allsec(self):
+        return self.sections
+    
+    def loadHoc(self):
+        h.load_file(self.filename)
 
 
