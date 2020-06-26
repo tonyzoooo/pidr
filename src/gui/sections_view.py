@@ -7,14 +7,14 @@ from model import AppModel
 class SectionsView(tk.Frame):
 
     def __init__(self, root: tk.Tk, model: AppModel):
-        tk.Frame.__init__(self, root)
+        """
+        self for the list of sections
+        """
+        super().__init__(root)
         self.model = model
         self._beforeSelectionCallbacks = []
         self._afterSelectionCallbacks = []
 
-        """
-        self for the list of sections
-        """
         newLabel = tk.Label(self, text='New section', justify='left')
         newLabel.grid(row=0, column=0)
         newButton = tk.Button(self, text='Create', command=self._addSection)
