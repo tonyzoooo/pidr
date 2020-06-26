@@ -11,6 +11,7 @@ import tkinter as tk
 from config_view import ConfigView
 from open_hoc_view import OpenHocView
 from sections_view import SectionsView
+from plot_view import PlotView
 from model import AppModel
 
 
@@ -21,7 +22,7 @@ class App(tk.Frame):
         self.root = root
         self.model = model
 
-        root.geometry('500x400')
+        root.geometry('600x400')
         root.title('Simulator :)')
         root.bind('<Escape>', lambda e: exit())
         root.protocol("WM_DELETE_WINDOW", lambda: exit())
@@ -36,8 +37,12 @@ class App(tk.Frame):
         self.sectionsView.beforeSelection(self.configView.saveCurrentSection)
         self.sectionsView.afterSelection(self.configView.refreshView)
 
+        self.plotView = PlotView(root, model)
+        self.plotView.grid(row=0, column=2, **pad)
+
         self.openHocView = OpenHocView(root, model)
         self.openHocView.grid(row=1, column=0, columnspan=2, **pad)
+        
 
     @staticmethod
     def launch():

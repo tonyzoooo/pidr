@@ -25,5 +25,5 @@ class OpenHocView(tk.Frame):
             title='Select file',
             filetypes=(('hoc files', '*.hoc'), ('all files', '*.*'))
         )
-        print('Opened: ' + self.model.filename)
-        self.root.destroy()
+        if self.model.filename != "":
+            print('Opened: ' + self.model.filename)

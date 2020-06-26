@@ -56,17 +56,19 @@ def plotCylinder(x0, x1, diam, ax, colour, name):
     
     
 
-def plot3DCell(cell):
+def plot3DCell(cell, view):
     """
-    Dessine une cellule neuronale en 3D. Nécessite un objet hoc.
+    Dessine une cellule neuronale. Nécessite un objet hoc.
+    Spécifier la vue souhaitée.
         - cell: hoc
+        - view: int
     Return:
         - None
     """
-    fig1 = plt.figure("3D")
-    fig2 = plt.figure("2D Z")
-    fig3 = plt.figure("2D Y")
-    fig4 = plt.figure("2D X")
+    fig1 = plt.figure()
+    fig2 = plt.figure()
+    fig3 = plt.figure()
+    fig4 = plt.figure()
     colormap = plt.get_cmap('jet')
     nrn_col = plt.get_cmap('Spectral')
     ax = fig1.add_subplot(111, projection='3d')
@@ -91,22 +93,22 @@ def plot3DCell(cell):
         max_range = np.array([X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min(), max_range]).max()
         i+=1
         
+    x = np.array(x)
+    y = np.array(y)
+    z = np.array(z)
     # equal scaling for all axes
     # https://stackoverflow.com/questions/13685386/matplotlib-equal-unit-length-with-equal-aspect-ratio-z-axis-is-not-equal-to
-    Xb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][0].flatten() + 0.5*(X.max()+X.min())
-    Yb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][1].flatten() + 0.5*(Y.max()+Y.min())
-    Zb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][2].flatten() + 0.5*(Z.max()+Z.min())
+    Xb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][0].flatten() + 0.5*(x.max()+x.min())
+    Yb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][1].flatten() + 0.5*(y.max()+y.min())
+    Zb = 0.5*max_range*np.mgrid[-1:2:2,-1:2:2,-1:2:2][2].flatten() + 0.5*(z.max()+z.min())
 
     for xb, yb, zb in zip(Xb, Yb, Zb):
         ax.plot([xb], [yb], [zb], 'w')
     
-    x = np.array(x)
-    y = np.array(y)
-    z = np.array(z)
+    
     caXY = axXY.contour(x, y, z, np.linspace(z.min(), z.max(), 1000), cmap = colormap)
     caXZ = axXZ.contourf(x, z, y, np.linspace(y.min(), y.max(), 150), cmap = colormap)
     caYZ = axYZ.contourf(y, z, x, np.linspace(x.min(), x.max(), 150), cmap = colormap)
-    print(z)
     axXY.set_xlabel("X (µm)")
     axXY.set_ylabel("Y (µm)")
     axXY.set_title("XY plan")
@@ -144,8 +146,9 @@ def plot3DCell(cell):
     ax.xaxis._axinfo["grid"]['color'] =  (1,1,1,0)
     ax.yaxis._axinfo["grid"]['color'] =  (1,1,1,0)
     ax.zaxis._axinfo["grid"]['color'] =  (1,1,1,0)
-    
-    
-    
     ax.legend()
+    for fig_num in plt.get_fignums():
+        if view!= fig_num:
+            plt.close(fig_num)
     plt.show()
+            
