@@ -62,22 +62,6 @@ class AppModel:
         if section is not None:
             h.disconnect(section)
 
-    def getConnections(self, section: h.Section) -> List[Tuple[h.Section, int]]:
-        connections = []
-
-        # Parent section
-        parentSeg = section.parentseg()
-        if parentSeg is not None:
-            connections.append((parentSeg.sec, parentSeg.x))
-
-        # Children sections
-        for potentialChild in self.sections:
-            parentSeg = potentialChild.parentseg()
-            if parentSeg is not None and parentSeg.sec is section:
-                connections.append((parentSeg.sec, parentSeg.x))
-
-        return connections
-
     @staticmethod
     def getParent(section: h.Section) -> Optional[h.Section]:
         # par = section.parentseg()

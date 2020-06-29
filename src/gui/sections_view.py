@@ -1,12 +1,13 @@
-import tkinter as tk
+from tkinter import *
+from tkinter.ttk import *
 from typing import Optional
 
 from model import AppModel
 
 
-class SectionsView(tk.Frame):
+class SectionsView(Frame):
 
-    def __init__(self, root: tk.Tk, model: AppModel):
+    def __init__(self, root: Tk, model: AppModel):
         """
         self for the list of sections
         """
@@ -15,17 +16,17 @@ class SectionsView(tk.Frame):
         self._beforeSelectionCallbacks = []
         self._afterSelectionCallbacks = []
 
-        newLabel = tk.Label(self, text='New section', justify='left')
+        newLabel = Label(self, text='New section', justify='left')
         newLabel.grid(row=0, column=0)
-        newButton = tk.Button(self, text='Create', command=self._addSection)
+        newButton = Button(self, text='Create', command=self._addSection, width=7)
         newButton.grid(row=0, column=1, sticky='nsew')
-        self.newEntry = tk.Entry(self)
+        self.newEntry = Entry(self)
         self.newEntry.grid(row=1, column=0, columnspan=2)
         self.newEntry.bind('<Return>', lambda e: self._addSection())
 
-        sectionLabel = tk.Label(self, text='Sections:', justify='left')
+        sectionLabel = Label(self, text='Sections:', justify='left')
         sectionLabel.grid(row=2, column=0, columnspan=2)
-        self.sectionList = tk.Listbox(self)
+        self.sectionList = Listbox(self)
         self.sectionList.grid(row=3, column=0, columnspan=2)
         self.sectionList.bind('<<ListboxSelect>>', lambda e: self._manageSelection())
 
