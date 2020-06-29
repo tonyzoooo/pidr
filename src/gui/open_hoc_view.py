@@ -21,10 +21,13 @@ class OpenHocView(Frame):
         openHocButton.pack()
 
     def _openFile(self):
-        self.model.filename = filedialog.askopenfilename(
+        name = filedialog.askopenfilename(
             initialdir='../../resources',
             title='Select file',
             filetypes=(('hoc files', '*.hoc'), ('all files', '*.*'))
         )
-        if self.model.filename != "":
+        if name == '':
+            print("Canceled.")
+        else :
+            self.model.filename = name
             print('Opened: ' + self.model.filename)
