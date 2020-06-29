@@ -10,12 +10,10 @@ from neuron import h
 class AppModel:
 
     def __init__(self):
-        self.filename = ''
+        self._filename = ''
         self.sections = []  # h.SectionList()
         self.selectedSection = None
-        self.hocObj = h
-        if self.filename != "":
-            self.loadHoc()
+        self.hocObject = None
             
         
     @property
@@ -89,7 +87,19 @@ class AppModel:
     def allsec(self):
         return self.sections
     
-    def loadHoc(self):
-        h.load_file(self.filename)
-
+    @property
+    def filename(self) -> str:
+        """
+        Returns name of filename.
+        """
+       
+        return self._filename
+    
+    @filename.setter
+    def filename(self, name):
+        self._filename = name
+        h.load_file(name)
+        self.hocObject = h
+        h.define_shape()
+         
 
