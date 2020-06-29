@@ -1,12 +1,13 @@
-import tkinter as tk
+from tkinter import *
+from tkinter.ttk import *
 from tkinter import filedialog
 
 from model import AppModel
 
 
-class OpenHocView(tk.Frame):
+class OpenHocView(Frame):
 
-    def __init__(self, root: tk.Tk, model: AppModel):
+    def __init__(self, root: Tk, model: AppModel):
         """
         Container for file selection
         """
@@ -14,9 +15,9 @@ class OpenHocView(tk.Frame):
         self.model = model
         self.root = root
 
-        titleLabel = tk.Label(self, text='Extracellular potential simulation')
+        titleLabel = Label(self, text='Extracellular potential simulation')
         titleLabel.pack()
-        openHocButton = tk.Button(self, text='Open .hoc', command=self._openFile)
+        openHocButton = Button(self, text='Open .hoc', command=self._openFile)
         openHocButton.pack()
 
     def _openFile(self):

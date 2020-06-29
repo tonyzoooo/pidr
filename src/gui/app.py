@@ -6,7 +6,8 @@ Created on Tue May  5 21:54:28 2020
 @author: tonyz
 """
 
-import tkinter as tk
+from tkinter import *
+from tkinter.ttk import *
 
 from config_view import ConfigView
 from open_hoc_view import OpenHocView
@@ -15,9 +16,9 @@ from plot_view import PlotView
 from model import AppModel
 
 
-class App(tk.Frame):
+class App(Frame):
 
-    def __init__(self, root: tk.Tk, model: AppModel):
+    def __init__(self, root: Tk, model: AppModel):
         super().__init__(root)
         self.root = root
         self.model = model
@@ -42,11 +43,13 @@ class App(tk.Frame):
 
         self.openHocView = OpenHocView(root, model)
         self.openHocView.grid(row=1, column=0, columnspan=2, **pad)
-        
 
     @staticmethod
     def launch():
-        root = tk.Tk()
+        root = Tk()
+        style = Style()
+        if 'clam' in style.theme_names():
+            style.theme_use('clam')
         model = AppModel()
         App(root, model)
         root.mainloop()
