@@ -30,8 +30,12 @@ class AppModel:
         self.selectedSection = section
         return True
 
+    def _isInvalidName(self, name):
+        return name == '' or name in self.sectionNames \
+               or '(' in name or ')' in name
+
     def tryAddSection(self, name: str) -> bool:
-        if name == '' or name in self.sectionNames:
+        if self._isInvalidName(name):
             print(f"name '{name}' is invalid")
             return False
 
@@ -45,29 +49,21 @@ class AppModel:
                 return sec
         return None
 
-    def trySetParent(self, child: h.Section, cEnd: int, parent: h.Section, pEnd: int) -> bool:
-        if (cEnd not in [0, 1]) or (pEnd not in [0, 1]):
-            print(f'Error: wrong indices: cEnd={cEnd}, pEnd={pEnd}')
-            return False
-        if child is None or parent is None:
-            print(f'Error: child={child}, parent={parent}')
-            return False
+    def setParent(self, child: h.Section, cEnd: int, parent: h.Section, pEnd: int):
         # TODO: Disconnect actual parent (if present) before connecting another
+        h.disconnect(child)
+        print(f"connect({child}, {cEnd}, {parent}, {pEnd})")
         child.connect(parent(pEnd), cEnd)  # May exit(1) if wrong connection
-        return True
-    
-    def disconnect(self, section: h.Section):
-        if section is not None:
-            h.disconnect(section)
 
-    @staticmethod
-    def getParent(section: h.Section) -> Optional[h.Section]:
-        # par = section.parentseg()
-        # 'area', 'cm', 'diam', 'node_index', 'point_processes', 'ri', 'sec', 'v', 'volume', 'x'
-        parentSegment = section.parentseg()
-        if parentSegment is None:
-            return None
-        return parentSegment.sec
+    def getPossibleConnections(self, section: h.Section):
+        result = []
+        for sec in self.sections:
+            if sec != section:
+                if sec.parentseg() is None or sec.orientation() != 0:
+                    result.append((sec, 0))
+                if sec.parentseg() is None or sec.orientation() != 1:
+                    result.append((sec, 1))
+        return result
 
     @property
     def sectionNames(self) -> List[str]:
@@ -82,6 +78,14 @@ class AppModel:
     @staticmethod
     def simpleName(section: h.Section) -> str:
         return section.name().split('.')[1]
+
+    def printSections(self):
+        for section in self.sections:
+            print('----------------')
+            print('name:', AppModel.simpleName(section))
+            print('orientation:', section.orientation())
+            print('parentseg:', section.parentseg())
+        print('----------------')
 
     #another getter for plotting
     def allsec(self):

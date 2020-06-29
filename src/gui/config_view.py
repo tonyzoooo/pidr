@@ -1,9 +1,8 @@
 from tkinter import *
 from tkinter.ttk import *
-from typing import Iterable, Tuple
+from typing import Iterable, Tuple, Callable, Optional
 
 from neuron import h
-from tkvalidate import float_validate
 
 from model import AppModel
 
@@ -15,26 +14,29 @@ class ConfigView(Frame):
         Container for the configuration of the selected section
         """
         super().__init__(root)
+        self.root = root
         self.model = model
-
-        spinArgs = {'from_': 0, 'to': 1000, 'increment': 0.1}
 
         self.selectedSectionLabel = Label(self, text='<no section>')
         self.selectedSectionLabel.grid(row=0, column=1, columnspan=2)
 
-        self.lengthVar = DoubleVar()
+        spinArgs = {
+            'from_': 0, 'to': 1000, 'increment': 0.1, 'validate': 'focusout'
+        }
+
+        self.lengthVar = DoubleVar(value=1.0)
         lengthLabel = Label(self, text='L')
         lengthLabel.grid(row=1, column=0)
         lengthEntry = Spinbox(self, textvariable=self.lengthVar, **spinArgs)
-        float_validate(lengthEntry)
+        _addPositiveFloatValidation(lengthEntry)
         lengthEntry.grid(row=1, column=1, columnspan=2)
         lengthEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
 
-        self.diamVar = DoubleVar()
+        self.diamVar = DoubleVar(value=1.0)
         dimLabel = Label(self, text='diam')
         dimLabel.grid(row=2, column=0)
         diamEntry = Spinbox(self, textvariable=self.diamVar, **spinArgs)
-        float_validate(diamEntry)
+        _addPositiveFloatValidation(diamEntry)
         diamEntry.grid(row=2, column=1, columnspan=2)
         diamEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
 
@@ -54,6 +56,7 @@ class ConfigView(Frame):
         - the currently selected section in self.sectionList
         - the data of the corresponding section in the model (self.model)
         """
+        print('refreshView()')
         name = self.model.selectedSectionName
         self.selectedSectionLabel.configure(text=name)
         section = self.model.selectedSection
@@ -63,19 +66,16 @@ class ConfigView(Frame):
         self.lengthVar.set(section.L)
         self.diamVar.set(section.diam)
 
-        names = self.model.sectionNames
-        values = []
-        for n in names:
-            # TODO: add only possible parents (end not taken by another section)
-            if n != AppModel.simpleName(section):
-                values.append(n + ' (0)')
-                values.append(n + ' (1)')
+        values = ['']
+        for (parent, end) in self.model.getPossibleConnections(section):
+            name = AppModel.simpleName(parent)
+            values.append(f'{name}({end})')
         _setComboboxValues(self.parentMenu, values)
 
         # get parent segment of current section
         parentSeg = section.parentseg()
         if parentSeg is None:
-            self.endMenu.set(0)
+            self.endMenu.current(0)  # sets first (default) index
             self.parentMenu.set('')
         else:
             # refresh end index value
@@ -84,38 +84,60 @@ class ConfigView(Frame):
             # refresh parent value
             parentName = AppModel.simpleName(parentSeg.sec)
             index = int(parentSeg.x)
-            self.parentMenu.set(f'{parentName} ({index})')
+            self.parentMenu.set(f'{parentName}({index})')
 
     def saveCurrentSection(self):
         """
         Saves the current section's data
         """
+        print('saveCurrentSection()')
         section = self.model.selectedSection
         if section is None:
             return
 
-        section.diam = self.diamVar.get()
-        section.L = self.lengthVar.get()
+        section.diam = _safePosFloat(self.diamVar.get, orElse=section.diam)
+        section.L = _safePosFloat(self.lengthVar.get, orElse=section.L)
 
         endIndex = int(self.endMenu.get())
         parentOption = self.parentMenu.get()
         if parentOption != '':
-            (parent, n) = self._parseParentOption(parentOption)
-            if not self.model.trySetParent(section, endIndex, parent, n):
-                print(f"Error: trySetParent({section}, {endIndex}, {parent}, {n})")
+            (parent, n) = self._parseParentValue(parentOption)
+            self.model.setParent(section, endIndex, parent, n)
 
-        h.topology()
-
-    def _parseParentOption(self, option: str) -> Tuple[h.Section, int]:
-        [name, number] = option.split(' ')
+    def _parseParentValue(self, option: str) -> Tuple[h.Section, int]:
+        [name, number] = option.split('(')
         section = self.model.getSection(name)
-        n = int(number[1:-1])
+        n = int(number[0:-1])
         return section, n
+
+
+def _safePosFloat(getter: Callable[[], str], orElse: float = 1.0) -> float:
+    try:
+        floatValue = float(getter())
+    except (TclError, ValueError):
+        return orElse
+    return floatValue if floatValue > 0 else orElse
+
+
+def _addPositiveFloatValidation(spinBox):
+    oldValue = spinBox.get()
+
+    def onValidation(newValue):
+        nonlocal oldValue
+        safe = _safePosFloat(lambda: newValue, orElse=oldValue)
+        oldValue = safe
+        if newValue == safe:
+            return True
+        else:
+            spinBox.set(safe)
+            return False
+
+    vcmd = (spinBox.register(onValidation), '%P')
+    spinBox.configure(validatecommand=vcmd)
 
 
 def _setComboboxValues(combobox: Combobox, values: Iterable):
     valueBefore = combobox.get()
-    combobox.option_clear()
     combobox['values'] = values
     if valueBefore not in values:
         combobox.set('')
