@@ -31,7 +31,7 @@ class ConfigView(Frame):
         nsegEntry = Spinbox(self, textvariable=self.nsegVar, **intSpinArgs)
         nsegEntry.grid(row=1, column=1, columnspan=2)
         nsegEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
-        addIntValidation(nsegEntry, _from=1, to=32767)
+        addIntValidation(nsegEntry, from_=1, to=32767)
 
         floatSpinArgs = {
             'from_': 0, 'to': 1e10, 'increment': 0.1, 'validate': 'focusout'
@@ -43,7 +43,7 @@ class ConfigView(Frame):
         lengthEntry = Spinbox(self, textvariable=self.lengthVar, **floatSpinArgs)
         lengthEntry.grid(row=2, column=1, columnspan=2)
         lengthEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
-        addFloatValidation(lengthEntry, _from=1e-9)
+        addFloatValidation(lengthEntry, from_=1e-9)
 
         self.diamVar = DoubleVar(value=1.0)
         dimLabel = Label(self, text='diam')
@@ -51,7 +51,7 @@ class ConfigView(Frame):
         diamEntry = Spinbox(self, textvariable=self.diamVar, **floatSpinArgs)
         diamEntry.grid(row=3, column=1, columnspan=2)
         diamEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
-        addFloatValidation(diamEntry, _from=1e-9)
+        addFloatValidation(diamEntry, from_=1e-9)
 
         parentLabel = Label(self, text='parent')
         parentLabel.grid(row=4, column=0)
@@ -109,9 +109,9 @@ class ConfigView(Frame):
         if section is None:
             return
 
-        section.nseg = safeInt(self.nsegVar.get, orElse=section.nseg, _from=1, to=32766)
-        section.diam = safeFloat(self.diamVar.get, orElse=section.diam, _from=1e-9)
-        section.L = safeFloat(self.lengthVar.get, orElse=section.L, _from=1e-9)
+        section.nseg = safeInt(self.nsegVar.get, orElse=section.nseg, from_=1, to=32766)
+        section.diam = safeFloat(self.diamVar.get, orElse=section.diam, from_=1e-9)
+        section.L = safeFloat(self.lengthVar.get, orElse=section.L, from_=1e-9)
 
         endIndex = int(self.endMenu.get())
         parentOption = self.parentMenu.get()

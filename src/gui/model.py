@@ -5,6 +5,7 @@
 """
 from typing import List, Optional
 
+import LFPy
 from neuron import h
 
 
@@ -12,7 +13,7 @@ class AppModel:
 
     def __init__(self):
         self._filename = ''
-        self.sections = []  # h.SectionList()
+        self.sections = []
         self.selectedSection = None
         self.hocObject = None
 
@@ -31,7 +32,7 @@ class AppModel:
 
     def _isInvalidName(self, name):
         return name == '' or name in self.sectionNames \
-               or '(' in name or ')' in name
+               or '(' in name or ')' in name or '.' in name
 
     def tryAddSection(self, name: str) -> bool:
         if self._isInvalidName(name):
@@ -70,7 +71,8 @@ class AppModel:
 
     @staticmethod
     def simpleName(section: h.Section) -> str:
-        return section.name().split('.')[1]
+        parts = section.name().split('.')
+        return parts[len(parts) - 1]
 
     def printSections(self):
         for section in self.sections:
@@ -97,3 +99,26 @@ class AppModel:
         h.load_file(name)
         self.hocObject = h
         h.define_shape()
+
+    def createLFPyCell(self):
+        sectionList = h.SectionList()
+        for s in self.sections:
+            sectionList.append(s)
+
+        for s in sectionList:
+            print(s)
+
+        cell_parameters = {
+            'morphology': sectionList,
+            'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
+            'passive': True,  # Passive mechanisms are initialized if True
+            'passive_parameters': {'g_pas': 1. / 30000, 'e_pas': -65},
+            'cm': 1.0,  # Membrane capacitance
+            'Ra': 150,  # Axial resistance
+            'dt': 1 / 1000,  # simulation timestep
+            'tstart': 0.,  # Initialization time for simulation <= 0 ms
+            'tstop': 20.,  # Stop time for simulation > 0 ms
+            'nsegs_method': 'lambda_f',  # spatial discretization method
+            'lambda_f': 100.,  # frequency where length constants are computed
+        }
+        return LFPy.Cell(**cell_parameters)
