@@ -50,11 +50,6 @@ def runLfpySimulation(filename):
     # ================================= MORPHOLOGY ================================
     # =============================================================================
 
-    # LA = "1000"
-    # DA = "2"
-    # LD = "200"
-    # DD = "2"
-
     st = 1 / 1000
     cell_parameters = {
         'morphology': filename,
@@ -158,13 +153,13 @@ def runLfpySimulation(filename):
 
 
 class StimulationResult:
-    Vlfpy = None
-    Vmlfpy = None
-    Imlfpy = None
-    cell = None
-    timeind = None
-    stimulus = None
-    meshgrid_electrodes = None
+    Vlfpy: np.ndarray = None
+    Vmlfpy: np.ndarray = None
+    Imlfpy: np.ndarray = None
+    cell: LFPy.Cell = None
+    timeind: float = None
+    stimulus: LFPy.StimIntElectrode = None
+    meshgrid_electrodes: LFPy.RecExtElectrode = None
 
 
 def plotStimulation(cell, timeind, stimulus, meshgrid_electrodes):
