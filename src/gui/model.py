@@ -3,9 +3,10 @@
 """
 @author: Loïc Bertrand
 """
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 from neuron import h
+
 
 class AppModel:
 
@@ -14,8 +15,7 @@ class AppModel:
         self.sections = []  # h.SectionList()
         self.selectedSection = None
         self.hocObject = None
-            
-        
+
     @property
     def selectedSectionName(self):
         if self.selectedSection is None:
@@ -26,7 +26,6 @@ class AppModel:
         section = self.getSection(name)
         if section is None:
             return False
-
         self.selectedSection = section
         return True
 
@@ -43,7 +42,7 @@ class AppModel:
         self.sections.append(section)
         return True
 
-    def getSection(self, name: str) -> h.Section:
+    def getSection(self, name: str) -> Optional[h.Section]:
         for sec in self.sections:
             if name == AppModel.simpleName(sec):
                 return sec
@@ -67,13 +66,7 @@ class AppModel:
 
     @property
     def sectionNames(self) -> List[str]:
-        """
-        Returns the section names in a list
-        """
-        names = []
-        for sec in self.sections:
-            names.append(AppModel.simpleName(sec))
-        return names
+        return [AppModel.simpleName(s) for s in self.sections]
 
     @staticmethod
     def simpleName(section: h.Section) -> str:
@@ -87,23 +80,20 @@ class AppModel:
             print('parentseg:', section.parentseg())
         print('----------------')
 
-    #another getter for plotting
+    # another getter for plotting
     def allsec(self):
         return self.sections
-    
+
     @property
     def filename(self) -> str:
         """
-        Returns name of filename.
+        Returns name of file.
         """
-       
         return self._filename
-    
+
     @filename.setter
     def filename(self, name):
         self._filename = name
         h.load_file(name)
         self.hocObject = h
         h.define_shape()
-         
-

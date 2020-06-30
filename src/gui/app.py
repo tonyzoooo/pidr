@@ -25,8 +25,8 @@ class App(Frame):
 
         root.geometry('600x400')
         root.title('Simulator :)')
-        root.bind('<Escape>', lambda e: exit())
-        root.protocol("WM_DELETE_WINDOW", lambda: exit())
+        root.bind('<Escape>', lambda e: root.destroy())
+        root.protocol("WM_DELETE_WINDOW", lambda: root.destroy())
 
         pad = {'padx': 10, 'pady': 10}
 

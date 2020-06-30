@@ -13,20 +13,20 @@ from morphofiltd import morphofiltd
 # HH (Hodgkin–Huxley model)
 # -----------------------------------------------------------
 
-inmvm = 3000    # index max on Vm in LFPy (3000 for synchronisation)
-lVLFPy = 8000   # signal length in LFPy
-dt = 10**(-3)   # in ms
-Nt = 2**15
-D = Nt*dt
-t = np.arange(dt, D+dt, dt)-dt
+inmvm = 3000     # index max on Vm in LFPy (3000 for synchronisation)
+lVLFPy = 8000    # signal length in LFPy
+dt = 10 ** (-3)  # in ms
+Nt = 2 ** 15
+D = Nt * dt
+t = np.arange(dt, D + dt, dt) - dt
 n = len(t)
 
-fe = 1/dt
-f = np.arange(0, fe/2, fe/Nt)
+fe = 1 / dt
+f = np.arange(0, fe / 2, fe / Nt)
 
 I = (
-    (np.heaviside(t-1, 1/2)-np.heaviside(t-31, 1/2))
-    * 0.044 / (2*pi*12.5*25) * 10**8*10**-3
+    (np.heaviside(t - 1, 1 / 2) - np.heaviside(t - 31, 1 / 2))
+    * 0.044 / (2 * pi * 12.5 * 25) * 10 ** 8 * 10 ** -3
     # * 5.093 # 0.15/(pi*12.5*12.5*2+2*pi*12.5*25)*10**8
 )
 icur = 1
@@ -35,7 +35,7 @@ icur = 1
 # (http://www.bem.fi/book/03/03.htm, 3.14)
 [Vm, m, n, h, INa, IK, Il] = hhrun(I, t)
 
-Im = (INa+IK+Il) * (2*pi*12.5*25) / 10**8 * 10**3
+Im = (INa + IK + Il) * (2 * pi * 12.5 * 25) / 10 ** 8 * 10 ** 3
 inMVm = np.argmax(Vm)
 MVm = Vm[inMVm]
 
@@ -48,7 +48,7 @@ SL = 25     # soma length (cylinder with the same diameter)
 LA = 1000   # axon length
 DA = 2      # axon diameter
 
-LD = 200     # dendrite length
+LD = 200    # dendrite length
 DD = 2      # dendrite diameter
 phi = pi/2  # angle avec Oz
 theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
@@ -156,8 +156,7 @@ cc = np.zeros((1, elpos.shape[0]))
 t = np.arange(0, dt * Vel2.shape[1], dt)
 
 fig = plt.figure('Simulation & Neuron Morphology')
-# plt.title('Simulation & Neuron Morphology')
-gs = fig.add_gridspec(5,  13)
+gs = fig.add_gridspec(5, 13)
 
 plotNeuron(cell, meshgrid_electrodes, fig)
 
@@ -165,12 +164,17 @@ cmap = plt.cm.get_cmap('jet')
 line_labels = ["Cell", "Tran", "LFPy"]
 line_obj = []
 ifil = 0
+
+# fix LFPy imprecision
+if Vlfpy.shape[0] != 8000:
+    Vlfpy = Vlfpy[:8000, :]
+
 for i in range(5):
     for j in range(13):
         ax = fig.add_subplot(gs[i, j])
         ax.axis('off')
-        l1 = ax.plot(t, Vel2[ifil]-Vel2[ifil, 0], linewidth=2)[0]
-        l2 = ax.plot(t, Vlfpy[:, ifil]-Vlfpy[0, ifil], linewidth=2)[0]
+        l1 = ax.plot(t, Vel2[ifil] - Vel2[ifil, 0], linewidth=2)[0]
+        l2 = ax.plot(t, Vlfpy[:, ifil] - Vlfpy[0, ifil], linewidth=2)[0]
         if len(line_obj) < 2:
             line_obj.append(l1)
             line_obj.append(l2)
@@ -184,9 +188,9 @@ for i in range(5):
         plt.scatter(4, -2e-3, 50, color, 'o', cmap)
         plt.ylim(np.array([-5, 5]) * 1e-3)
         if i == 0:
-            plt.text(1, 6e-3, rf'{j*125-250}$\mu$m')
+            plt.text(1, 6e-3, rf'{j * 125 - 250}$\mu$m')
         if j == 0:
-            plt.text(-10, -2e-3, rf'{-i*50+250}$\mu$m')
+            plt.text(-10, -2e-3, rf'{-i * 50 + 250}$\mu$m')
         ifil += 1
 
 fig.legend(
