@@ -4,15 +4,15 @@ from tkinter import TclError
 from typing import Callable
 
 
-def safeFloat(getter: Callable[[], str], orElse: float = 1.0, _from=-sys.maxsize, to=sys.maxsize) -> float:
+def safeFloat(getter: Callable[[], str], orElse: float = 1.0, from_=-sys.maxsize, to=sys.maxsize) -> float:
     try:
         floatValue = float(getter())
     except (TclError, ValueError):
         return orElse
-    return floatValue if _from <= floatValue <= to else orElse
+    return floatValue if from_ <= floatValue <= to else orElse
 
 
-def safeInt(getter: Callable[[], str], orElse: int = 1.0, _from=-sys.maxsize, to=sys.maxsize) -> int:
+def safeInt(getter: Callable[[], str], orElse: int = 1.0, from_=-sys.maxsize, to=sys.maxsize) -> int:
     try:
         intValue = int(getter())
     except (TclError, ValueError):
@@ -20,15 +20,15 @@ def safeInt(getter: Callable[[], str], orElse: int = 1.0, _from=-sys.maxsize, to
             intValue = ceil(float(getter()))
         except (TclError, ValueError):
             return orElse
-    return intValue if _from <= intValue <= to else orElse
+    return intValue if from_ <= intValue <= to else orElse
 
 
-def addFloatValidation(spinBox, _from=-sys.maxsize, to=sys.maxsize):
-    _addNumberValidation(spinBox, safeFloat, _from=_from, to=to)
+def addFloatValidation(spinBox, from_=-sys.maxsize, to=sys.maxsize):
+    _addNumberValidation(spinBox, safeFloat, from_=from_, to=to)
 
 
-def addIntValidation(spinBox, _from=-sys.maxsize, to=sys.maxsize):
-    _addNumberValidation(spinBox, safeInt, _from=_from, to=to)
+def addIntValidation(spinBox, from_=-sys.maxsize, to=sys.maxsize):
+    _addNumberValidation(spinBox, safeInt, from_=from_, to=to)
 
 
 def _addNumberValidation(spinBox, safeConverter, **kwargs):

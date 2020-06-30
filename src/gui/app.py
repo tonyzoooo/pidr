@@ -44,6 +44,15 @@ class App(Frame):
         self.openHocView = OpenHocView(root, model)
         self.openHocView.grid(row=1, column=0, columnspan=2, **pad)
 
+        debugButton = Button(root, text='debug', command=self.debugCommand)
+        debugButton.grid(row=1, column=2, **pad)
+
+    def debugCommand(self):
+        print('debug')
+        cell = self.model.createLFPyCell()
+        print(cell)
+        pass
+
     @staticmethod
     def launch():
         root = Tk()
