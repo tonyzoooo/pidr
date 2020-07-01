@@ -7,7 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import tkinter as tk
 from neuron import h
-            
+
 def defCylinder(x0, x1, diam):
     """
     Calcule les coordonnées d'un cylindre étant donnés son origine, son sommet 
@@ -25,12 +25,12 @@ def defCylinder(x0, x1, diam):
     nseg = 5
     v = x1 - x0
     mag = np.linalg.norm(v)
-    v = v/mag
+    v = v / (mag or 1)
     not_v = np.array([1, 0, 0])
     if (v == not_v).all():
         not_v = np.array([0, 1, 0])
     n1 = np.cross(v, not_v)
-    n1 /= np.linalg.norm(n1)
+    n1 /= (np.linalg.norm(n1) or 1)
     n2 = np.cross(v, n1)
     t = np.linspace(0, mag, nseg)
     theta = np.linspace(0, 2 * np.pi, 2*nseg)
@@ -98,15 +98,15 @@ def plot2DCell(sectionlist):
     cbarXY = fig.colorbar(caXY, ax = axXY)
     cbarXY.set_label("Depth in Z axis (µm)")
     axXY.grid()
-    
+
     axXZ.set_xlabel("X (µm)")
     axXZ.set_ylabel("Z (µm)")
     axXZ.set_title("XZ plan")
     cbarXZ = fig.colorbar(caXZ, ax = axXZ)
     cbarXZ.set_label("Depth in Y axis (µm)")
     axXZ.grid()
-    
-    
+
+
     axYZ.set_xlabel("Y (µm)")
     axYZ.set_ylabel("Z (µm)")
     axYZ.set_title("YZ plan")
@@ -140,7 +140,7 @@ def plot3DCell(sectionlist):
     x, y, z = [], [], []
     N = sum(1 for s in sectionlist)
     # en attendant de trouver une méthode pour avoir le nombres de sections...
-    for s in sectionlist:    
+    for s in sectionlist:
         xseg = s.x3d(1) - s.x3d(0)
         yseg = s.y3d(1) - s.y3d(0)
         zseg = s.z3d(1) - s.z3d(0)
@@ -160,7 +160,7 @@ def plot3DCell(sectionlist):
             new_X3.extend(X3)
             new_Y3.extend(Y3)
             new_Z3.extend(Z3)
-        
+
         new_X = np.array(new_X)
         new_Y = np.array(new_Y)
         new_Z = np.array(new_Z)
@@ -185,10 +185,10 @@ def plot3DCell(sectionlist):
         y.extend(list(new_Y))
         z.extend(list(new_Z))
         c+=1
-        
 
-        
-        
+
+
+
     x = np.array(x)
     y = np.array(y)
     z = np.array(z)
@@ -205,8 +205,8 @@ def plot3DCell(sectionlist):
 
     for xb, yb, zb in zip(Xb, Yb, Zb):
         ax.plot([xb], [yb], [zb], 'w')
-    
-    
+
+
     # make the panes transparent
     #ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
     #ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
@@ -216,12 +216,11 @@ def plot3DCell(sectionlist):
     ax.yaxis._axinfo["grid"]['color'] =  (1,1,1,0)
     ax.zaxis._axinfo["grid"]['color'] =  (1,1,1,0)
     ax.legend()
-    
+
     toolbar = NavigationToolbar2Tk(canvas, window)
     toolbar.update()
     canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
     plt.close(fig)
     window.mainloop()
-    
 
- 
+
