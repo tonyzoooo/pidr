@@ -106,7 +106,7 @@ class AppModel:
             sectionList.append(s)
 
         for s in sectionList:
-            print(s)
+            print(s.name())
 
         cell_parameters = {
             'morphology': sectionList,
@@ -120,5 +120,6 @@ class AppModel:
             'tstop': 20.,  # Stop time for simulation > 0 ms
             'nsegs_method': 'lambda_f',  # spatial discretization method
             'lambda_f': 100.,  # frequency where length constants are computed
+            'verbose': True
         }
         return LFPy.Cell(**cell_parameters)
