@@ -22,7 +22,7 @@ def defCylinder(x0, x1, diam):
     Return:
         - array(float), array(float), array(float), ...
     """
-    nseg = 10
+    nseg = 5
     v = x1 - x0
     mag = np.linalg.norm(v)
     v = v/mag
@@ -146,24 +146,44 @@ def plot3DCell(sectionlist):
         zseg = s.z3d(1) - s.z3d(0)
         d = s.diam3d(0)
         colour = nrn_col(c/N)
+        new_X, new_Y, new_Z, new_X2, new_Y2, new_Z2, new_X3, new_Y3, new_Z3 = [], [], [], [], [], [], [], [], []
         for i in range(s.nseg):
             x0 = np.array([s.x3d(0)+i*xseg, s.y3d(0)+i*yseg, s.z3d(0)+i*zseg])
             x1 = np.array([s.x3d(1)+(i+1)*xseg, s.y3d(1)+(i+1)*yseg, s.z3d(1)+(i+1)*zseg])
             X, Y, Z, X2, Y2, Z2, X3, Y3, Z3 = defCylinder(x0, x1, d)
-            cyl = ax.plot_surface(X, Y, Z, color =colour, label = s.name() if i ==0 else "")
+            new_X.extend(X)
+            new_Y.extend(Y)
+            new_Z.extend(Z)
+            new_X2.extend(X2)
+            new_Y2.extend(Y2)
+            new_Z2.extend(Z2)
+            new_X3.extend(X3)
+            new_Y3.extend(Y3)
+            new_Z3.extend(Z3)
+        
+        new_X = np.array(new_X)
+        new_Y = np.array(new_Y)
+        new_Z = np.array(new_Z)
+        new_X2 = np.array(new_X2)
+        new_Y2 = np.array(new_Y2)
+        new_Z2 = np.array(new_Z2)
+        new_X3 = np.array(new_X3)
+        new_Y3 = np.array(new_Y3)
+        new_Z3 = np.array(new_Z3)
+        cyl = ax.plot_surface(new_X, new_Y, new_Z, color =colour, label = s.name())
             # fix for 3d colors
-            cyl._facecolors2d=cyl._facecolors3d
-            cyl._edgecolors2d=cyl._edgecolors3d
-            face1 = ax.plot_surface(X2, Y2, Z2, color =colour)
-            face1._facecolors2d=face1._facecolors3d
-            face1._edgecolors2d=face1._edgecolors3d
-            face2 = ax.plot_surface(X3, Y3, Z3, color =colour)
-            face2._facecolors2d=face2._facecolors3d
-            face2._edgecolors2d=face2._edgecolors3d
-            max_range = np.array([X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min(), max_range]).max()
-            x.extend(list(X))
-            y.extend(list(Y))
-            z.extend(list(Z))
+        cyl._facecolors2d=cyl._facecolors3d
+        cyl._edgecolors2d=cyl._edgecolors3d
+        face1 = ax.plot_surface(new_X2, new_Y2, new_Z2, color =colour)
+        face1._facecolors2d=face1._facecolors3d
+        face1._edgecolors2d=face1._edgecolors3d
+        face2 = ax.plot_surface(new_X3, new_Y3, new_Z3, color =colour)
+        face2._facecolors2d=face2._facecolors3d
+        face2._edgecolors2d=face2._edgecolors3d
+        max_range = np.array([new_X.max()-new_X.min(), new_Y.max()-new_Y.min(), new_Z.max()-new_Z.min(), max_range]).max()
+        x.extend(list(new_X))
+        y.extend(list(new_Y))
+        z.extend(list(new_Z))
         c+=1
         
 
