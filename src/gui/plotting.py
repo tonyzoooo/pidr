@@ -52,16 +52,18 @@ def getAllPoints(sectionlist):
         - array(float), array(float), array(float)
     """
     x, y, z = [], [], []
-    i = 0
     for s in sectionlist :
-        x0 = np.array([s.x3d(0), s.y3d(0), s.z3d(0)])
-        x1 = np.array([s.x3d(1), s.y3d(1), s.z3d(1)])
         d = s.diam3d(0)
-        X, Y, Z, X2, Y2, Z2, X3, Y3, Z3 = defCylinder(x0, x1, d)
-        x.extend(list(X))
-        y.extend(list(Y))
-        z.extend(list(Z))
-        i+=1
+        xseg = s.x3d(1) - s.x3d(0)
+        yseg = s.y3d(1) - s.y3d(0)
+        zseg = s.z3d(1) - s.z3d(0)
+        for i in range(s.nseg):
+            x0 = np.array([s.x3d(0)+i*xseg, s.y3d(0)+i*yseg, s.z3d(0)+i*zseg])
+            x1 = np.array([s.x3d(1)+(i+1)*xseg, s.y3d(1)+(i+1)*yseg, s.z3d(1)+(i+1)*zseg])
+            X, Y, Z, X2, Y2, Z2, X3, Y3, Z3 = defCylinder(x0, x1, d)
+            x.extend(list(X))
+            y.extend(list(Y))
+            z.extend(list(Z))
     x = np.array(x)
     y = np.array(y)
     z = np.array(z)
@@ -134,31 +136,36 @@ def plot3DCell(sectionlist):
     nrn_col = plt.get_cmap('Spectral')
     ax = fig.add_subplot(111, projection='3d')
     max_range = 0
+    c=0
     x, y, z = [], [], []
-    i = 0
     N = sum(1 for s in sectionlist)
     # en attendant de trouver une méthode pour avoir le nombres de sections...
-    for s in sectionlist:
-        x0 = np.array([s.x3d(0), s.y3d(0), s.z3d(0)])
-        x1 = np.array([s.x3d(1), s.y3d(1), s.z3d(1)])
+    for s in sectionlist:    
+        xseg = s.x3d(1) - s.x3d(0)
+        yseg = s.y3d(1) - s.y3d(0)
+        zseg = s.z3d(1) - s.z3d(0)
         d = s.diam3d(0)
-        colour = nrn_col(i/N)
-        X, Y, Z, X2, Y2, Z2, X3, Y3, Z3 = defCylinder(x0, x1, d)
-        cyl = ax.plot_surface(X, Y, Z, color =colour, label = s.name())
-        # fix for 3d colors
-        cyl._facecolors2d=cyl._facecolors3d
-        cyl._edgecolors2d=cyl._edgecolors3d
-        face1 = ax.plot_surface(X2, Y2, Z2, color =colour)
-        face1._facecolors2d=face1._facecolors3d
-        face1._edgecolors2d=face1._edgecolors3d
-        face2 = ax.plot_surface(X3, Y3, Z3, color =colour)
-        face2._facecolors2d=face2._facecolors3d
-        face2._edgecolors2d=face2._edgecolors3d
-        max_range = np.array([X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min(), max_range]).max()
-        x.extend(list(X))
-        y.extend(list(Y))
-        z.extend(list(Z))
-        i+=1
+        colour = nrn_col(c/N)
+        for i in range(s.nseg):
+            x0 = np.array([s.x3d(0)+i*xseg, s.y3d(0)+i*yseg, s.z3d(0)+i*zseg])
+            x1 = np.array([s.x3d(1)+(i+1)*xseg, s.y3d(1)+(i+1)*yseg, s.z3d(1)+(i+1)*zseg])
+            X, Y, Z, X2, Y2, Z2, X3, Y3, Z3 = defCylinder(x0, x1, d)
+            cyl = ax.plot_surface(X, Y, Z, color =colour, label = s.name() if i ==0 else "")
+            # fix for 3d colors
+            cyl._facecolors2d=cyl._facecolors3d
+            cyl._edgecolors2d=cyl._edgecolors3d
+            face1 = ax.plot_surface(X2, Y2, Z2, color =colour)
+            face1._facecolors2d=face1._facecolors3d
+            face1._edgecolors2d=face1._edgecolors3d
+            face2 = ax.plot_surface(X3, Y3, Z3, color =colour)
+            face2._facecolors2d=face2._facecolors3d
+            face2._edgecolors2d=face2._edgecolors3d
+            max_range = np.array([X.max()-X.min(), Y.max()-Y.min(), Z.max()-Z.min(), max_range]).max()
+            x.extend(list(X))
+            y.extend(list(Y))
+            z.extend(list(Z))
+        c+=1
+        
 
         
         
