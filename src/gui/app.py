@@ -9,6 +9,8 @@ Created on Tue May  5 21:54:28 2020
 from tkinter import *
 from tkinter.ttk import *
 
+from ttkthemes import ThemedTk
+
 from config_view import ConfigView
 from open_hoc_view import OpenHocView
 from sections_view import SectionsView
@@ -28,7 +30,7 @@ class App(Frame):
         root.bind('<Escape>', lambda e: root.destroy())
         root.protocol("WM_DELETE_WINDOW", lambda: root.destroy())
 
-        pad = {'padx': 10, 'pady': 10}
+        pad = {'padx': (12, 0), 'pady': (12, 0)}
 
         self.configView = ConfigView(root, model)
         self.configView.grid(row=0, column=1, **pad)
@@ -42,10 +44,10 @@ class App(Frame):
         self.plotView.grid(row=0, column=2, **pad)
 
         self.openHocView = OpenHocView(root, model)
-        self.openHocView.grid(row=1, column=0, columnspan=2, **pad)
+        self.openHocView.grid(row=1, column=0, **pad)
 
         debugButton = Button(root, text='debug', command=self.debugCommand)
-        debugButton.grid(row=1, column=2, **pad)
+        debugButton.grid(row=1, column=1, **pad)
 
     def debugCommand(self):
         print('debug')
@@ -55,10 +57,12 @@ class App(Frame):
 
     @staticmethod
     def launch():
-        root = Tk()
-        style = Style()
-        if 'clam' in style.theme_names():
-            style.theme_use('clam')
+        root = ThemedTk(background=True)
+        if 'plastik' in root.get_themes():
+            root.set_theme('plastik')  # plastik / arc
+        # style = Style()
+        # if 'clam' in style.theme_names():
+        #     style.theme_use('clam')
         model = AppModel()
         App(root, model)
         root.mainloop()
