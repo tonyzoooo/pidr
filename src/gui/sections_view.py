@@ -62,6 +62,9 @@ class SectionsView(Frame):
         if self.model.tryAddSection(name):
             self.sectionList.insert('end', name)
             self.newEntry.delete(0, 'end')
+            self.sectionList.selection_clear(0, 'end')
+            self.sectionList.selection_set('end')
+            self._manageSelection()
 
     def _getSelectedSectionName(self) -> Optional[str]:
         """

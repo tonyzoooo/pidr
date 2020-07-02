@@ -19,7 +19,7 @@ class PlotView(Frame):
         super().__init__(root)
         self.model = model
 
-        self.buttonVar = IntVar()
+        self.buttonVar = IntVar(value=1)
         self.figures = []
         optButton0 = Radiobutton(self, text="3D View", variable=self.buttonVar, value=1)
         optButton1 = Radiobutton(self, text="2D View", variable=self.buttonVar, value=2)
