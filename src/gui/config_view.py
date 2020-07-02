@@ -25,9 +25,8 @@ class ConfigView(Frame):
             'from_': 1, 'to': 1e10, 'increment': 1, 'validate': 'focusout'
         }
 
+        Label(self, text='nseg').grid(row=1, column=0)
         self.nsegVar = IntVar(value=1)
-        nsegLabel = Label(self, text='nseg')
-        nsegLabel.grid(row=1, column=0)
         nsegEntry = Spinbox(self, textvariable=self.nsegVar, **intSpinArgs)
         nsegEntry.grid(row=1, column=1, columnspan=2)
         nsegEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
@@ -37,24 +36,21 @@ class ConfigView(Frame):
             'from_': 0, 'to': 1e10, 'increment': 0.1, 'validate': 'focusout'
         }
 
+        Label(self, text='L').grid(row=2, column=0)
         self.lengthVar = DoubleVar(value=1.0)
-        lengthLabel = Label(self, text='L')
-        lengthLabel.grid(row=2, column=0)
         lengthEntry = Spinbox(self, textvariable=self.lengthVar, **floatSpinArgs)
         lengthEntry.grid(row=2, column=1, columnspan=2)
         lengthEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
         addFloatValidation(lengthEntry, from_=1e-9)
 
+        Label(self, text='diam').grid(row=3, column=0)
         self.diamVar = DoubleVar(value=1.0)
-        dimLabel = Label(self, text='diam')
-        dimLabel.grid(row=3, column=0)
         diamEntry = Spinbox(self, textvariable=self.diamVar, **floatSpinArgs)
         diamEntry.grid(row=3, column=1, columnspan=2)
         diamEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
         addFloatValidation(diamEntry, from_=1e-9)
 
-        parentLabel = Label(self, text='parent')
-        parentLabel.grid(row=4, column=0)
+        Label(self, text='parent').grid(row=4, column=0)
         self.endMenu = Combobox(self, values=[0, 1], width=1, state="readonly")
         self.endMenu.current(0)
         self.endMenu.grid(row=4, column=1, sticky='ew')
@@ -63,13 +59,16 @@ class ConfigView(Frame):
         self.parentMenu.grid(row=4, column=2, sticky='ew')
         self.parentMenu.bind('<<ComboboxSelected>>', lambda e: self.saveCurrentSection())
 
+        Label(self, text='mechanism').grid(row=5, column=0)
+        self.mechMenu = Combobox(self, values=['', 'hh', 'pas'], state="readonly")
+        self.mechMenu.grid(row=5, column=1, columnspan=2, sticky='ew')
+
     def refreshView(self):
         """
         Refreshes the section configuration view using:
         - the currently selected section in self.sectionList
         - the data of the corresponding section in the model (self.model)
         """
-        print('refreshView()')
         name = self.model.selectedSectionName
         self.selectedSectionLabel.configure(text=name)
         section = self.model.selectedSection
@@ -100,11 +99,12 @@ class ConfigView(Frame):
             index = int(parentSeg.x)
             self.parentMenu.set(f'{parentName}({index})')
 
+        self.mechMenu.set(AppModel.getMechanism(section) or '')
+
     def saveCurrentSection(self):
         """
         Saves the current section's data
         """
-        print('saveCurrentSection()')
         section = self.model.selectedSection
         if section is None:
             return
@@ -118,6 +118,8 @@ class ConfigView(Frame):
         if parentOption != '':
             (parent, n) = self._parseParentValue(parentOption)
             self.model.setParent(section, endIndex, parent, n)
+
+        AppModel.setMechanism(section, self.mechMenu.get() or None)
 
     def _parseParentValue(self, option: str) -> Tuple[h.Section, int]:
         [name, number] = option.split('(')
