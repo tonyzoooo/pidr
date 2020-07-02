@@ -41,6 +41,7 @@ class AppModel:
 
         section = h.Section(name=name, cell='CurrentCell')
         self.sections.append(section)
+        section.insert('hh')
         return True
 
     def getSection(self, name: str) -> Optional[h.Section]:
@@ -74,6 +75,23 @@ class AppModel:
         parts = section.name().split('.')
         return parts[len(parts) - 1]
 
+    @staticmethod
+    def getMechanism(section: h.Section) -> Optional[str]:
+        firstSegment = next(iter(section))
+        return 'hh' if hasattr(firstSegment, 'hh') \
+            else 'pas' if hasattr(firstSegment, 'pas') \
+            else None
+
+    @staticmethod
+    def setMechanism(section: h.Section, mech: Optional[str]):
+        actual = AppModel.getMechanism(section)
+        if mech == actual:
+            return
+        if actual is not None:
+            section.uninsert(actual)
+        if mech is not None:
+            section.insert(mech)
+
     def printSections(self):
         for section in self.sections:
             print('----------------')
@@ -100,7 +118,7 @@ class AppModel:
         self.hocObject = h
         h.define_shape()
 
-    def createLFPyCell(self):
+    def createLFPyCell(self) -> LFPy.Cell:
         sectionList = h.SectionList()
         for s in self.sections:
             sectionList.append(s)
