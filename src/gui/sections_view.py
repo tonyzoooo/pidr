@@ -79,3 +79,14 @@ class SectionsView(Frame):
 
         index = selected[0]
         return self.sectionList.get(index)
+
+    def refreshView(self):
+        """
+        Refreshes the list of sections to reflect the model
+        """
+        self.sectionList.delete(0, 'end')
+        for sec in self.model.sections:
+            name = AppModel.simpleName(sec)
+            self.sectionList.insert('end', name)
+            self.sectionList.selection_set(0)
+            self._manageSelection()
