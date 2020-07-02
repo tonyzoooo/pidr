@@ -25,8 +25,8 @@ class PlotView(Frame):
         optButton1 = Radiobutton(self, text="2D View", variable=self.buttonVar, value=2)
         printButton = Button(self, text="Display", command=lambda:self._refresh())
         optButton0.grid(row=0, column=0)
-        optButton1.grid(row=1, column=0)
-        printButton.grid(row=2, column=0)
+        optButton1.grid(row=1, column=0, pady=4)
+        printButton.grid(row=2, column=0, padx=8)
         
 
     def _refresh(self):
@@ -36,4 +36,3 @@ class PlotView(Frame):
                 plot3DCell(self.model.hocObject.allsec())
             elif value == 2:
                 plot2DCell(self.model.hocObject.allsec())
-        self.buttonVar.set(0)

@@ -16,18 +16,18 @@ class SectionsView(Frame):
         self._beforeSelectionCallbacks = []
         self._afterSelectionCallbacks = []
 
-        newLabel = Label(self, text='New section', justify='left')
-        newLabel.grid(row=0, column=0)
-        newButton = Button(self, text='Create', command=self._addSection, width=7)
-        newButton.grid(row=0, column=1, sticky='nsew')
+        newLabel = Label(self, text='New section')
+        newLabel.grid(row=0, column=0, sticky='w')
+        newButton = Button(self, text='Create', command=self._addSection, width=8)
+        newButton.grid(row=0, column=1, sticky='e')
         self.newEntry = Entry(self)
-        self.newEntry.grid(row=1, column=0, columnspan=2)
+        self.newEntry.grid(row=1, column=0, columnspan=2, pady=4)
         self.newEntry.bind('<Return>', lambda e: self._addSection())
 
-        sectionLabel = Label(self, text='Sections:', justify='left')
-        sectionLabel.grid(row=2, column=0, columnspan=2)
+        sectionLabel = Label(self, text='Sections')
+        sectionLabel.grid(row=2, column=0, columnspan=2, sticky='w')
         self.sectionList = Listbox(self)
-        self.sectionList.grid(row=3, column=0, columnspan=2)
+        self.sectionList.grid(row=3, column=0, columnspan=2, pady=4)
         self.sectionList.bind('<<ListboxSelect>>', lambda e: self._manageSelection())
 
     def beforeSelection(self, callback):

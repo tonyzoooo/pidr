@@ -41,7 +41,6 @@ class AppModel:
 
         section = h.Section(name=name, cell='CurrentCell')
         self.sections.append(section)
-        section.insert('hh')
         return True
 
     def getSection(self, name: str) -> Optional[h.Section]:

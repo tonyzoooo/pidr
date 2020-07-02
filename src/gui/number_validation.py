@@ -1,5 +1,4 @@
 import sys
-from math import ceil
 from tkinter import TclError
 from typing import Callable
 
@@ -17,7 +16,7 @@ def safeInt(getter: Callable[[], str], orElse: int = 1.0, from_=-sys.maxsize, to
         intValue = int(getter())
     except (TclError, ValueError):
         try:
-            intValue = ceil(float(getter()))
+            intValue = round(float(getter()))
         except (TclError, ValueError):
             return orElse
     return intValue if from_ <= intValue <= to else orElse

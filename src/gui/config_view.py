@@ -21,47 +21,44 @@ class ConfigView(Frame):
         self.selectedSectionLabel = Label(self, text='<no section>')
         self.selectedSectionLabel.grid(row=0, column=1, columnspan=2)
 
-        intSpinArgs = {
-            'from_': 1, 'to': 1e10, 'increment': 1, 'validate': 'focusout'
-        }
+        intSpinArgs = {'from_': 1, 'to': 1e10, 'increment': 1, 'validate': 'focusout'}
+        floatSpinArgs = {'from_': 0, 'to': 1e10, 'increment': 0.1, 'validate': 'focusout'}
+        labelArgs = {'sticky': 'e', 'padx': (0, 8)}
+        entryArgs = {'sticky': 'ew', 'pady': 4}
 
-        Label(self, text='nseg').grid(row=1, column=0)
+        Label(self, text='nseg').grid(row=1, **labelArgs)
         self.nsegVar = IntVar(value=1)
         nsegEntry = Spinbox(self, textvariable=self.nsegVar, **intSpinArgs)
-        nsegEntry.grid(row=1, column=1, columnspan=2)
+        nsegEntry.grid(row=1, column=1, columnspan=2, **entryArgs)
         nsegEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
         addIntValidation(nsegEntry, from_=1, to=32767)
 
-        floatSpinArgs = {
-            'from_': 0, 'to': 1e10, 'increment': 0.1, 'validate': 'focusout'
-        }
-
-        Label(self, text='L').grid(row=2, column=0)
+        Label(self, text='L').grid(row=2, **labelArgs)
         self.lengthVar = DoubleVar(value=1.0)
         lengthEntry = Spinbox(self, textvariable=self.lengthVar, **floatSpinArgs)
-        lengthEntry.grid(row=2, column=1, columnspan=2)
+        lengthEntry.grid(row=2, column=1, columnspan=2, **entryArgs)
         lengthEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
         addFloatValidation(lengthEntry, from_=1e-9)
 
-        Label(self, text='diam').grid(row=3, column=0)
+        Label(self, text='diam').grid(row=3, **labelArgs)
         self.diamVar = DoubleVar(value=1.0)
         diamEntry = Spinbox(self, textvariable=self.diamVar, **floatSpinArgs)
-        diamEntry.grid(row=3, column=1, columnspan=2)
+        diamEntry.grid(row=3, column=1, columnspan=2, **entryArgs)
         diamEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
         addFloatValidation(diamEntry, from_=1e-9)
 
-        Label(self, text='parent').grid(row=4, column=0)
+        Label(self, text='parent').grid(row=4, **labelArgs)
         self.endMenu = Combobox(self, values=[0, 1], width=1, state="readonly")
         self.endMenu.current(0)
-        self.endMenu.grid(row=4, column=1, sticky='ew')
+        self.endMenu.grid(row=4, column=1, padx=(0, 8), **entryArgs)
         self.endMenu.bind('<<ComboboxSelected>>', lambda e: self.saveCurrentSection())
         self.parentMenu = Combobox(self, values=[''], width=10, state="readonly")
-        self.parentMenu.grid(row=4, column=2, sticky='ew')
+        self.parentMenu.grid(row=4, column=2, **entryArgs)
         self.parentMenu.bind('<<ComboboxSelected>>', lambda e: self.saveCurrentSection())
 
-        Label(self, text='mechanism').grid(row=5, column=0)
+        Label(self, text='mechanism').grid(row=5, **labelArgs)
         self.mechMenu = Combobox(self, values=['', 'hh', 'pas'], state="readonly")
-        self.mechMenu.grid(row=5, column=1, columnspan=2, sticky='ew')
+        self.mechMenu.grid(row=5, column=1, columnspan=2, **entryArgs)
 
     def refreshView(self):
         """

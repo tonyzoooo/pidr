@@ -15,8 +15,6 @@ class OpenHocView(Frame):
         self.model = model
         self.root = root
 
-        titleLabel = Label(self, text='Extracellular potential simulation')
-        titleLabel.pack()
         openHocButton = Button(self, text='Open .hoc', command=self._openFile)
         openHocButton.pack()
 
