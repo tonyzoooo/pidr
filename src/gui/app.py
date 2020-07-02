@@ -9,13 +9,15 @@ Created on Tue May  5 21:54:28 2020
 from tkinter import *
 from tkinter.ttk import *
 
+import matplotlib.pyplot as plt
 from ttkthemes import ThemedTk
 
+import lfpy_simulation
 from config_view import ConfigView
-from open_hoc_view import OpenHocView
-from sections_view import SectionsView
-from plot_view import PlotView
 from model import AppModel
+from open_hoc_view import OpenHocView
+from plot_view import PlotView
+from sections_view import SectionsView
 
 
 class App(Frame):
@@ -46,14 +48,40 @@ class App(Frame):
         self.openHocView = OpenHocView(root, model)
         self.openHocView.grid(row=1, column=0, **pad)
 
-        debugButton = Button(root, text='debug', command=self.debugCommand)
-        debugButton.grid(row=1, column=1, **pad)
+        ballstickButton = Button(root, text='fill ball & stick', command=self.fillBallStick)
+        ballstickButton.grid(row=1, column=1, **pad)
 
-    def debugCommand(self):
-        print('debug')
+        cellButton = Button(root, text='create LFPy Cell', command=self.createCell)
+        cellButton.grid(row=1, column=2, **pad)
+
+    def createCell(self):
         cell = self.model.createLFPyCell()
-        print(cell)
-        pass
+        fig = plt.figure('Cell')
+        lfpy_simulation.plotNeuron(cell=cell, fig=fig, electrode=None)
+        plt.show()
+
+    def fillBallStick(self):
+        self.model.tryAddSection('soma')
+        self.model.tryAddSection('axon')
+        self.model.tryAddSection('dend')
+        soma = self.model.getSection('soma')
+        axon = self.model.getSection('axon')
+        dend = self.model.getSection('dend')
+        soma.nseg = 1
+        soma.L = 25
+        soma.diam = 25
+        soma.insert('hh')
+        axon.nseg = 100
+        axon.L = 1000
+        axon.diam = 2
+        axon.insert('hh')
+        dend.nseg = 5
+        dend.L = 50
+        dend.diam = 2
+        dend.insert('pas')
+        axon.connect(soma(1), 0)
+        dend.connect(soma(0), 1)
+        self.sectionsView.refreshView()
 
     @staticmethod
     def launch():

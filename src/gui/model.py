@@ -71,8 +71,7 @@ class AppModel:
 
     @staticmethod
     def simpleName(section: h.Section) -> str:
-        parts = section.name().split('.')
-        return parts[len(parts) - 1]
+        return section.name().split('.')[-1]
 
     @staticmethod
     def getMechanism(section: h.Section) -> Optional[str]:
@@ -122,9 +121,6 @@ class AppModel:
         for s in self.sections:
             sectionList.append(s)
 
-        for s in sectionList:
-            print(s.name())
-
         cell_parameters = {
             'morphology': sectionList,
             'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
@@ -137,6 +133,7 @@ class AppModel:
             'tstop': 20.,  # Stop time for simulation > 0 ms
             'nsegs_method': 'lambda_f',  # spatial discretization method
             'lambda_f': 100.,  # frequency where length constants are computed
+            'delete_sections': False,
             'verbose': True
         }
         return LFPy.Cell(**cell_parameters)
