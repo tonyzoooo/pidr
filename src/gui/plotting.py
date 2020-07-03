@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import tkinter as tk
+
 import matplotlib.pyplot as plt
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-import tkinter as tk
-from neuron import h
+from mpl_toolkits.mplot3d import Axes3D
+
 
 def defCylinder(x0, x1, diam):
     """
@@ -134,7 +135,7 @@ def plot3DCell(sectionlist):
     canvas.draw()
 
     nrn_col = plt.get_cmap('Spectral')
-    ax = fig.add_subplot(111, projection='3d')
+    ax = Axes3D(fig)  # fig.add_subplot(111, projection='3d')
     max_range = 0
     c=0
     x, y, z = [], [], []

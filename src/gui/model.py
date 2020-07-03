@@ -116,11 +116,15 @@ class AppModel:
         self.hocObject = h
         h.define_shape()
 
-    def createLFPyCell(self) -> LFPy.Cell:
+    def toSectionList(self) -> h.SectionList:
         sectionList = h.SectionList()
         for s in self.sections:
             sectionList.append(s)
+        h.define_shape()
+        return sectionList
 
+    def toLFPyCell(self) -> LFPy.Cell:
+        sectionList = self.toSectionList()
         cell_parameters = {
             'morphology': sectionList,
             'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
