@@ -1,221 +1,226 @@
+import LFPy
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import pi
 from numpy.linalg import norm
 
 import util
-from app import App
 from hhrun import hhrun
 from lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulation
 from morphofiltd import morphofiltd
 
-# -----------------------------------------------------------
-# HH (Hodgkin–Huxley model)
-# -----------------------------------------------------------
 
-inmvm = 3000     # index max on Vm in LFPy (3000 for synchronisation)
-lVLFPy = 8000    # signal length in LFPy
-dt = 10 ** (-3)  # in ms
-Nt = 2 ** 15
-D = Nt * dt
-t = np.arange(dt, D + dt, dt) - dt
-n = len(t)
+def executeDemo(
+        filename: str = 'resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc',
+        cell: LFPy.Cell = None
+):
+    # -----------------------------------------------------------
+    # HH (Hodgkin–Huxley model)
+    # -----------------------------------------------------------
 
-fe = 1 / dt
-f = np.arange(0, fe / 2, fe / Nt)
+    inmvm = 3000  # index max on Vm in LFPy (3000 for synchronisation)
+    lVLFPy = 8000  # signal length in LFPy
+    dt = 10 ** (-3)  # in ms
+    Nt = 2 ** 15
+    D = Nt * dt
+    t = np.arange(dt, D + dt, dt) - dt
 
-I = (
-    (np.heaviside(t - 1, 1 / 2) - np.heaviside(t - 31, 1 / 2))
-    * 0.044 / (2 * pi * 12.5 * 25) * 10 ** 8 * 10 ** -3
-    # * 5.093 # 0.15/(pi*12.5*12.5*2+2*pi*12.5*25)*10**8
-)
-icur = 1
+    fe = 1 / dt
+    f = np.arange(0, fe / 2, fe / Nt)
 
-# pot membrane, proportional to ion channels electric current
-# (http://www.bem.fi/book/03/03.htm, 3.14)
-[Vm, m, n, h, INa, IK, Il] = hhrun(I, t)
+    I = (
+            (np.heaviside(t - 1, 1 / 2) - np.heaviside(t - 31, 1 / 2))
+            * 0.044 / (2 * pi * 12.5 * 25) * 10 ** 8 * 10 ** -3
+        # * 5.093 # 0.15/(pi*12.5*12.5*2+2*pi*12.5*25)*10**8
+    )
+    icur = 1
 
-Im = (INa + IK + Il) * (2 * pi * 12.5 * 25) / 10 ** 8 * 10 ** 3
-inMVm = np.argmax(Vm)
-MVm = Vm[inMVm]
+    # pot membrane, proportional to ion channels electric current
+    # (http://www.bem.fi/book/03/03.htm, 3.14)
+    [Vm, m, n, h, INa, IK, Il] = hhrun(I, t)
 
-# -----------------------------------------------------------
-# BS neuron morphology
-# -----------------------------------------------------------
+    Im = (INa + IK + Il) * (2 * pi * 12.5 * 25) / 10 ** 8 * 10 ** 3
+    inMVm = np.argmax(Vm)
+    MVm = Vm[inMVm]
 
-SL = 25     # soma length (cylinder with the same diameter)
+    # -----------------------------------------------------------
+    # BS neuron morphology
+    # -----------------------------------------------------------
 
-LA = 1000   # axon length
-DA = 2      # axon diameter
+    SL = 25  # soma length (cylinder with the same diameter)
 
-LD = 200    # dendrite length
-DD = 2      # dendrite diameter
-phi = pi/2  # angle avec Oz
-theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
+    LA = 1000  # axon length
+    DA = 2  # axon diameter
 
-# -----------------------------------------------------------
-# load LFPy simulation result
-# -----------------------------------------------------------
+    LD = 200  # dendrite length
+    DD = 2  # dendrite diameter
+    phi = pi / 2  # angle avec Oz
+    theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
 
-appModel = App.launch()
+    # -----------------------------------------------------------
+    # load LFPy simulation result
+    # -----------------------------------------------------------
 
-result = runLfpySimulation(appModel.filename)
+    if cell is not None:
+        result = runLfpySimulation(lfpyCell=cell)
+    else:
+        result = runLfpySimulation(filename=filename)
 
-Vlfpy = result.Vlfpy
-Vmlfpy = result.Vmlfpy
-Imlfpy = result.Imlfpy
+    Vlfpy = result.Vlfpy
+    Vmlfpy = result.Vmlfpy
+    Imlfpy = result.Imlfpy
 
-cell = result.cell
-timeind = result.timeind
-stimulus = result.stimulus
-meshgrid_electrodes = result.meshgrid_electrodes
+    cell = result.cell
+    timeind = result.timeind
+    stimulus = result.stimulus
+    meshgrid_electrodes = result.meshgrid_electrodes
 
-# -----------------------------------------------------------
-# figure check
-# -----------------------------------------------------------
+    # -----------------------------------------------------------
+    # figure check
+    # -----------------------------------------------------------
 
-values = np.arange(inMVm-inmvm, inMVm-inmvm+lVLFPy)
+    values = np.arange(inMVm - inmvm, inMVm - inmvm + lVLFPy)
 
-fig = plt.figure('Simulation result')
+    plt.figure('Simulation result')
+
+    plt.subplot(2, 1, 1)
+    plt.plot(Vm[values], label="Tran")
+    plt.plot(Vmlfpy, label="LFPy")
+    plt.xlabel("Time (ms)")
+    plt.ylabel("Membrane voltage (mV)")
+    plt.legend()
+
+    plt.subplot(2, 1, 2)
+    plt.plot(Im[values], label='Tran')
+    plt.plot(Imlfpy, label="LFPy")
+    plt.xlabel("Time (ms)")
+    plt.ylabel("Current (nA)")
+    plt.legend()
+
+    # -----------------------------------------------------------
+    # filter parameters
+    # -----------------------------------------------------------
+
+    dk = 10  # axonal spatial sampling(~ nb of segments)
+
+    order = int(LA / dk + 1)
+    r0 = np.array([0, 0, 0])  # soma position
+    r1 = np.array([SL / 2, 0, 0])  # axon start position
+    # axon stop position (start of the last segment)
+    rN = np.array([SL / 2 + LA - dk, 0, 0])
+    rd = norm(r1 - r0) * np.array([
+        np.sin(phi) * np.cos(theta),
+        np.sin(phi) * np.sin(theta),
+        np.cos(phi)
+    ])  # dendrite end position, normalized
+    Cs = 2  # somatic equivalent dipole amplitude
+    taus = 23  # subsampling of the membrane current dk/taus = speed v)
+
+    # -----------------------------------------------------------
+    # electrodes
+    # -----------------------------------------------------------
+
+    X = np.arange(-250, 1250 + 125, 125)
+    Y = np.arange(250, 50 - 50, -50)
+    Z = 0
+
+    elpos = util.reshapeMeshgrid(np.meshgrid(X, Y, Z)).transpose()
+
+    # -----------------------------------------------------------
+    # simulation
+    # -----------------------------------------------------------
+
+    w = morphofiltd(elpos, order, r0, r1, rN, rd, Cs)
+    wup = util.upsample(w.transpose(), taus).transpose()
+
+    Vel = np.zeros((len(w), len(Im)))
+
+    for iel in range(len(w)):
+        Vel[iel] = np.convolve(Im, wup[iel], 'same')
+
+    # cut
+    commonPart = inMVm - inmvm - int(np.fix(wup.shape[1] / 2))
+    rangeStart = commonPart + 1
+    rangeEnd = commonPart + lVLFPy
+    intervVm = np.arange(rangeStart, rangeEnd + 1)
+    Vel2 = Vel[:, intervVm]
+
+    # normalize
+    elsync = 55
+    Vel2 = Vel2 / norm(Vel2[elsync, :]) * norm(Vlfpy[:, elsync])
+
+    # -----------------------------------------------------------
+    # plot grid
+    # -----------------------------------------------------------
+
+    cc = np.zeros((1, elpos.shape[0]))
+    t = np.arange(0, dt * Vel2.shape[1], dt)
+
+    fig = plt.figure('Simulation & Neuron Morphology')
+    gs = fig.add_gridspec(5, 13)
+
+    plotNeuron(cell, meshgrid_electrodes, fig)
+
+    cmap = plt.cm.get_cmap('jet')
+    line_labels = ["Cell", "Tran", "LFPy"]
+    line_obj = []
+    ifil = 0
+
+    # fix LFPy imprecision
+    if Vlfpy.shape[0] != 8000:
+        Vlfpy = Vlfpy[:8000, :]
+
+    for i in range(5):
+        for j in range(13):
+            ax = fig.add_subplot(gs[i, j])
+            ax.axis('off')
+            l1 = ax.plot(t, Vel2[ifil] - Vel2[ifil, 0], linewidth=2)[0]
+            l2 = ax.plot(t, Vlfpy[:, ifil] - Vlfpy[0, ifil], linewidth=2)[0]
+            if len(line_obj) < 2:
+                line_obj.append(l1)
+                line_obj.append(l2)
+            res = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
+            if res <= 0:
+                cc[0, ifil] = 0
+            else:
+                cc[0, ifil] = res
+            rgba = cmap(cc[0, ifil])
+            color = np.array([[rgba[n] for n in range(3)]])
+            plt.scatter(4, -2e-3, 50, color, 'o', cmap)
+            plt.ylim(np.array([-5, 5]) * 1e-3)
+            if i == 0:
+                plt.text(1, 6e-3, rf'{j * 125 - 250}$\mu$m')
+            if j == 0:
+                plt.text(-10, -2e-3, rf'{-i * 50 + 250}$\mu$m')
+            ifil += 1
+
+    fig.legend(
+        handles=line_obj,  # The line objects
+        labels=line_labels,  # The labels for each line
+        loc="lower left",  # Position of legend
+        bbox_to_anchor=(0.1, 0),  # Anchor
+        borderaxespad=0.1,  # Small spacing around legend box
+    )
+
+    plt.subplots_adjust(top=0.90, bottom=0.32)
+    pos = fig.add_axes([0.75, 0.1, 0.15, 0.03])
+    plt.colorbar(plt.cm.ScalarMappable(cmap=cmap),
+                 cax=pos, orientation='horizontal')
+
+    # plt.show()
+
+    print('Mean correlation = ' + '{0:.2f}'.format(np.mean(cc)))
+    print('Min correlation = ' + '{0:.2f}'.format(np.min(cc)))
+    print('Max correlation = ' + '{0:.2f}'.format(np.max(cc)))
+
+    # -----------------------------------------------------------
+    # plot stimulation
+    # -----------------------------------------------------------
+
+    plotStimulation(cell, timeind, stimulus, meshgrid_electrodes)
+
+    plt.show()
 
 
-plt.subplot(2, 1, 1)
-plt.plot(Vm[values], label="Tran")
-plt.plot(Vmlfpy, label="LFPy")
-plt.xlabel("Time (ms)")
-plt.ylabel("Membrane voltage (mV)")
-plt.legend()
-
-
-plt.subplot(2, 1, 2)
-plt.plot(Im[values], label='Tran')
-plt.plot(Imlfpy, label="LFPy")
-plt.xlabel("Time (ms)")
-plt.ylabel("Current (nA)")
-plt.legend()
-
-# plt.show()
-
-# -----------------------------------------------------------
-# filter parameters
-# -----------------------------------------------------------
-
-dk = 10     # axonal spatial sampling(~ nb of segments)
-
-order = int(LA/dk+1)
-r0 = np.array([0, 0, 0])           # soma position
-r1 = np.array([SL/2, 0, 0])        # axon start position
-# axon stop position (start of the last segment)
-rN = np.array([SL/2+LA-dk, 0, 0])
-rd = norm(r1-r0) * np.array([
-    np.sin(phi) * np.cos(theta),
-    np.sin(phi) * np.sin(theta),
-    np.cos(phi)
-])          # dendrite end position, normalized
-Cs = 2      # somatic equivalent dipole amplitude
-taus = 23   # subsampling of the membrane current dk/taus = speed v)
-
-# -----------------------------------------------------------
-# electrodes
-# -----------------------------------------------------------
-
-X = np.arange(-250, 1250+125, 125)
-Y = np.arange(250, 50-50, -50)
-Z = 0
-
-elpos = util.reshapeMeshgrid(np.meshgrid(X, Y, Z)).transpose()
-
-# -----------------------------------------------------------
-# simulation
-# -----------------------------------------------------------
-
-w = morphofiltd(elpos, order, r0, r1, rN, rd, Cs)
-wup = util.upsample(w.transpose(), taus).transpose()
-
-Vel = np.zeros((len(w), len(Im)))
-
-for iel in range(len(w)):
-    Vel[iel] = np.convolve(Im, wup[iel], 'same')
-
-# cut
-commonPart = inMVm - inmvm - int(np.fix(wup.shape[1]/2))
-rangeStart = commonPart + 1
-rangeEnd = commonPart + lVLFPy
-intervVm = np.arange(rangeStart, rangeEnd + 1)
-Vel2 = Vel[:, intervVm]
-
-# normalize
-elsync = 55
-Vel2 = Vel2 / norm(Vel2[elsync, :]) * norm(Vlfpy[:, elsync])
-
-# -----------------------------------------------------------
-# plot grid
-# -----------------------------------------------------------
-
-cc = np.zeros((1, elpos.shape[0]))
-t = np.arange(0, dt * Vel2.shape[1], dt)
-
-fig = plt.figure('Simulation & Neuron Morphology')
-gs = fig.add_gridspec(5, 13)
-
-plotNeuron(cell, meshgrid_electrodes, fig)
-
-cmap = plt.cm.get_cmap('jet')
-line_labels = ["Cell", "Tran", "LFPy"]
-line_obj = []
-ifil = 0
-
-# fix LFPy imprecision
-if Vlfpy.shape[0] != 8000:
-    Vlfpy = Vlfpy[:8000, :]
-
-for i in range(5):
-    for j in range(13):
-        ax = fig.add_subplot(gs[i, j])
-        ax.axis('off')
-        l1 = ax.plot(t, Vel2[ifil] - Vel2[ifil, 0], linewidth=2)[0]
-        l2 = ax.plot(t, Vlfpy[:, ifil] - Vlfpy[0, ifil], linewidth=2)[0]
-        if len(line_obj) < 2:
-            line_obj.append(l1)
-            line_obj.append(l2)
-        res = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
-        if res <= 0:
-            cc[0, ifil] = 0
-        else:
-            cc[0, ifil] = res
-        rgba = cmap(cc[0, ifil])
-        color = np.array([[rgba[n] for n in range(3)]])
-        plt.scatter(4, -2e-3, 50, color, 'o', cmap)
-        plt.ylim(np.array([-5, 5]) * 1e-3)
-        if i == 0:
-            plt.text(1, 6e-3, rf'{j * 125 - 250}$\mu$m')
-        if j == 0:
-            plt.text(-10, -2e-3, rf'{-i * 50 + 250}$\mu$m')
-        ifil += 1
-
-fig.legend(
-    handles=line_obj,           # The line objects
-    labels=line_labels,         # The labels for each line
-    loc="lower left",           # Position of legend
-    bbox_to_anchor=(0.1, 0),    # Anchor
-    borderaxespad=0.1,          # Small spacing around legend box
-)
-
-plt.subplots_adjust(top=0.90, bottom=0.32)
-pos = fig.add_axes([0.75, 0.1, 0.15, 0.03])
-plt.colorbar(plt.cm.ScalarMappable(cmap=cmap),
-             cax=pos, orientation='horizontal')
-
-# plt.show()
-
-print('Mean correlation = ' + '{0:.2f}'.format(np.mean(cc)))
-print('Min correlation = ' + '{0:.2f}'.format(np.min(cc)))
-print('Max correlation = ' + '{0:.2f}'.format(np.max(cc)))
-
-# -----------------------------------------------------------
-# plot stimulation
-# -----------------------------------------------------------
-
-plotStimulation(cell, timeind, stimulus, meshgrid_electrodes)
-
-plt.show()
+if __name__ == '__main__':
+    executeDemo()

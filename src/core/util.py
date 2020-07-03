@@ -1,9 +1,4 @@
-import io
-
-import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.image import imread
-from PIL import Image
 
 
 def upsample(arr: np.array, n: int) -> np.array:
@@ -12,7 +7,7 @@ def upsample(arr: np.array, n: int) -> np.array:
     if arr.ndim == 2:
         rows = arr.shape[0]
         cols = arr.shape[1]
-        result = np.empty((rows*n, cols), dtype=arr.dtype)
+        result = np.empty((rows * n, cols), dtype=arr.dtype)
         for i in range(rows):
             result[i * n] = arr[i]
             for j in range(1, n):

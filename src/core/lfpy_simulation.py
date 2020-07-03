@@ -1,7 +1,6 @@
 import LFPy
 import matplotlib.pyplot as plt
 import numpy as np
-import pylab as pl
 from matplotlib.collections import PolyCollection
 
 
@@ -45,26 +44,31 @@ def plotNeuron(cell, electrode, fig):
     return fig
 
 
-def runLfpySimulation(filename):
+def runLfpySimulation(filename: str = None, lfpyCell: LFPy.Cell = None):
     # =============================================================================
     # ================================= MORPHOLOGY ================================
     # =============================================================================
 
     st = 1 / 1000
-    cell_parameters = {
-        'morphology': filename,
-        'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
-        'passive': True,  # Passive mechanisms are initialized if True
-        'passive_parameters': {'g_pas': 1. / 30000, 'e_pas': -65},
-        'cm': 1.0,  # Membrane capacitance
-        'Ra': 150,  # Axial resistance
-        'dt': st,  # simulation timestep
-        'tstart': 0.,  # Initialization time for simulation <= 0 ms
-        'tstop': 20.,  # Stop time for simulation > 0 ms
-        'nsegs_method': 'lambda_f',  # spatial discretization method
-        'lambda_f': 100.,  # frequency where length constants are computed
-    }
-    cell = LFPy.Cell(**cell_parameters)
+    if filename is not None:
+        cell_parameters = {
+            'morphology': filename,
+            'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
+            'passive': True,  # Passive mechanisms are initialized if True
+            'passive_parameters': {'g_pas': 1. / 30000, 'e_pas': -65},
+            'cm': 1.0,  # Membrane capacitance
+            'Ra': 150,  # Axial resistance
+            'dt': st,  # simulation timestep
+            'tstart': 0.,  # Initialization time for simulation <= 0 ms
+            'tstop': 20.,  # Stop time for simulation > 0 ms
+            'nsegs_method': 'lambda_f',  # spatial discretization method
+            'lambda_f': 100.,  # frequency where length constants are computed
+        }
+        cell = LFPy.Cell(**cell_parameters)
+    elif lfpyCell is not None:
+        cell = lfpyCell
+    else:
+        raise Exception('You must specify a filename or a cell')
 
     # =============================================================================
     # ================================= stimulation parameters================================
@@ -167,7 +171,7 @@ def plotStimulation(cell, timeind, stimulus, meshgrid_electrodes):
 
     # ================= STIMULATION PLOT ==========================================
     plt.subplot(411)
-    pl.plot(cell.tvec[timeind], stimulus.i[timeind])
+    plt.plot(cell.tvec[timeind], stimulus.i[timeind])
     plt.axis('tight')
     plt.ylabel(r'$I_s$ (nA)', va='center')
     plt.grid(True)
