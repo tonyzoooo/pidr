@@ -9,16 +9,19 @@ Created on Tue May  5 21:54:28 2020
 from tkinter import *
 from tkinter.ttk import *
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from ttkthemes import ThemedTk
 
-import lfpy_simulation
+import src.core.demo as demo
 import plotting
 from config_view import ConfigView
 from model import AppModel
 from open_hoc_view import OpenHocView
 from plot_view import PlotView
 from sections_view import SectionsView
+
+
+# from src.core.lfpy_simulation import plotNeuron
 
 
 class App(Frame):
@@ -52,16 +55,25 @@ class App(Frame):
         ballstickButton = Button(root, text='Create ball & stick', command=self.fillBallStick)
         ballstickButton.grid(row=1, column=1, **pad)
 
-        cellButton = Button(root, text='Show cell', command=self.createCell)
+        cellButton = Button(root, text='Show cell', command=self.showCell)
         cellButton.grid(row=1, column=2, **pad)
 
-    def createCell(self):
-        sectionList = self.model.toSectionList()
-        plotting.plot3DCell(sectionList)
-        # cell = self.model.toLFPyCell()
-        # fig = plt.figure('Cell')
-        # lfpy_simulation.plotNeuron(cell=cell, fig=fig, electrode=None)
-        # plt.show()
+        simuButton = Button(root, text='Simulation', command=self.doSimulation)
+        simuButton.grid(row=2, column=2, **pad)
+
+    def doSimulation(self):
+        if self.model.hasSections():
+            cell = self.model.toLFPyCell()
+            demo.executeDemo(cell=cell)
+
+    def showCell(self):
+        if self.model.hasSections():
+            sectionList = self.model.toSectionList()
+            plotting.plot3DCell(sectionList)
+            # cell = self.model.toLFPyCell()
+            # fig = plt.figure('Cell')
+            # plotNeuron(cell=cell, fig=fig, electrode=None)
+            # plt.show()
 
     def fillBallStick(self):
         self.model.tryAddSection('soma')

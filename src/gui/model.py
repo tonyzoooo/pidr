@@ -39,7 +39,7 @@ class AppModel:
             print(f"name '{name}' is invalid")
             return False
 
-        section = h.Section(name=name, cell='CurrentCell')
+        section = h.Section(name=name, cell='cell')
         self.sections.append(section)
         return True
 
@@ -64,6 +64,9 @@ class AppModel:
                 if sec.parentseg() is None or sec.orientation() != 1:
                     result.append((sec, 1))
         return result
+
+    def hasSections(self):
+        return len(self.sections) != 0
 
     @property
     def sectionNames(self) -> List[str]:
@@ -138,6 +141,6 @@ class AppModel:
             'nsegs_method': 'lambda_f',  # spatial discretization method
             'lambda_f': 100.,  # frequency where length constants are computed
             'delete_sections': False,
-            'verbose': True
+            # 'verbose': True
         }
         return LFPy.Cell(**cell_parameters)
