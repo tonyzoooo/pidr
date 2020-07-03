@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from ttkthemes import ThemedTk
 
 import lfpy_simulation
+import plotting
 from config_view import ConfigView
 from model import AppModel
 from open_hoc_view import OpenHocView
@@ -48,17 +49,19 @@ class App(Frame):
         self.openHocView = OpenHocView(root, model)
         self.openHocView.grid(row=1, column=0, **pad)
 
-        ballstickButton = Button(root, text='fill ball & stick', command=self.fillBallStick)
+        ballstickButton = Button(root, text='Create ball & stick', command=self.fillBallStick)
         ballstickButton.grid(row=1, column=1, **pad)
 
-        cellButton = Button(root, text='create LFPy Cell', command=self.createCell)
+        cellButton = Button(root, text='Show cell', command=self.createCell)
         cellButton.grid(row=1, column=2, **pad)
 
     def createCell(self):
-        cell = self.model.createLFPyCell()
-        fig = plt.figure('Cell')
-        lfpy_simulation.plotNeuron(cell=cell, fig=fig, electrode=None)
-        plt.show()
+        sectionList = self.model.toSectionList()
+        plotting.plot3DCell(sectionList)
+        # cell = self.model.toLFPyCell()
+        # fig = plt.figure('Cell')
+        # lfpy_simulation.plotNeuron(cell=cell, fig=fig, electrode=None)
+        # plt.show()
 
     def fillBallStick(self):
         self.model.tryAddSection('soma')
