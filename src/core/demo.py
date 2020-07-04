@@ -4,10 +4,10 @@ import numpy as np
 from numpy import pi
 from numpy.linalg import norm
 
-import util
-from hhrun import hhrun
-from lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulation
-from morphofiltd import morphofiltd
+from src.core import util
+from src.core.hhrun import hhrun
+from src.core.lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulation
+from src.core.morphofiltd import morphofiltd
 
 
 def executeDemo(

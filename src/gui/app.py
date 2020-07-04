@@ -9,19 +9,15 @@ Created on Tue May  5 21:54:28 2020
 from tkinter import *
 from tkinter.ttk import *
 
-# import matplotlib.pyplot as plt
 from ttkthemes import ThemedTk
 
-import src.core.demo as demo
-import plotting
-from config_view import ConfigView
-from model import AppModel
-from open_hoc_view import OpenHocView
-from plot_view import PlotView
-from sections_view import SectionsView
-
-
-# from src.core.lfpy_simulation import plotNeuron
+from src.core import demo
+from src.gui import plotting
+from src.gui.config_view import ConfigView
+from src.gui.model import AppModel
+from src.gui.open_hoc_view import OpenHocView
+from src.gui.plot_view import PlotView
+from src.gui.sections_view import SectionsView
 
 
 class App(Frame):

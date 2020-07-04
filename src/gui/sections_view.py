@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter.ttk import *
 from typing import Optional
 
-from model import AppModel
+from src.gui.model import AppModel
 
 
 class SectionsView(Frame):
