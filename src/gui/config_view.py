@@ -4,8 +4,8 @@ from typing import Iterable, Tuple
 
 from neuron import h
 
-from model import AppModel
-from number_validation import safeFloat, addFloatValidation, addIntValidation, safeInt
+from src.gui.model import AppModel
+from src.gui.number_validation import safeFloat, addFloatValidation, addIntValidation, safeInt
 
 
 class ConfigView(Frame):
