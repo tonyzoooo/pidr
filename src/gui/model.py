@@ -3,10 +3,13 @@
 """
 @author: Loïc Bertrand
 """
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import LFPy
 from neuron import h
+from neuron import nrn
+
+ParentConnection = Tuple[int, nrn.Section, int]
 
 
 class AppModel:
@@ -43,19 +46,32 @@ class AppModel:
         self.sections.append(section)
         return True
 
-    def getSection(self, name: str) -> Optional[h.Section]:
+    def getSection(self, name: str) -> Optional[nrn.Section]:
         for sec in self.sections:
             if name == AppModel.simpleName(sec):
                 return sec
         return None
 
-    def setParent(self, child: h.Section, cEnd: int, parent: h.Section, pEnd: int):
-        # TODO: Disconnect actual parent (if present) before connecting another
+    @staticmethod
+    def setParent(child: nrn.Section, parent: Optional[ParentConnection]):
         h.disconnect(child)
-        print(f"connect({child}, {cEnd}, {parent}, {pEnd})")
-        child.connect(parent(pEnd), cEnd)  # May exit(1) if wrong connection
+        if parent is None:
+            return
+        childEnd, parent, parentEnd = parent
+        child.connect(parent(parentEnd), childEnd)  # May exit(1) if wrong connection
 
-    def getPossibleConnections(self, section: h.Section):
+    @staticmethod
+    def getParent(child: nrn.Section) -> Optional[ParentConnection]:
+        parentSeg = child.parentseg()
+        if parentSeg is None:
+            return None
+        else:
+            childEnd = int(child.orientation())
+            parent = parentSeg.sec
+            parentEnd = int(parentSeg.x)
+            return childEnd, parent, parentEnd
+
+    def getPossibleConnections(self, section: nrn.Section):
         result = []
         for sec in self.sections:
             if sec != section:
@@ -73,18 +89,18 @@ class AppModel:
         return [AppModel.simpleName(s) for s in self.sections]
 
     @staticmethod
-    def simpleName(section: h.Section) -> str:
-        return section.name().split('.')[-1]
+    def simpleName(section: nrn.Section) -> str:
+        return section.hname().split('.')[-1]
 
     @staticmethod
-    def getMechanism(section: h.Section) -> Optional[str]:
+    def getMechanism(section: nrn.Section) -> Optional[str]:
         firstSegment = next(iter(section))
         return 'hh' if hasattr(firstSegment, 'hh') \
             else 'pas' if hasattr(firstSegment, 'pas') \
             else None
 
     @staticmethod
-    def setMechanism(section: h.Section, mech: Optional[str]):
+    def setMechanism(section: nrn.Section, mech: Optional[str]):
         actual = AppModel.getMechanism(section)
         if mech == actual:
             return
@@ -99,6 +115,10 @@ class AppModel:
             print('name:', AppModel.simpleName(section))
             print('orientation:', section.orientation())
             print('parentseg:', section.parentseg())
+            print('nseg:', section.nseg)
+            print('diam:', section.diam)
+            print('L:', section.L)
+            print('mechanism:', AppModel.getMechanism(section))
         print('----------------')
 
     # another getter for plotting
@@ -128,6 +148,7 @@ class AppModel:
 
     def toLFPyCell(self) -> LFPy.Cell:
         sectionList = self.toSectionList()
+        sectionListCopy = AppModel.cloneSectionList(sectionList)
         cell_parameters = {
             'morphology': sectionList,
             'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
@@ -141,6 +162,35 @@ class AppModel:
             'nsegs_method': 'lambda_f',  # spatial discretization method
             'lambda_f': 100.,  # frequency where length constants are computed
             'delete_sections': False,
-            # 'verbose': True
+            'verbose': True
         }
         return LFPy.Cell(**cell_parameters)
+
+    @staticmethod
+    def cloneSectionList(sectionList: h.SectionList) -> h.SectionList:
+        clonedList = h.SectionList()
+        for sec in sectionList:
+            clonedList.append(AppModel.cloneSection(sec))
+        for clonedSec, sec in zip(clonedList, sectionList):
+            parentConnection = AppModel.getParent(sec)
+            if parentConnection is not None:
+                childEnd, parent, parentEnd = parentConnection
+                clonedParent = _findSectionSameName(clonedList, parent)
+                AppModel.setParent(clonedSec, (childEnd, clonedParent, parentEnd))
+        return clonedList
+
+    @staticmethod
+    def cloneSection(section: nrn.Section) -> nrn.Section:
+        clone = h.Section()
+        clone.nseg = section.nseg
+        clone.diam = section.diam
+        clone.L = section.L
+        AppModel.setMechanism(clone, AppModel.getMechanism(section))
+        return clone
+
+
+def _findSectionSameName(secList: h.SectionList, section: nrn.Section) -> Optional[nrn.Section]:
+    for s in secList:
+        if s.hname() == section.hname():
+            return s
+    return None
