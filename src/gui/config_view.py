@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter.ttk import *
 from typing import Iterable, Tuple
 
-from neuron import h
+from neuron import nrn
 
 from src.gui.model import AppModel
 from src.gui.number_validation import safeFloat, addFloatValidation, addIntValidation, safeInt
@@ -82,19 +82,15 @@ class ConfigView(Frame):
             values.append(f'{name}({end})')
         _setComboboxValues(self.parentMenu, values)
 
-        # get parent segment of current section
-        parentSeg = section.parentseg()
-        if parentSeg is None:
+        parentConnection = AppModel.getParent(section)
+        if parentConnection is None:
             self.endMenu.current(0)  # sets first (default) index
             self.parentMenu.set('')
         else:
-            # refresh end index value
-            endIndex = int(section.orientation())
-            self.endMenu.set(endIndex)
-            # refresh parent value
-            parentName = AppModel.simpleName(parentSeg.sec)
-            index = int(parentSeg.x)
-            self.parentMenu.set(f'{parentName}({index})')
+            childEnd, parent, parentEnd = parentConnection
+            parentName = AppModel.simpleName(parent)
+            self.endMenu.set(childEnd)
+            self.parentMenu.set(f'{parentName}({parentEnd})')
 
         self.mechMenu.set(AppModel.getMechanism(section) or '')
 
@@ -110,15 +106,17 @@ class ConfigView(Frame):
         section.diam = safeFloat(self.diamVar.get, orElse=section.diam, from_=1e-9)
         section.L = safeFloat(self.lengthVar.get, orElse=section.L, from_=1e-9)
 
-        endIndex = int(self.endMenu.get())
         parentOption = self.parentMenu.get()
-        if parentOption != '':
-            (parent, n) = self._parseParentValue(parentOption)
-            self.model.setParent(section, endIndex, parent, n)
+        if parentOption == '':
+            AppModel.setParent(section, None)
+        else:
+            childEnd = int(self.endMenu.get())
+            parent, parentEnd = self._parseParentValue(parentOption)
+            AppModel.setParent(section, (childEnd, parent, parentEnd))
 
         AppModel.setMechanism(section, self.mechMenu.get() or None)
 
-    def _parseParentValue(self, option: str) -> Tuple[h.Section, int]:
+    def _parseParentValue(self, option: str) -> Tuple[nrn.Section, int]:
         [name, number] = option.split('(')
         section = self.model.getSection(name)
         n = int(number[0:-1])
