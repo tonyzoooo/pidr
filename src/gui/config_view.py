@@ -4,6 +4,7 @@ from typing import Iterable, Tuple
 
 from neuron import nrn
 
+from src.gui import section_util
 from src.gui.model import AppModel
 from src.gui.number_validation import safeFloat, addFloatValidation, addIntValidation, safeInt
 
@@ -78,21 +79,21 @@ class ConfigView(Frame):
 
         values = ['']
         for (parent, end) in self.model.getPossibleConnections(section):
-            name = AppModel.simpleName(parent)
+            name = section_util.simpleName(parent)
             values.append(f'{name}({end})')
         _setComboboxValues(self.parentMenu, values)
 
-        parentConnection = AppModel.getParent(section)
+        parentConnection = section_util.getParent(section)
         if parentConnection is None:
             self.endMenu.current(0)  # sets first (default) index
             self.parentMenu.set('')
         else:
             childEnd, parent, parentEnd = parentConnection
-            parentName = AppModel.simpleName(parent)
+            parentName = section_util.simpleName(parent)
             self.endMenu.set(childEnd)
             self.parentMenu.set(f'{parentName}({parentEnd})')
 
-        self.mechMenu.set(AppModel.getMechanism(section) or '')
+        self.mechMenu.set(section_util.getMechanism(section) or '')
 
     def saveCurrentSection(self):
         """
@@ -108,13 +109,13 @@ class ConfigView(Frame):
 
         parentOption = self.parentMenu.get()
         if parentOption == '':
-            AppModel.setParent(section, None)
+            section_util.setParent(section, None)
         else:
             childEnd = int(self.endMenu.get())
             parent, parentEnd = self._parseParentValue(parentOption)
-            AppModel.setParent(section, (childEnd, parent, parentEnd))
+            section_util.setParent(section, (childEnd, parent, parentEnd))
 
-        AppModel.setMechanism(section, self.mechMenu.get() or None)
+        section_util.setMechanism(section, self.mechMenu.get() or None)
 
     def _parseParentValue(self, option: str) -> Tuple[nrn.Section, int]:
         [name, number] = option.split('(')
@@ -127,4 +128,4 @@ def _setComboboxValues(combobox: Combobox, values: Iterable):
     valueBefore = combobox.get()
     combobox['values'] = values
     if valueBefore not in values:
-        combobox.set('')
+        combobox.current(0)  # select first element
