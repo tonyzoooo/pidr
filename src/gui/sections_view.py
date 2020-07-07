@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter.ttk import *
 from typing import Optional
 
+from src.gui import section_util
 from src.gui.model import AppModel
 
 
@@ -70,7 +71,7 @@ class SectionsView(Frame):
         """
         Gets the name of the selected section in the list, or None
         """
-        if len(self.model.sections) == 0:
+        if not self.model.hasSections():
             return None
 
         selected = self.sectionList.curselection()
@@ -85,8 +86,8 @@ class SectionsView(Frame):
         Refreshes the list of sections to reflect the model
         """
         self.sectionList.delete(0, 'end')
-        for sec in self.model.sections:
-            name = AppModel.simpleName(sec)
+        for sec in self.model.cell.sections:
+            name = section_util.simpleName(sec)
             self.sectionList.insert('end', name)
             self.sectionList.selection_set(0)
             self._manageSelection()
