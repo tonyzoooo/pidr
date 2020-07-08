@@ -8,11 +8,13 @@ from src.gui import section_util
 
 class CellModel:
     _instancesCount = 0
+    _lastInstanceCreated: Optional['CellModel'] = None
 
     def __init__(self):
         self.sections = []
         self.displayName = f'cell[{CellModel._instancesCount}]'
         CellModel._instancesCount += 1
+        CellModel._lastInstanceCreated = self
 
     def getSection(self, name: str) -> Optional[nrn.Section]:
         for sec in self.sections:
@@ -43,6 +45,7 @@ class CellModel:
 
     def toLFPyCell(self) -> LFPy.Cell:
         sectionList = self.clone().toSectionList()
+        print('Created SectionList with', sum(1 for _ in sectionList), 'sections')
         cell_parameters = {
             'morphology': sectionList,
             'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
@@ -56,7 +59,7 @@ class CellModel:
             'nsegs_method': 'lambda_f',  # spatial discretization method
             'lambda_f': 100.,  # frequency where length constants are computed
             'delete_sections': False,
-            'verbose': True
+            # 'verbose': True
         }
         return LFPy.Cell(**cell_parameters)
 
