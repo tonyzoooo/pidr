@@ -18,6 +18,8 @@ from src.gui.model import AppModel
 from src.gui.open_hoc_view import OpenHocView
 from src.gui.plot_view import PlotView
 from src.gui.sections_view import SectionsView
+#import lfpy_simulation
+
 
 
 class App(Frame):
