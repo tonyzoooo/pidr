@@ -12,14 +12,11 @@ from tkinter.ttk import *
 from ttkthemes import ThemedTk
 
 from src.core import demo
-from src.gui import plotting
 from src.gui.config_view import ConfigView
-from src.gui.model import AppModel
+from src.gui.model import AppModel, CellSource
 from src.gui.open_hoc_view import OpenHocView
 from src.gui.plot_view import PlotView
 from src.gui.sections_view import SectionsView
-#import lfpy_simulation
-
 
 
 class App(Frame):
@@ -29,49 +26,56 @@ class App(Frame):
         self.root = root
         self.model = model
 
-        root.geometry('600x400')
+        root.configure(padx=8, pady=8)
+        root.geometry('')  # auto-size
         root.title('Simulator :)')
         root.bind('<Escape>', lambda e: root.destroy())
         root.protocol("WM_DELETE_WINDOW", lambda: root.destroy())
 
-        pad = {'padx': (12, 0), 'pady': (12, 0)}
+        pad = {'padx': 8, 'pady': 8}
 
-        self.configView = ConfigView(root, model)
+        # Multitab holder
+        self.tabs = Notebook(root)
+        self.tabs.grid(row=0, column=0, rowspan=2)
+
+        # Ball & Stick builder tab
+        builderTab = Frame(self.tabs, padding=8)
+        self.sectionsView = SectionsView(builderTab, model)
+        self.sectionsView.grid(row=0, column=0, rowspan=2, **pad)
+        self.configView = ConfigView(builderTab, model)
         self.configView.grid(row=0, column=1, **pad)
+        ballstickButton = Button(builderTab, text='Create ball & stick', command=self.fillBallStick)
+        ballstickButton.grid(row=1, column=1, **pad)
+        self.tabs.add(builderTab, text='Cell builder')
 
-        self.sectionsView = SectionsView(root, model)
-        self.sectionsView.grid(row=0, column=0, **pad)
+        # Hoc file loader tab
+        hocFileTab = Frame(self.tabs, padding=8)
+        self.openHocView = OpenHocView(hocFileTab, model)
+        self.openHocView.grid(row=1, column=0, **pad)
+        self.tabs.add(hocFileTab, text='HOC loader')
+
+        # Plotting and simulation controls
+        self.plotView = PlotView(root, model)
+        self.plotView.grid(row=0, column=1, **pad)
+        simuButton = Button(root, text='Simulation', command=self.doSimulation)
+        simuButton.grid(row=1, column=1, **pad)
+
+        # Event handlers
         self.sectionsView.beforeSelection(self.configView.saveCurrentSection)
         self.sectionsView.afterSelection(self.configView.refreshView)
+        self.tabs.bind('<<NotebookTabChanged>>', self.onTabChanged)
 
-        self.plotView = PlotView(root, model)
-        self.plotView.grid(row=0, column=2, **pad)
-
-        self.openHocView = OpenHocView(root, model)
-        self.openHocView.grid(row=1, column=0, **pad)
-
-        ballstickButton = Button(root, text='Create ball & stick', command=self.fillBallStick)
-        ballstickButton.grid(row=1, column=1, **pad)
-
-        cellButton = Button(root, text='Show cell', command=self.showCell)
-        cellButton.grid(row=1, column=2, **pad)
-
-        simuButton = Button(root, text='Simulation', command=self.doSimulation)
-        simuButton.grid(row=2, column=2, **pad)
+    def onTabChanged(self, _):
+        index = self.tabs.index(self.tabs.select())
+        if index == 0:
+            self.model.cellSource = CellSource.BUILDER
+        elif index == 1:
+            self.model.cellSource = CellSource.HOC_FILE
 
     def doSimulation(self):
         if self.model.hasSections():
             cell = self.model.toLFPyCell()
             demo.executeDemo(cell=cell)
-
-    def showCell(self):
-        if self.model.hasSections():
-            sectionList = self.model.toSectionList()
-            plotting.plot3DCell(sectionList)
-            # cell = self.model.toLFPyCell()
-            # fig = plt.figure('Cell')
-            # plotNeuron(cell=cell, fig=fig, electrode=None)
-            # plt.show()
 
     def fillBallStick(self):
         self.model.tryAddSection('soma')

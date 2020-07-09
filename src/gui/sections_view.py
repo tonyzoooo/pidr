@@ -8,11 +8,11 @@ from src.gui.model import AppModel
 
 class SectionsView(Frame):
 
-    def __init__(self, root: Tk, model: AppModel):
+    def __init__(self, master, model: AppModel):
         """
         self for the list of sections
         """
-        super().__init__(root)
+        super().__init__(master)
         self.model = model
         self._beforeSelectionCallbacks = []
         self._afterSelectionCallbacks = []

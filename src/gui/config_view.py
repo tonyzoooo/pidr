@@ -11,12 +11,11 @@ from src.gui.number_validation import safeFloat, addFloatValidation, addIntValid
 
 class ConfigView(Frame):
 
-    def __init__(self, root: Tk, model: AppModel):
+    def __init__(self, master, model: AppModel):
         """
         Container for the configuration of the selected section
         """
-        super().__init__(root)
-        self.root = root
+        super().__init__(master)
         self.model = model
 
         self.selectedSectionLabel = Label(self, text='<no section>')

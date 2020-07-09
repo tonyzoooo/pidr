@@ -1,7 +1,10 @@
-from numpy import array, exp, zeros
+from typing import Tuple
+
+from numpy import exp, zeros
+from numpy.core.multiarray import ndarray
 
 
-def hhrun(I, t):
+def hhrun(I, t) -> Tuple[ndarray, ...]:
     # def am(v):
     #     # Alpha for Variable m
     #     a = 0.1*(v+35)/(1-exp(-(v+35)/10))
@@ -35,7 +38,7 @@ def hhrun(I, t):
     # -------------------------------------------------------
     # Gerstner page EPFL
     # -------------------------------------------------------
-    
+
     def am(v):
         # Alpha for Variable m
         v = v+65
@@ -125,29 +128,29 @@ def hhrun(I, t):
     gbarl = 0.3     # mS/cm**2 Leakage conductance
     V[0] = -65      # Initial Membrane voltage
 
-    m[0] = am(V[0])/(am(V[0])+bm(V[0]))  # Initial m-value
-    n[0] = an(V[0])/(an(V[0])+bn(V[0]))  # Initial n-value
-    h[0] = ah(V[0])/(ah(V[0])+bh(V[0]))  # Initial h-value
-    for i in range(len(t)-1):
+    m[0] = am(V[0]) / (am(V[0]) + bm(V[0]))  # Initial m-value
+    n[0] = an(V[0]) / (an(V[0]) + bn(V[0]))  # Initial n-value
+    h[0] = ah(V[0]) / (ah(V[0]) + bh(V[0]))  # Initial h-value
+    for i in range(len(t) - 1):
         # Euler method to find the next m/n/h value
-        m[i+1] = m[i]+dt*((am(V[i])*(1-m[i]))-(bm(V[i])*m[i]))
-        n[i+1] = n[i]+dt*((an(V[i])*(1-n[i]))-(bn(V[i])*n[i]))
-        h[i+1] = h[i]+dt*((ah(V[i])*(1-h[i]))-(bh(V[i])*h[i]))
-        gNa = gbarNa*m[i]**3*h[i]
-        gK = gbarK*n[i]**4
+        m[i + 1] = m[i] + dt * ((am(V[i]) * (1 - m[i])) - (bm(V[i]) * m[i]))
+        n[i + 1] = n[i] + dt * ((an(V[i]) * (1 - n[i])) - (bn(V[i]) * n[i]))
+        h[i + 1] = h[i] + dt * ((ah(V[i]) * (1 - h[i])) - (bh(V[i]) * h[i]))
+        gNa = gbarNa * m[i] ** 3 * h[i]
+        gK = gbarK * n[i] ** 4
         gl = gbarl
-        INa[i] = gNa*(V[i]-ENa)
-        IK[i] = gK*(V[i]-EK)
-        Il[i] = gl*(V[i]-El)
+        INa[i] = gNa * (V[i] - ENa)
+        IK[i] = gK * (V[i] - EK)
+        Il[i] = gl * (V[i] - El)
         # Euler method to find the next voltage value
-        V[i+1] = V[i]+dt*((1/Cm)*(I[i]-(INa[i]+IK[i]+Il[i])))
-    INa[i+1] = gNa*(V[i+1]-ENa)
-    IK[i+1] = gK*(V[i+1]-EK)
-    Il[i+1] = gl*(V[i+1]-El)
+        V[i + 1] = V[i] + dt * ((1 / Cm) * (I[i] - (INa[i] + IK[i] + Il[i])))
+    INa[i + 1] = gNa * (V[i + 1] - ENa)
+    IK[i + 1] = gK * (V[i + 1] - EK)
+    Il[i + 1] = gl * (V[i + 1] - El)
 
     # # Store variables for graphing later
     # FE = V
     # FEm = m
     # FEn = n
     # FEh = h
-    return array([V, m, n, h, INa, IK, Il])
+    return V, m, n, h, INa, IK, Il
