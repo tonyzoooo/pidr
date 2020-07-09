@@ -3,6 +3,7 @@
 """
 @author: Loïc Bertrand
 """
+from enum import Enum
 from typing import List, Optional
 
 import LFPy
@@ -19,6 +20,8 @@ class AppModel:
         self.selectedSection = None
         self.hocObject = None
         self.cell = CellModel()
+        # Cell to use for plotting and simulation
+        self.cellSource = CellSource.BUILDER
 
     @property
     def selectedSectionName(self):
@@ -83,3 +86,8 @@ class AppModel:
 
     def toLFPyCell(self) -> LFPy.Cell:
         return self.cell.toLFPyCell()
+
+
+class CellSource(Enum):
+    BUILDER = 1
+    HOC_FILE = 2

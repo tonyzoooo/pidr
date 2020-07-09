@@ -1,22 +1,25 @@
 from tkinter import *
-from tkinter.ttk import *
 from tkinter import filedialog
+from tkinter.ttk import *
 
 from src.gui.model import AppModel
 
 
 class OpenHocView(Frame):
 
-    def __init__(self, root: Tk, model: AppModel):
+    def __init__(self, master, model: AppModel):
         """
         Container for file selection
         """
-        super().__init__(root)
+        super().__init__(master)
         self.model = model
-        self.root = root
+        master.grid_columnconfigure(0, weight=1)  # center horizontally
 
         openHocButton = Button(self, text='Open .hoc', command=self._openFile)
-        openHocButton.pack()
+        openHocButton.pack(padx=8, pady=(64, 8))
+
+        self.fileLabel = Label(self, text='No file selected', wraplength=400)
+        self.fileLabel.pack(padx=8, pady=8)
 
     def _openFile(self):
         name = filedialog.askopenfilename(
@@ -26,6 +29,7 @@ class OpenHocView(Frame):
         )
         if name == '':
             print("Canceled.")
-        else :
+        else:
             self.model.filename = name
+            self.fileLabel.configure(text=name)
             print('Opened: ' + self.model.filename)

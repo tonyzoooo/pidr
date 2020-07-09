@@ -37,7 +37,7 @@ def executeDemo(
 
     # pot membrane, proportional to ion channels electric current
     # (http://www.bem.fi/book/03/03.htm, 3.14)
-    [Vm, m, n, h, INa, IK, Il] = hhrun(I, t)
+    Vm, m, n, h, INa, IK, Il = hhrun(I, t)
 
     Im = (INa + IK + Il) * (2 * pi * 12.5 * 25) / 10 ** 8 * 10 ** 3
     inMVm = np.argmax(Vm)
