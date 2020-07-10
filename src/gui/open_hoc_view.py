@@ -28,8 +28,8 @@ class OpenHocView(Frame):
             filetypes=(('hoc files', '*.hoc'), ('all files', '*.*'))
         )
         if name == '':
-            print("Canceled.")
+            self.model.filename = None
+            self.fileLabel.configure(text='No file selected')
         else:
             self.model.filename = name
             self.fileLabel.configure(text=name)
-            print('Opened: ' + self.model.filename)

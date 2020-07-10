@@ -57,7 +57,7 @@ class App(Frame):
         # Plotting and simulation controls
         self.plotView = PlotView(root, model)
         self.plotView.grid(row=0, column=1, **pad)
-        simuButton = Button(root, text='Simulation', command=self.doSimulation)
+        simuButton = Button(root, text='Simulation', command=self.model.doSimulation)
         simuButton.grid(row=1, column=1, **pad)
 
         # Event handlers
@@ -71,11 +71,6 @@ class App(Frame):
             self.model.cellSource = CellSource.BUILDER
         elif index == 1:
             self.model.cellSource = CellSource.HOC_FILE
-
-    def doSimulation(self):
-        if self.model.hasSections():
-            cell = self.model.toLFPyCell()
-            demo.executeDemo(cell=cell)
 
     def fillBallStick(self):
         self.model.tryAddSection('soma')

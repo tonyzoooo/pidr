@@ -1,3 +1,5 @@
+from typing import Union
+
 import LFPy
 import matplotlib.pyplot as plt
 import numpy as np
@@ -44,15 +46,15 @@ def plotNeuron(cell, electrode, fig):
     return fig
 
 
-def runLfpySimulation(filename: str = None, lfpyCell: LFPy.Cell = None):
+def runLfpySimulation(morphology: Union[str, LFPy.Cell] = None):
     # =============================================================================
     # ================================= MORPHOLOGY ================================
     # =============================================================================
 
     st = 1 / 1000
-    if filename is not None:
+    if type(morphology) is str:
         cell_parameters = {
-            'morphology': filename,
+            'morphology': morphology,
             'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
             'passive': True,  # Passive mechanisms are initialized if True
             'passive_parameters': {'g_pas': 1. / 30000, 'e_pas': -65},
@@ -65,10 +67,10 @@ def runLfpySimulation(filename: str = None, lfpyCell: LFPy.Cell = None):
             'lambda_f': 100.,  # frequency where length constants are computed
         }
         cell = LFPy.Cell(**cell_parameters)
-    elif lfpyCell is not None:
-        cell = lfpyCell
+    elif type(morphology) is LFPy.Cell:
+        cell = morphology
     else:
-        raise Exception('You must specify a filename or a cell')
+        raise Exception('Morphology must be an HOC file name or an LFPy.Cell')
 
     # =============================================================================
     # ================================= stimulation parameters================================
