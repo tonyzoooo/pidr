@@ -1,3 +1,5 @@
+from typing import Union
+
 import LFPy
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,8 +13,7 @@ from src.core.morphofiltd import morphofiltd
 
 
 def executeDemo(
-        filename: str = 'resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc',
-        cell: LFPy.Cell = None
+        morphology: Union[str, LFPy.Cell] = 'resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc'
 ):
     # -----------------------------------------------------------
     # HH (Hodgkin–Huxley model)
@@ -61,10 +62,7 @@ def executeDemo(
     # load LFPy simulation result
     # -----------------------------------------------------------
 
-    if cell is not None:
-        result = runLfpySimulation(lfpyCell=cell)
-    else:
-        result = runLfpySimulation(filename=filename)
+    result = runLfpySimulation(morphology)
 
     Vlfpy = result.Vlfpy
     Vmlfpy = result.Vmlfpy
