@@ -27,7 +27,18 @@ class AppModel:
         self.hocObject = None
         self.cell = CellModel()
         # Cell to use for plotting and simulation
-        self.cellSource = CellSource.BUILDER
+        self._cellSource = CellSource.BUILDER
+
+    @property
+    def cellSource(self):
+        return self._cellSource
+
+    @cellSource.setter
+    def cellSource(self, src: CellSource):
+        if src is self._cellSource:
+            return
+        self._cellSource = src
+        self.clear()
 
     @property
     def selectedSectionName(self):
@@ -68,10 +79,6 @@ class AppModel:
     def sectionNames(self) -> List[str]:
         return self.cell.getSimpleNames()
 
-    # another getter for plotting
-    def allsec(self) -> List[nrn.Section]:
-        return self.cell.sections
-
     @property
     def sections(self) -> List[nrn.Section]:
         return self.cell.sections
@@ -108,6 +115,7 @@ class AppModel:
                 demo.executeDemo(self.filename)
 
     def clear(self):
+        self.filename = None
         self.selectedSection = None
         self.cell.sections.clear()
         for s in h.allsec():
