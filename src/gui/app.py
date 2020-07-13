@@ -7,6 +7,7 @@ Created on Tue May  5 21:54:28 2020
 """
 
 from tkinter import *
+from tkinter import messagebox
 from tkinter.ttk import *
 
 from ttkthemes import ThemedTk
@@ -78,16 +79,18 @@ class App(Frame):
         self.tabs.bind('<<NotebookTabChanged>>', self.onTabChanged)
 
     def switchToFile(self):
+        if self.model.hasSections():
+            if not messagebox.askokcancel("Warning", "Do you really want to clear the builder?"):
+                return
         self.builderFrame.pack_forget()
         self.hocFileFrame.pack()
         self.model.cellSource = CellSource.HOC_FILE
-        self.model.clear()
+        self.openHocView.refreshView()
 
     def switchToBuilder(self):
         self.hocFileFrame.pack_forget()
         self.builderFrame.pack()
         self.model.cellSource = CellSource.BUILDER
-        self.model.clear()
         self.sectionsView.refreshView()
 
     def onTabChanged(self, _):

@@ -9,6 +9,8 @@ Created on Fri Jun 26 16:08:39 2020
 from tkinter import *
 from tkinter.ttk import *
 
+from neuron import h
+
 from src.gui.model import AppModel, CellSource
 from src.gui.plotting import plot2DCell, plot3DCell
 
@@ -31,8 +33,8 @@ class PlotView(Frame):
     def _display(self):
         source = self.model.cellSource
         if source is CellSource.HOC_FILE:
-            if self.model.filename != '':
-                self._displayCell(self.model.hocObject.allsec())
+            if self.model.filename:
+                self._displayCell(h.allsec())
         elif source is CellSource.BUILDER:
             if self.model.hasSections():
                 sectionList = self.model.toSectionList()

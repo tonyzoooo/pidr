@@ -28,9 +28,9 @@ class OpenHocView(Frame):
             filetypes=(('hoc files', '*.hoc'), ('all files', '*.*'))
         )
         self.model.clear()
-        if name == '':
-            self.model.filename = None
-            self.fileLabel.configure(text='No file selected')
-        else:
-            self.model.filename = name
-            self.fileLabel.configure(text=name)
+        self.model.filename = name if name != '' else None
+        self.refreshView()
+
+    def refreshView(self):
+        text = self.model.filename or 'No file selected'
+        self.fileLabel.configure(text=text)
