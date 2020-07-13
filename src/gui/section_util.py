@@ -27,7 +27,7 @@ def setParent(child: nrn.Section, parent: Optional[ParentConnection]):
     if parent is None:
         return
     childEnd, parent, parentEnd = parent
-    child.connect(parent(parentEnd), childEnd)  # May exit(1) if wrong connection
+    child.connect(parent, parentEnd, childEnd)  # May exit(1) if wrong connection
 
 
 def getParent(child: nrn.Section) -> Optional[ParentConnection]:

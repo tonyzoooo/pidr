@@ -11,7 +11,6 @@ from tkinter.ttk import *
 
 from ttkthemes import ThemedTk
 
-from src.core import demo
 from src.gui.config_view import ConfigView
 from src.gui.model import AppModel, CellSource
 from src.gui.open_hoc_view import OpenHocView
@@ -35,24 +34,37 @@ class App(Frame):
         pad = {'padx': 8, 'pady': 8}
 
         # Multitab holder
-        self.tabs = Notebook(root)
+        self.tabs = Notebook(root, width=500, height=300)
         self.tabs.grid(row=0, column=0, rowspan=2)
 
-        # Ball & Stick builder tab
-        builderTab = Frame(self.tabs, padding=8)
-        self.sectionsView = SectionsView(builderTab, model)
+        # Tab 1: Morphology
+        self.morphoTab = Frame(self.tabs)
+        # - Ball & Stick builder
+        self.builderFrame = Frame(self.morphoTab, padding=8)
+        self.sectionsView = SectionsView(self.builderFrame, model)
         self.sectionsView.grid(row=0, column=0, rowspan=2, **pad)
-        self.configView = ConfigView(builderTab, model)
-        self.configView.grid(row=0, column=1, **pad)
-        ballstickButton = Button(builderTab, text='Create ball & stick', command=self.fillBallStick)
+        self.configView = ConfigView(self.builderFrame, model)
+        self.configView.grid(row=0, column=1, columnspan=2, **pad)
+        ballstickButton = Button(self.builderFrame, text='Create ball & stick', command=self.fillBallStick)
         ballstickButton.grid(row=1, column=1, **pad)
-        self.tabs.add(builderTab, text='Cell builder')
-
-        # Hoc file loader tab
-        hocFileTab = Frame(self.tabs, padding=8)
-        self.openHocView = OpenHocView(hocFileTab, model)
+        useFileButton = Button(self.builderFrame, text='Use HOC file', command=self.switchToFile)
+        useFileButton.grid(row=1, column=2, **pad)
+        self.builderFrame.pack()
+        # - Hoc file loader
+        self.hocFileFrame = Frame(self.morphoTab, padding=8)
+        self.openHocView = OpenHocView(self.hocFileFrame, model)
         self.openHocView.grid(row=1, column=0, **pad)
-        self.tabs.add(hocFileTab, text='HOC loader')
+        useBuilderButton = Button(self.hocFileFrame, text='Use builder', command=self.switchToBuilder)
+        useBuilderButton.grid(row=2, column=0, **pad)
+        self.morphoTab.pack()
+        self.tabs.add(self.morphoTab, text='Morphology')
+
+        # Tab 2: Stimulation
+        stimTab = Frame(self.tabs)
+        stimLabel = Label(stimTab, text='<Stimulation parameters>')
+        stimLabel.pack(pady=(100, 0))
+        stimTab.pack()
+        self.tabs.add(stimTab, text='Stimulation')
 
         # Plotting and simulation controls
         self.plotView = PlotView(root, model)
@@ -65,14 +77,24 @@ class App(Frame):
         self.sectionsView.afterSelection(self.configView.refreshView)
         self.tabs.bind('<<NotebookTabChanged>>', self.onTabChanged)
 
+    def switchToFile(self):
+        self.builderFrame.pack_forget()
+        self.hocFileFrame.pack()
+        self.model.cellSource = CellSource.HOC_FILE
+        self.model.clear()
+
+    def switchToBuilder(self):
+        self.hocFileFrame.pack_forget()
+        self.builderFrame.pack()
+        self.model.cellSource = CellSource.BUILDER
+        self.model.clear()
+        self.sectionsView.refreshView()
+
     def onTabChanged(self, _):
         index = self.tabs.index(self.tabs.select())
-        if index == 0:
-            self.model.cellSource = CellSource.BUILDER
-        elif index == 1:
-            self.model.cellSource = CellSource.HOC_FILE
 
     def fillBallStick(self):
+        self.model.cell.sections.clear()
         self.model.tryAddSection('soma')
         self.model.tryAddSection('axon')
         self.model.tryAddSection('dend')

@@ -23,8 +23,8 @@ class ConfigView(Frame):
 
         intSpinArgs = {'from_': 1, 'to': 1e10, 'increment': 1, 'validate': 'focusout'}
         floatSpinArgs = {'from_': 0, 'to': 1e10, 'increment': 0.1, 'validate': 'focusout'}
-        labelArgs = {'sticky': 'e', 'padx': (0, 8)}
-        entryArgs = {'sticky': 'ew', 'pady': 4}
+        labelArgs = {'sticky': 'e', 'padx': 4, 'pady': 4}
+        entryArgs = {'sticky': 'ew', 'padx': 4, 'pady': 4}
 
         Label(self, text='nseg').grid(row=1, **labelArgs)
         self.nsegVar = IntVar(value=1)
@@ -50,7 +50,7 @@ class ConfigView(Frame):
         Label(self, text='parent').grid(row=4, **labelArgs)
         self.endMenu = Combobox(self, values=[0, 1], width=1, state="readonly")
         self.endMenu.current(0)
-        self.endMenu.grid(row=4, column=1, padx=(0, 8), **entryArgs)
+        self.endMenu.grid(row=4, column=1, **entryArgs)
         self.endMenu.bind('<<ComboboxSelected>>', lambda e: self.saveCurrentSection())
         self.parentMenu = Combobox(self, values=[''], width=10, state="readonly")
         self.parentMenu.grid(row=4, column=2, **entryArgs)
