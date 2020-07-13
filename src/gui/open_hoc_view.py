@@ -27,6 +27,7 @@ class OpenHocView(Frame):
             title='Select file',
             filetypes=(('hoc files', '*.hoc'), ('all files', '*.*'))
         )
+        self.model.clear()
         if name == '':
             self.model.filename = None
             self.fileLabel.configure(text='No file selected')

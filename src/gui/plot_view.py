@@ -23,12 +23,12 @@ class PlotView(Frame):
         self.figures = []
         optButton0 = Radiobutton(self, text="3D View", variable=self.buttonVar, value=1)
         optButton1 = Radiobutton(self, text="2D View", variable=self.buttonVar, value=2)
-        printButton = Button(self, text="Display", command=self._refresh)
+        printButton = Button(self, text="Display", command=self._display)
         optButton0.grid(row=0, column=0)
         optButton1.grid(row=1, column=0, pady=4)
         printButton.grid(row=2, column=0, padx=8)
 
-    def _refresh(self):
+    def _display(self):
         source = self.model.cellSource
         if source is CellSource.HOC_FILE:
             if self.model.filename != '':

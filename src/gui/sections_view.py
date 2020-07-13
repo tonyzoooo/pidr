@@ -71,9 +71,6 @@ class SectionsView(Frame):
         """
         Gets the name of the selected section in the list, or None
         """
-        if not self.model.hasSections():
-            return None
-
         selected = self.sectionList.curselection()
         if len(selected) == 0:
             return None
@@ -89,5 +86,6 @@ class SectionsView(Frame):
         for sec in self.model.cell.sections:
             name = section_util.simpleName(sec)
             self.sectionList.insert('end', name)
+        if len(self.model.cell.sections) > 0:
             self.sectionList.selection_set(0)
             self._manageSelection()

@@ -14,6 +14,11 @@ from src.gui import section_util
 from src.gui.cell_model import CellModel
 
 
+class CellSource(Enum):
+    BUILDER = 1
+    HOC_FILE = 2
+
+
 class AppModel:
 
     def __init__(self):
@@ -102,7 +107,8 @@ class AppModel:
             if self.hasHocFile():
                 demo.executeDemo(self.filename)
 
-
-class CellSource(Enum):
-    BUILDER = 1
-    HOC_FILE = 2
+    def clear(self):
+        self.selectedSection = None
+        self.cell.sections.clear()
+        for s in h.allsec():
+            h.delete_section(sec=s)
