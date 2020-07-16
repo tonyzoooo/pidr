@@ -2,6 +2,7 @@ from typing import Union
 
 import LFPy
 import matplotlib.pyplot as plt
+import neuron
 import numpy as np
 from numpy import pi
 from numpy.linalg import norm
@@ -47,6 +48,9 @@ def executeDemo(
     # -----------------------------------------------------------
     # BS neuron morphology
     # -----------------------------------------------------------
+
+    for s in neuron.h.allsec():
+        print(s)
 
     SL = 25  # soma length (cylinder with the same diameter)
 
@@ -137,9 +141,8 @@ def executeDemo(
         Vel[iel] = np.convolve(Im, wup[iel], 'same')
 
     # cut
-    commonPart = inMVm - inmvm - int(np.fix(wup.shape[1] / 2))
-    rangeStart = commonPart + 1
-    rangeEnd = commonPart + lVLFPy
+    rangeStart = inMVm - inmvm - int(np.fix(wup.shape[1] / 2)) + 1
+    rangeEnd = rangeStart - 1 + lVLFPy
     intervVm = np.arange(rangeStart, rangeEnd + 1)
     Vel2 = Vel[:, intervVm]
 
@@ -163,10 +166,6 @@ def executeDemo(
     line_labels = ["Cell", "Tran", "LFPy"]
     line_obj = []
     ifil = 0
-
-    # fix LFPy imprecision
-    if Vlfpy.shape[0] != 8000:
-        Vlfpy = Vlfpy[:8000, :]
 
     for i in range(5):
         for j in range(13):

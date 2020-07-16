@@ -87,7 +87,7 @@ def runLfpySimulation(morphology: Union[str, LFPy.Cell] = None):
     stim = {
         'idx': cell.get_closest_idx(x=0, y=0, z=0),
         'record_current': True,
-        'pptype': 'IClamp',
+        'pptype': 'IClamp',  # Type of point process: VClamp / SEClamp / ICLamp.
         'amp': amp,
         'dur': dur,  # 0.01
         'delay': delay,  # 5
