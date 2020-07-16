@@ -17,6 +17,7 @@ from src.gui.model import AppModel, CellSource
 from src.gui.open_hoc_view import OpenHocView
 from src.gui.plot_view import PlotView
 from src.gui.sections_view import SectionsView
+from src.gui.stim_view import StimView
 
 
 class App(Frame):
@@ -62,8 +63,8 @@ class App(Frame):
 
         # Tab 2: Stimulation
         stimTab = Frame(self.tabs)
-        stimLabel = Label(stimTab, text='<Stimulation parameters>')
-        stimLabel.pack(pady=(100, 0))
+        stimView = StimView(stimTab, model)
+        stimView.place(anchor="c", relx=.5, rely=.5)
         stimTab.pack()
         self.tabs.add(stimTab, text='Stimulation')
 
