@@ -17,7 +17,7 @@ class StimView(Frame):
         Label(self, text='z').grid(row=0, column=3)
 
         self.idxMode = IntVar(value=1)
-        self.idxMode.trace_variable('w', lambda a, b, c: print(self.idxMode.get()))
+        self.idxMode.trace_variable('w', lambda a, b, c: ...)
         Radiobutton(self, text='closest idx', variable=self.idxMode, value=1).grid(row=1, column=0, **pad)
         Radiobutton(self, text='section idx', variable=self.idxMode, value=2).grid(row=2, column=0, **pad)
         self.xCoord = Spinbox(self, width=5)

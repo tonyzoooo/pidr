@@ -80,9 +80,9 @@ class App(Frame):
         self.tabs.bind('<<NotebookTabChanged>>', self.onTabChanged)
 
     def switchToFile(self):
-        if self.model.hasSections():
-            if not messagebox.askokcancel("Warning", "Do you really want to clear the builder?"):
-                return
+        # if self.model.hasSections():
+        #     if not messagebox.askokcancel("Warning", "Do you really want to clear the builder?"):
+        #         return
         self.builderFrame.pack_forget()
         self.hocFileFrame.pack()
         self.model.cellSource = CellSource.HOC_FILE
@@ -99,12 +99,9 @@ class App(Frame):
 
     def fillBallStick(self):
         self.model.cell.sections.clear()
-        self.model.tryAddSection('soma')
-        self.model.tryAddSection('axon')
-        self.model.tryAddSection('dend')
-        soma = self.model.getSection('soma')
-        axon = self.model.getSection('axon')
-        dend = self.model.getSection('dend')
+        soma = self.model.tryAddSection('soma')
+        axon = self.model.tryAddSection('axon')
+        dend = self.model.tryAddSection('dend')
         soma.nseg = 1
         soma.L = 25
         soma.diam = 25
