@@ -2,6 +2,8 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import *
 
+from neuron import h
+
 from src.gui.model import AppModel
 
 
@@ -27,7 +29,7 @@ class OpenHocView(Frame):
             title='Select file',
             filetypes=(('hoc files', '*.hoc'), ('all files', '*.*'))
         )
-        self.model.clear()
+        # self.model.clear()
         self.model.filename = name if name != '' else None
         self.refreshView()
 

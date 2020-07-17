@@ -23,21 +23,9 @@ class AppModel:
     def __init__(self):
         self._filename = None
         self.selectedSection = None
-        self.hocObject = None
         self.cell = CellModel()
         # Cell to use for plotting and simulation
-        self._cellSource = CellSource.BUILDER
-
-    @property
-    def cellSource(self):
-        return self._cellSource
-
-    @cellSource.setter
-    def cellSource(self, src: CellSource):
-        if src is self._cellSource:
-            return
-        self._cellSource = src
-        self.clear()
+        self.cellSource = CellSource.BUILDER
 
     @property
     def selectedSectionName(self):
@@ -52,7 +40,7 @@ class AppModel:
         self.selectedSection = section
         return True
 
-    def tryAddSection(self, name: str) -> bool:
+    def tryAddSection(self, name: str) -> Optional[nrn.Section]:
         return self.cell.tryAddSection(name)
 
     def getSection(self, name: str) -> Optional[nrn.Section]:
@@ -91,11 +79,22 @@ class AppModel:
 
     @filename.setter
     def filename(self, name):
+        # Remove existing file sections if present
+        for sec in h.allsec():
+            if sec.cell() is None:
+                h.delete_section(sec=sec)
+
         self._filename = name
         if name:
-            h.load_file(name)
-            self.hocObject = h
-            h.define_shape()
+            print('loading file', name)
+            try:
+                h.xopen(name)
+            except RuntimeError as e:
+                print('xopen:', e)
+            try:
+                h.define_shape()
+            except RuntimeError as e:
+                print('define_shape:', e)
 
     def toSectionList(self) -> h.SectionList:
         return self.cell.toSectionList()
@@ -112,13 +111,6 @@ class AppModel:
         elif source is CellSource.HOC_FILE:
             if self.hasHocFile():
                 demo.executeDemo(self.filename)
-
-    def clear(self):
-        self.filename = None
-        self.selectedSection = None
-        self.cell.sections.clear()
-        for s in h.allsec():
-            h.delete_section(sec=s)
 
 
 class CellModel:
@@ -137,14 +129,14 @@ class CellModel:
                 return sec
         return None
 
-    def tryAddSection(self, name: str) -> bool:
+    def tryAddSection(self, name: str) -> Optional[nrn.Section]:
         if self._isInvalidName(name):
             print(f"name '{name}' is invalid")
-            return False
+            return None
 
         section = h.Section(name=name, cell=self)
         self.sections.append(section)
-        return True
+        return section
 
     def _isInvalidName(self, name):
         return name == '' or name in self.getSimpleNames() \

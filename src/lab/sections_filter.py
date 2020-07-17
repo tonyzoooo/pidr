@@ -1,4 +1,4 @@
-from neuron import h
+from neuron import h, nrn
 
 from model import CellModel
 
@@ -7,18 +7,19 @@ def sectionsFromCell(cell: CellModel):
     return [s for s in h.allsec() if s.cell() is cell]
 
 
+def isFromFile(section: nrn.Section):
+    return section.cell() is None
+
+
 def sectionsFromFile():
     return [s for s in h.allsec() if s.cell() is None]
 
 
 def test():
     cell = CellModel()
-    cell.tryAddSection('soma')
-    cell.tryAddSection('axon')
-    cell.tryAddSection('dend')
-    soma = cell.getSection('soma')
-    axon = cell.getSection('axon')
-    dend = cell.getSection('dend')
+    soma = cell.tryAddSection('soma')
+    axon = cell.tryAddSection('axon')
+    dend = cell.tryAddSection('dend')
     soma.nseg = 1
     soma.L = 25
     soma.diam = 25
@@ -53,6 +54,9 @@ def test():
     print('--4--')
     for s in sectionsFromCell(copy):
         print(s)
+
+    print('--5--')
+    print(h.SectionRef(sec=sectionsFromFile()[0]).root)
 
 
 test()

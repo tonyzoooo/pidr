@@ -76,20 +76,22 @@ def buildTree(sectionlist):
             if len(xyzd)>1:
                 connections.append([child_id, parent_id])
             parent_id = child_id
-        return xyzd, connections   
-     
+        return xyzd, connections
+
     def append_children_data(parent, parent_id, xyzd, connections):
         sref = h.SectionRef(sec=parent)
         if sref.child:
              for child in sref.child:
                  xyzd, connections = append_data(child, xyzd, connections, parent_id)
-                 xyzd, connections = append_children_data(parent=child, 
+                 xyzd, connections = append_children_data(parent=child,
                                                           parent_id=len(xyzd)-1,
                                                           xyzd=xyzd,
                                                           connections=connections)
         return xyzd, connections
 
-    root_section = h.SectionRef().root
+    assert sum(1 for _ in sectionlist) > 0, 'sectionList is empty'
+    first_section = next(iter(sectionlist))
+    root_section = h.SectionRef(sec=first_section).root
     xyzd = [[h.x3d(0, sec=root_section),h.y3d(0, sec=root_section),
              h.z3d(0, sec=root_section),h.diam3d(0, sec=root_section)]]
     xyzd, connections = append_data(root_section, xyzd, [], 0)
@@ -111,16 +113,16 @@ def plot2DCell(sectionlist):
     window.wm_title("Cell visualisation (2D)")
     canvas = FigureCanvasTkAgg(fig, master=window)
     canvas.draw()
-    
+
     ax = fig.add_subplot(111)
-    
+
     colormap = plt.get_cmap('jet')
     N = sum(1 for s in sectionlist)
     i=0
     for section in sectionlist:
         x, y, z = getCoordinates(section)
         d = getDiameters(section)
-        
+
         #XY face
         segments = createSegments(x, y)
         lc = LineCollection(segments, linewidths=d, color=colormap(i/N))
@@ -136,12 +138,12 @@ def plot2DCell(sectionlist):
     canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
     plt.close(fig)
     window.mainloop()
-    
-    
+
+
 def getSectionData(sectionlist):
     indexes = []
     names = []
-    for section in sectionlist: 
+    for section in sectionlist:
         names.append(section.name())
         if indexes == []:
             indexes = [0]
@@ -149,7 +151,7 @@ def getSectionData(sectionlist):
             indexes.append(indexes[-1]+section.n3d())
         names.append(section.name())
     return indexes, names
-    
+
 def plot3DCell(sectionlist):
     """
     Returns collections of lines for different 2d views of cell.
@@ -163,7 +165,7 @@ def plot3DCell(sectionlist):
     o = vtkObject
     o.GetGlobalWarningDisplay()
     o.SetGlobalWarningDisplay(0) # Turn it off.
-    
+
     mlab.figure(1)
     mlab.clf()
     xyzd, connections = buildTree(sectionlist)
@@ -172,10 +174,10 @@ def plot3DCell(sectionlist):
     z = xyzd[:,2]
     d = xyzd[:,3]
     connections = np.vstack(connections)
-    
+
     # Create the points
     points = mlab.pipeline.scalar_scatter(x, y, z, d)
-    
+
     dataset = points.mlab_source.dataset
     dataset.point_data.get_array(0).name = 'diameter'
     dataset.lines = connections
@@ -192,14 +194,14 @@ def plot3DCell(sectionlist):
     # Connect them
 
     #src.mlab_source.dataset.lines = connections
-    
+
     #src.update()
-    
+
     # The stripper filter cleans up connected lines
     #lines = mlab.pipeline.stripper(src)
     # Finally, display the set of lines
     #mlab.pipeline.surface(lines, colormap='jet', line_width=1, opacity=.4)
-    
+
     #labels
 #    indexes, names = getSectionData(sectionlist)
 #    for i in range(len(indexes)):
@@ -223,7 +225,7 @@ def plot3DCell(sectionlist):
 # Old version with matplolib
 # =============================================================================
 #from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-#from mpl_toolkits.mplot3d import Axes3D    
+#from mpl_toolkits.mplot3d import Axes3D
 
 #def defCylinder(x0, x1, diam):
 #    """

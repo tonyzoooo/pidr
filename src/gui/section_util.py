@@ -23,7 +23,7 @@ def setMechanism(section: nrn.Section, mech: Optional[str]):
 
 
 def setParent(child: nrn.Section, parent: Optional[ParentConnection]):
-    h.disconnect(child)
+    h.disconnect(sec=child)
     if parent is None:
         return
     childEnd, parent, parentEnd = parent
@@ -43,3 +43,14 @@ def getParent(child: nrn.Section) -> Optional[ParentConnection]:
 
 def simpleName(section: nrn.Section) -> str:
     return section.hname().split('.')[-1]
+
+
+def fileSections():
+    return [sec for sec in h.allsec() if sec.cell() is None]
+
+
+def hasFileSections():
+    for s in h.allsec():
+        if s.cell() is None:
+            return True
+    return False
