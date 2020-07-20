@@ -33,19 +33,13 @@ class ConfigView(Frame):
         nsegEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
         addIntValidation(nsegEntry, from_=1, to=32767)
 
-        Label(self, text='L').grid(row=2, **labelArgs)
-        self.lengthVar = DoubleVar(value=1.0)
-        lengthEntry = Spinbox(self, textvariable=self.lengthVar, **floatSpinArgs)
-        lengthEntry.grid(row=2, column=1, columnspan=2, **entryArgs)
-        lengthEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
-        addFloatValidation(lengthEntry, from_=1e-9)
-
-        Label(self, text='diam').grid(row=3, **labelArgs)
-        self.diamVar = DoubleVar(value=1.0)
-        diamEntry = Spinbox(self, textvariable=self.diamVar, **floatSpinArgs)
-        diamEntry.grid(row=3, column=1, columnspan=2, **entryArgs)
-        diamEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
-        addFloatValidation(diamEntry, from_=1e-9)
+        self.lengthVar, self.diamVar = (DoubleVar(value=1.0) for _ in [1, 2])
+        for row, lbl, var in (2, 'L', self.lengthVar), (3, 'diam', self.diamVar):
+            Label(self, text=lbl).grid(row=row, **labelArgs)
+            spinBox = Spinbox(self, textvariable=var, **floatSpinArgs)
+            spinBox.grid(row=row, column=1, columnspan=2, **entryArgs)
+            spinBox.bind('<FocusOut>', lambda e: self.saveCurrentSection())
+            addFloatValidation(spinBox, from_=1e-9)
 
         Label(self, text='parent').grid(row=4, **labelArgs)
         self.endMenu = Combobox(self, values=[0, 1], width=1, state="readonly")
