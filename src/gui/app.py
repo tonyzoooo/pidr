@@ -80,9 +80,6 @@ class App(Frame):
         self.tabs.bind('<<NotebookTabChanged>>', self.onTabChanged)
 
     def switchToFile(self):
-        # if self.model.hasSections():
-        #     if not messagebox.askokcancel("Warning", "Do you really want to clear the builder?"):
-        #         return
         self.builderFrame.pack_forget()
         self.hocFileFrame.pack()
         self.model.cellSource = CellSource.HOC_FILE
