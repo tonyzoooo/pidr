@@ -9,7 +9,6 @@ from typing import List, Optional, Tuple
 import LFPy
 from neuron import h, nrn
 
-from src.core import demo
 from src.gui import section_util
 
 
@@ -88,9 +87,9 @@ class AppModel:
         if name:
             print('loading file', name)
             try:
-                h.xopen(name)
+                h.load_file(1, name)
             except RuntimeError as e:
-                print('xopen:', e)
+                print('load_file:', e)
             try:
                 h.define_shape()
             except RuntimeError as e:
@@ -103,14 +102,17 @@ class AppModel:
         return self.cell.toLFPyCell()
 
     def doSimulation(self):
+        from src.core import demo
         source = self.cellSource
         if source is CellSource.BUILDER:
             if self.hasSections():
                 cell = self.toLFPyCell()
-                demo.executeDemo(cell)
+                props = section_util.getBSProperties(self.cell.sections)
+                demo.executeDemo(morphology=cell, props=props)
         elif source is CellSource.HOC_FILE:
             if self.hasHocFile():
-                demo.executeDemo(self.filename)
+                props = section_util.getBSProperties(section_util.fileSections())
+                demo.executeDemo(morphology=self.filename, props=props)
 
 
 class CellModel:

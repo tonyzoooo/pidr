@@ -29,7 +29,6 @@ class OpenHocView(Frame):
             title='Select file',
             filetypes=(('hoc files', '*.hoc'), ('all files', '*.*'))
         )
-        # self.model.clear()
         self.model.filename = name if name != '' else None
         self.refreshView()
 

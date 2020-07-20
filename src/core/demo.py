@@ -2,7 +2,6 @@ from typing import Union
 
 import LFPy
 import matplotlib.pyplot as plt
-import neuron
 import numpy as np
 from numpy import pi
 from numpy.linalg import norm
@@ -14,7 +13,8 @@ from src.core.morphofiltd import morphofiltd
 
 
 def executeDemo(
-        morphology: Union[str, LFPy.Cell] = 'resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc'
+        morphology: Union[str, LFPy.Cell] = 'resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc',
+        props=None
 ):
     # -----------------------------------------------------------
     # HH (Hodgkin–Huxley model)
@@ -49,16 +49,17 @@ def executeDemo(
     # BS neuron morphology
     # -----------------------------------------------------------
 
-    for s in neuron.h.allsec():
-        print(s)
+    if props is None:
+        props = {}
+    print('props:', props)
 
-    SL = 25  # soma length (cylinder with the same diameter)
+    SL = props.get('SL', 25)  # soma length (cylinder with the same diameter)
 
-    LA = 1000  # axon length
-    DA = 2  # axon diameter
+    AL = props.get('AL', 1000)  # axon length
+    AD = props.get('AD', 2)  # axon diameter
 
-    LD = 200  # dendrite length
-    DD = 2  # dendrite diameter
+    LD = props.get('LD', 200)  # dendrite length
+    DD = props.get('DD', 2)  # dendrite diameter
     phi = pi / 2  # angle avec Oz
     theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
 
@@ -105,11 +106,11 @@ def executeDemo(
 
     dk = 10  # axonal spatial sampling(~ nb of segments)
 
-    order = int(LA / dk + 1)
+    order = int(AL / dk + 1)
     r0 = np.array([0, 0, 0])  # soma position
     r1 = np.array([SL / 2, 0, 0])  # axon start position
     # axon stop position (start of the last segment)
-    rN = np.array([SL / 2 + LA - dk, 0, 0])
+    rN = np.array([SL / 2 + AL - dk, 0, 0])
     rd = norm(r1 - r0) * np.array([
         np.sin(phi) * np.cos(theta),
         np.sin(phi) * np.sin(theta),

@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 from neuron import nrn, h
 
@@ -54,3 +54,18 @@ def hasFileSections():
         if s.cell() is None:
             return True
     return False
+
+
+def getBSProperties(sections: List[nrn.Section]) -> dict:
+    props = {}
+    for sec in sections:
+        name: str = sec.hname()
+        if name.find('soma') >= 0:
+            props['SL'] = sec.L
+        elif name.find('axon') >= 0:
+            props['AL'] = sec.L
+            props['AD'] = sec.diam
+        elif name.find('dend') >= 0:
+            props['DL'] = sec.L
+            props['DD'] = sec.diam
+    return props
