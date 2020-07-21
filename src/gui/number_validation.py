@@ -3,7 +3,7 @@ from tkinter import TclError
 from typing import Callable
 
 
-def safeFloat(getter: Callable[[], str], orElse: float = 1.0, from_=-sys.maxsize, to=sys.maxsize) -> float:
+def safeFloat(getter: Callable[[], str], orElse=1.0, from_=-sys.maxsize, to=sys.maxsize) -> float:
     try:
         floatValue = float(getter())
     except (TclError, ValueError):
@@ -11,7 +11,7 @@ def safeFloat(getter: Callable[[], str], orElse: float = 1.0, from_=-sys.maxsize
     return floatValue if from_ <= floatValue <= to else orElse
 
 
-def safeInt(getter: Callable[[], str], orElse: int = 1.0, from_=-sys.maxsize, to=sys.maxsize) -> int:
+def safeInt(getter: Callable[[], str], orElse=1, from_=-sys.maxsize, to=sys.maxsize) -> int:
     try:
         intValue = int(getter())
     except (TclError, ValueError):

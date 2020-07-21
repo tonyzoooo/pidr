@@ -1,5 +1,3 @@
-from typing import Union
-
 import LFPy
 import matplotlib.pyplot as plt
 import numpy as np
@@ -12,10 +10,7 @@ from src.core.lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulat
 from src.core.morphofiltd import morphofiltd
 
 
-def executeDemo(
-        morphology: Union[str, LFPy.Cell] = 'resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc',
-        props=None
-):
+def executeDemo(cell: LFPy.Cell, props=None):
     # -----------------------------------------------------------
     # HH (Hodgkin–Huxley model)
     # -----------------------------------------------------------
@@ -67,7 +62,7 @@ def executeDemo(
     # load LFPy simulation result
     # -----------------------------------------------------------
 
-    result = runLfpySimulation(morphology)
+    result = runLfpySimulation(cell)
 
     Vlfpy = result.Vlfpy
     Vmlfpy = result.Vmlfpy
@@ -161,7 +156,7 @@ def executeDemo(
     fig = plt.figure('Simulation & Neuron Morphology')
     gs = fig.add_gridspec(5, 13)
 
-    plotNeuron(cell, meshgrid_electrodes, fig)
+    plotNeuron(cell, fig)
 
     cmap = plt.cm.get_cmap('jet')
     line_labels = ["Cell", "Tran", "LFPy"]
@@ -220,5 +215,24 @@ def executeDemo(
     plt.show()
 
 
+def main():
+    cell_parameters = {
+        'morphology': '../../resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc',
+        'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
+        'passive': True,  # Passive mechanisms are initialized if True
+        'passive_parameters': {'g_pas': 1. / 30000, 'e_pas': -65},
+        'cm': 1.0,  # Membrane capacitance
+        'Ra': 150,  # Axial resistance
+        'dt': 1 / 1000,  # simulation timestep
+        'tstart': 0.,  # Initialization time for simulation <= 0 ms
+        'tstop': 20.,  # Stop time for simulation > 0 ms
+        'nsegs_method': 'lambda_f',  # spatial discretization method
+        'lambda_f': 100.,  # frequency where length constants are computed
+        'delete_sections': False,
+    }
+    cell = LFPy.Cell(**cell_parameters)
+    executeDemo(cell=cell)
+
+
 if __name__ == '__main__':
-    executeDemo()
+    main()
