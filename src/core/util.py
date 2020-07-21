@@ -37,3 +37,17 @@ def reshapeMeshgrid(lst: list):
     for i in range(rows):
         result[i] = np.reshape(lst[i], cols)
     return result
+
+
+def auto_str(cls):
+    """
+    Decorator which adds a default implementation for the __str__ method of a class.
+    """
+    def __str__(self):
+        return '%s(%s)' % (
+            type(self).__name__,
+            ', '.join('%s=%s' % item for item in vars(self).items())
+        )
+
+    cls.__str__ = __str__
+    return cls

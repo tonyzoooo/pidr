@@ -1,28 +1,18 @@
-from typing import Union
-
 import LFPy
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import PolyCollection
 
 
-# import scipy
-# from scipy.signal import butter, lfilter
-# import matplotlib.animation as animation
-
-
 def PolyArea(x, y):
     return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
 
 
-def plotNeuron(cell, electrode, fig):
-    # fig = plt.figure(2)
-    # fig.canvas.set_window_title('Neuron Morphology')
+def plotNeuron(cell, fig):
     # plt.plot(electrode.x, electrode.y, '.',  marker='o',
     #          markersize=3, color='r', zorder=0)
     # rotation = {'x' : 0, 'y' : math.pi, 'z' : 0} #-math.pi/9 # Mainen
     # cell.set_rotation(**rotation)
-    # Plot neuron morphology
     zips = []
     for x, y in cell.get_idx_polygons(projection=('x', 'y')):
         # PATCH Radu do not plot big boxes
@@ -46,31 +36,8 @@ def plotNeuron(cell, electrode, fig):
     return fig
 
 
-def runLfpySimulation(morphology: Union[str, LFPy.Cell] = None):
-    # =============================================================================
-    # ================================= MORPHOLOGY ================================
-    # =============================================================================
-
+def runLfpySimulation(cell: LFPy.Cell = None):
     st = 1 / 1000
-    if type(morphology) is str:
-        cell_parameters = {
-            'morphology': morphology,
-            'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
-            'passive': True,  # Passive mechanisms are initialized if True
-            'passive_parameters': {'g_pas': 1. / 30000, 'e_pas': -65},
-            'cm': 1.0,  # Membrane capacitance
-            'Ra': 150,  # Axial resistance
-            'dt': st,  # simulation timestep
-            'tstart': 0.,  # Initialization time for simulation <= 0 ms
-            'tstop': 20.,  # Stop time for simulation > 0 ms
-            'nsegs_method': 'lambda_f',  # spatial discretization method
-            'lambda_f': 100.,  # frequency where length constants are computed
-        }
-        cell = LFPy.Cell(**cell_parameters)
-    elif type(morphology) is LFPy.Cell:
-        cell = morphology
-    else:
-        raise Exception('Morphology must be an HOC file name or an LFPy.Cell')
 
     # =============================================================================
     # ================================= stimulation parameters================================

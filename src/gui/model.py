@@ -4,11 +4,12 @@
 @author: Loïc Bertrand
 """
 from enum import Enum
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 import LFPy
 from neuron import h, nrn
 
+from src.core.util import auto_str
 from src.gui import section_util
 
 
@@ -25,6 +26,7 @@ class AppModel:
         self.cell = CellModel()
         # Cell to use for plotting and simulation
         self.cellSource = CellSource.BUILDER
+        self.stim = StimModel()
 
     @property
     def selectedSectionName(self):
@@ -63,7 +65,11 @@ class AppModel:
 
     @property
     def sectionNames(self) -> List[str]:
-        return self.cell.getSimpleNames()
+        source = self.cellSource
+        if source is CellSource.BUILDER:
+            return self.cell.getSimpleNames()
+        else:
+            return [sec.hname() for sec in section_util.fileSections()]
 
     @property
     def sections(self) -> List[nrn.Section]:
@@ -98,21 +104,39 @@ class AppModel:
     def toSectionList(self) -> h.SectionList:
         return self.cell.toSectionList()
 
-    def toLFPyCell(self) -> LFPy.Cell:
-        return self.cell.toLFPyCell()
+    def hasMorphology(self) -> bool:
+        source = self.cellSource
+        return (source is CellSource.BUILDER and self.hasSections()
+                or source is CellSource.HOC_FILE and self.hasHocFile())
+
+    def toLFPyCell(self) -> Optional[LFPy.Cell]:
+        if not self.hasMorphology():
+            return None
+        if self.cellSource is CellSource.BUILDER:
+            return self.cell.toLFPyCell()
+        else:
+            cell_parameters = {
+                'morphology': self._filename,
+                'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
+                'passive': True,  # Passive mechanisms are initialized if True
+                'passive_parameters': {'g_pas': 1. / 30000, 'e_pas': -65},
+                'cm': 1.0,  # Membrane capacitance
+                'Ra': 150,  # Axial resistance
+                'dt': 1 / 1000,  # simulation timestep
+                'tstart': 0.,  # Initialization time for simulation <= 0 ms
+                'tstop': 20.,  # Stop time for simulation > 0 ms
+                'nsegs_method': 'lambda_f',  # spatial discretization method
+                'lambda_f': 100.,  # frequency where length constants are computed
+                'delete_sections': False,
+            }
+            return LFPy.Cell(**cell_parameters)
 
     def doSimulation(self):
         from src.core import demo
-        source = self.cellSource
-        if source is CellSource.BUILDER:
-            if self.hasSections():
-                cell = self.toLFPyCell()
-                props = section_util.getBSProperties(self.cell.sections)
-                demo.executeDemo(morphology=cell, props=props)
-        elif source is CellSource.HOC_FILE:
-            if self.hasHocFile():
-                props = section_util.getBSProperties(section_util.fileSections())
-                demo.executeDemo(morphology=self.filename, props=props)
+        if self.hasMorphology():
+            cell = self.toLFPyCell()
+            props = section_util.getBSProperties(cell.allseclist)
+            demo.executeDemo(cell=cell, props=props)
 
 
 class CellModel:
@@ -218,16 +242,17 @@ class CellModel:
 
 class IdxMode(Enum):
     CLOSEST = 1
-    EXACT = 2
+    SECTION = 2
 
 
+@auto_str
 class StimModel:
 
     def __init__(self):
         # Cell segment index where the stimulation electrode is placed
         self.idxMode = IdxMode.CLOSEST
-        self.closestIdx: Tuple[int, int, int] = (0, 0, 0)
-        self.exactIdx: int = 0
+        self.closestIdx = (0, 0, 0)
+        self.sectionIdx = 0
         # Type of point process:
         # - ICLamp: Single pulse current clamp point process
         # - VClamp: Two electrode voltage clamp with three levels
@@ -251,5 +276,5 @@ class StimModel:
     def _getIdx(self, cell: LFPy.Cell) -> int:
         if self.idxMode is IdxMode.CLOSEST:
             return cell.get_closest_idx(*self.closestIdx)
-        elif self.idxMode is IdxMode.EXACT:
-            return self.exactIdx
+        elif self.idxMode is IdxMode.SECTION:
+            return self.sectionIdx

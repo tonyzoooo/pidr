@@ -7,7 +7,6 @@ Created on Tue May  5 21:54:28 2020
 """
 
 from tkinter import *
-from tkinter import messagebox
 from tkinter.ttk import *
 
 from ttkthemes import ThemedTk
@@ -63,8 +62,8 @@ class App(Frame):
 
         # Tab 2: Stimulation
         stimTab = Frame(self.tabs)
-        stimView = StimView(stimTab, model)
-        stimView.place(anchor="c", relx=.5, rely=.5)
+        self.stimView = StimView(stimTab, model)
+        self.stimView.place(anchor="c", relx=.5, rely=.5)
         stimTab.pack()
         self.tabs.add(stimTab, text='Stimulation')
 
@@ -93,6 +92,8 @@ class App(Frame):
 
     def onTabChanged(self, _):
         index = self.tabs.index(self.tabs.select())
+        if index == 1:
+            self.stimView.refreshView()
 
     def fillBallStick(self):
         self.model.cell.sections.clear()

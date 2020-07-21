@@ -39,3 +39,9 @@ stim = {
     'delay': delay,
 }
 stimulus = LFPy.StimIntElectrode(cell, **stim)
+
+print(cell.allsecnames)
+print(cell.allseclist)
+
+for s in cell.allseclist:
+    print(s)
