@@ -53,6 +53,9 @@ class StimView(Frame):
         names = self.model.sectionNames
 
         self.section.configure(values=names)
+        if cell is not None:
+            indices = cell.get_idx(self.section.get())
+            self.segIdx.configure(values=indices)
 
     def saveStim(self):
         cell = self.model.toLFPyCell()

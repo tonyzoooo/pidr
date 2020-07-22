@@ -4,7 +4,7 @@
 @author: Loïc Bertrand
 """
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import LFPy
 from neuron import h, nrn
@@ -22,17 +22,17 @@ class AppModel:
 
     def __init__(self):
         self._filename = None
-        self.selectedSection = None
+        self.selectedSection: Optional[SectionModel] = None
         self.cell = CellModel()
         # Cell to use for plotting and simulation
         self.cellSource = CellSource.BUILDER
         self.stim = StimModel()
 
     @property
-    def selectedSectionName(self):
+    def selectedSectionName(self) -> Optional[str]:
         if self.selectedSection is None:
             return None
-        return section_util.simpleName(self.selectedSection)
+        return self.selectedSection.name
 
     def trySelectSection(self, name: str) -> bool:
         section = self.cell.getSection(name)
@@ -41,19 +41,19 @@ class AppModel:
         self.selectedSection = section
         return True
 
-    def tryAddSection(self, name: str) -> Optional[nrn.Section]:
+    def tryAddSection(self, name: str) -> Optional['SectionModel']:
         return self.cell.tryAddSection(name)
 
-    def getSection(self, name: str) -> Optional[nrn.Section]:
+    def getSection(self, name: str) -> Optional['SectionModel']:
         return self.cell.getSection(name)
 
-    def getPossibleConnections(self, section: nrn.Section):
+    def getPossibleConnections(self, section: 'SectionModel') -> List[Tuple['SectionModel', int]]:
         result = []
         for sec in self.cell.sections:
             if sec != section:
-                if sec.parentseg() is None or sec.orientation() != 0:
+                if sec.parentSec is None or sec.childEnd != 0:
                     result.append((sec, 0))
-                if sec.parentseg() is None or sec.orientation() != 1:
+                if sec.parentSec is None or sec.childEnd != 1:
                     result.append((sec, 1))
         return result
 
@@ -72,7 +72,7 @@ class AppModel:
             return [sec.hname() for sec in section_util.fileSections()]
 
     @property
-    def sections(self) -> List[nrn.Section]:
+    def sections(self) -> List['SectionModel']:
         return self.cell.sections
 
     @property
@@ -139,28 +139,62 @@ class AppModel:
             demo.executeDemo(cell=cell, props=props)
 
 
+Connection = Tuple[int, Optional['SectionModel'], int]
+
+
+class SectionModel:
+
+    def __init__(self, name):
+        self.name = name
+        self.nseg = 1
+        self.L = 1
+        self.diam = 1
+        self.mechanism = None
+        self.parentSec = None
+        self.childEnd = 0  # orientation
+        self.parentEnd = 0
+
+    def connect(self, parent: 'SectionModel', parentEnd: int, childEnd: int):
+        self.parentSec = parent
+        self.parentEnd = parentEnd
+        self.childEnd = childEnd
+
+    def insert(self, mechanism: str):
+        self.mechanism = mechanism
+
+    def toNrnSection(self) -> nrn.Section:
+        sec = h.Section(name=self.name)
+        sec.nseg = self.nseg
+        sec.L = self.L
+        sec.diam = self.diam
+        sec.insert(self.mechanism)
+        return sec
+
+
 class CellModel:
     _instancesCount = 0
     _lastInstanceCreated: Optional['CellModel'] = None
 
     def __init__(self):
-        self.sections = []
+        self.sections: List[SectionModel] = []
         self.displayName = f'cell[{CellModel._instancesCount}]'
         CellModel._instancesCount += 1
         CellModel._lastInstanceCreated = self
+        # Maintains a reference to created nrn.Section(s)
+        self._nrnSectionsCache = []
 
-    def getSection(self, name: str) -> Optional[nrn.Section]:
+    def getSection(self, name: str) -> Optional[SectionModel]:
         for sec in self.sections:
-            if section_util.simpleName(sec) == name:
+            if sec.name == name:
                 return sec
         return None
 
-    def tryAddSection(self, name: str) -> Optional[nrn.Section]:
+    def tryAddSection(self, name: str) -> Optional[SectionModel]:
         if self._isInvalidName(name):
             print(f"name '{name}' is invalid")
             return None
 
-        section = h.Section(name=name, cell=self)
+        section = SectionModel(name)
         self.sections.append(section)
         return section
 
@@ -169,15 +203,26 @@ class CellModel:
                or '(' in name or ')' in name or '.' in name
 
     def getSimpleNames(self) -> List[str]:
-        return [section_util.simpleName(sec) for sec in self.sections]
+        return [sec.name for sec in self.sections]
 
     def toSectionList(self) -> h.SectionList:
-        secList = h.SectionList(self.sections)
+        nrnSections = [sec.toNrnSection() for sec in self.sections]
+        secList = h.SectionList(nrnSections)
+        # Same connections
+        for nrnSec, sec in zip(nrnSections, self.sections):
+            if sec.parentSec is not None:
+                nrnParent = CellModel._findSimilarSection(nrnSections, sec.parentSec)
+                nrnSec.connect(nrnParent, sec.parentEnd, sec.childEnd)
         h.define_shape()
+        self._nrnSectionsCache = nrnSections
         return secList
 
     def toLFPyCell(self) -> LFPy.Cell:
-        sectionList = self.clone().toSectionList()
+        sectionList = self.toSectionList()
+        print('sectionList')
+        for s in sectionList:
+            print(s)
+        print('-----------')
         cell_parameters = {
             'morphology': sectionList,
             'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
@@ -195,45 +240,45 @@ class CellModel:
         }
         return LFPy.Cell(**cell_parameters)
 
-    def clone(self) -> 'CellModel':
-        copy = CellModel()
-        copy.sections = [CellModel._cloneSection(sec, copy) for sec in self.sections]
-        # same connections
-        for clonedSec, sec in zip(copy.sections, self.sections):
-            parentConnection = section_util.getParent(sec)
-            if parentConnection is not None:
-                childEnd, parent, parentEnd = parentConnection
-                clonedParent = CellModel._findSimilarSection(copy.sections, parent)
-                section_util.setParent(clonedSec, (childEnd, clonedParent, parentEnd))
-        return copy
+    # def clone(self) -> 'CellModel':
+    #     copy = CellModel()
+    #     copy.sections = [CellModel._cloneSection(sec, copy) for sec in self.sections]
+    #     # same connections
+    #     for clonedSec, sec in zip(copy.sections, self.sections):
+    #         parentConnection = section_util.getParent(sec)
+    #         if parentConnection is not None:
+    #             childEnd, parent, parentEnd = parentConnection
+    #             clonedParent = CellModel._findSimilarSection(copy.sections, parent)
+    #             section_util.setParent(clonedSec, (childEnd, clonedParent, parentEnd))
+    #     return copy
+
+    # @staticmethod
+    # def _cloneSection(section: nrn.Section, cellName: 'CellModel') -> nrn.Section:
+    #     name = section_util.simpleName(section)
+    #     clone = h.Section(name=name, cell=cellName)
+    #     clone.nseg = section.nseg
+    #     clone.diam = section.diam
+    #     clone.L = section.L
+    #     section_util.setMechanism(clone, section_util.getMechanism(section))
+    #     return clone
 
     @staticmethod
-    def _cloneSection(section: nrn.Section, cellName: 'CellModel') -> nrn.Section:
-        name = section_util.simpleName(section)
-        clone = h.Section(name=name, cell=cellName)
-        clone.nseg = section.nseg
-        clone.diam = section.diam
-        clone.L = section.L
-        section_util.setMechanism(clone, section_util.getMechanism(section))
-        return clone
-
-    @staticmethod
-    def _findSimilarSection(secList: h.SectionList, section: nrn.Section) -> Optional[nrn.Section]:
+    def _findSimilarSection(secList: h.SectionList, section: SectionModel) -> Optional[nrn.Section]:
         for s in secList:
-            if section_util.simpleName(s) == section_util.simpleName(section):
+            if s.name() == section.name:
                 return s
         return None
 
     def printDebug(self):
         print(f'-----{self.displayName}-----')
         for section in self.sections:
-            print('name:', section_util.simpleName(section))
-            print('orientation:', section.orientation())
-            print('parentseg:', section.parentseg())
+            print('name:', section.name)
+            print('orientation:', section.childEnd)
+            print('parentSec:', section.parentSec)
             print('nseg:', section.nseg)
             print('diam:', section.diam)
             print('L:', section.L)
-            print('mechanism:', section_util.getMechanism(section))
+            print('mechanism:', section.mechanism)
             print('-----')
 
     def __str__(self):

@@ -1,49 +1,47 @@
-from typing import Optional, Tuple, List
-
-from neuron import nrn, h
-
-ParentConnection = Tuple[int, nrn.Section, int]
+from neuron import h
 
 
-def getMechanism(section: nrn.Section) -> Optional[str]:
-    firstSegment = next(iter(section))
-    return 'hh' if hasattr(firstSegment, 'hh') \
-        else 'pas' if hasattr(firstSegment, 'pas') \
-        else None
+# ParentConnection = Tuple[int, nrn.Section, int]
+#
+#
+# def getMechanism(section: nrn.Section) -> Optional[str]:
+#     firstSegment = next(iter(section))
+#     return 'hh' if hasattr(firstSegment, 'hh') \
+#         else 'pas' if hasattr(firstSegment, 'pas') \
+#         else None
+#
+#
+# def setMechanism(section: nrn.Section, mech: Optional[str]):
+#     actual = getMechanism(section)
+#     if mech == actual:
+#         return
+#     if actual is not None:
+#         section.uninsert(actual)
+#     if mech is not None:
+#         section.insert(mech)
+#
+#
+# def setParent(child: nrn.Section, parent: Optional[ParentConnection]):
+#     h.disconnect(sec=child)
+#     if parent is None:
+#         return
+#     childEnd, parent, parentEnd = parent
+#     child.connect(parent, parentEnd, childEnd)  # May exit(1) if wrong connection
+#
+#
+# def getParent(child: nrn.Section) -> Optional[ParentConnection]:
+#     parentSeg = child.parentseg()
+#     if parentSeg is None:
+#         return None
+#     else:
+#         childEnd = int(child.orientation())
+#         parent = parentSeg.sec
+#         parentEnd = int(parentSeg.x)
+#         return childEnd, parent, parentEnd
 
 
-def setMechanism(section: nrn.Section, mech: Optional[str]):
-    actual = getMechanism(section)
-    if mech == actual:
-        return
-    if actual is not None:
-        section.uninsert(actual)
-    if mech is not None:
-        section.insert(mech)
-
-
-def setParent(child: nrn.Section, parent: Optional[ParentConnection]):
-    h.disconnect(sec=child)
-    if parent is None:
-        return
-    childEnd, parent, parentEnd = parent
-    child.connect(parent, parentEnd, childEnd)  # May exit(1) if wrong connection
-
-
-def getParent(child: nrn.Section) -> Optional[ParentConnection]:
-    parentSeg = child.parentseg()
-    if parentSeg is None:
-        return None
-    else:
-        childEnd = int(child.orientation())
-        parent = parentSeg.sec
-        parentEnd = int(parentSeg.x)
-        return childEnd, parent, parentEnd
-
-
-def simpleName(section: nrn.Section) -> str:
-    return section.hname().split('.')[-1]
-
+# def simpleName(section: nrn.Section) -> str:
+#     return section.hname().split('.')[-1]
 
 def fileSections():
     return [sec for sec in h.allsec() if sec.cell() is None]
@@ -56,10 +54,10 @@ def hasFileSections():
     return False
 
 
-def getBSProperties(sections: List[nrn.Section]) -> dict:
+def getBSProperties(sections) -> dict:
     props = {}
     for sec in sections:
-        name: str = sec.hname()
+        name: str = sec.name()
         if name.find('soma') >= 0:
             props['SL'] = sec.L
         elif name.find('axon') >= 0:

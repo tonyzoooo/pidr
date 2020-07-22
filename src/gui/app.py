@@ -112,18 +112,15 @@ class App(Frame):
         dend.L = 50
         dend.diam = 2
         dend.insert('pas')
-        axon.connect(soma(1), 0)
-        dend.connect(soma(0), 1)
+        axon.connect(soma, 1, 0)
+        dend.connect(soma, 0, 1)
         self.sectionsView.refreshView()
 
     @staticmethod
     def launch():
         root = ThemedTk(background=True)
         if 'plastik' in root.get_themes():
-            root.set_theme('plastik')  # plastik / arc
-        # style = Style()
-        # if 'clam' in style.theme_names():
-        #     style.theme_use('clam')
+            root.set_theme('plastik')
         model = AppModel()
         App(root, model)
         root.mainloop()

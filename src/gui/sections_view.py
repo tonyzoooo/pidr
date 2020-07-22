@@ -2,7 +2,6 @@ from tkinter import *
 from tkinter.ttk import *
 from typing import Optional
 
-from src.gui import section_util
 from src.gui.model import AppModel
 
 
@@ -84,8 +83,7 @@ class SectionsView(Frame):
         """
         self.sectionList.delete(0, 'end')
         for sec in self.model.cell.sections:
-            name = section_util.simpleName(sec)
-            self.sectionList.insert('end', name)
+            self.sectionList.insert('end', sec.name)
         if len(self.model.cell.sections) > 0:
             self.sectionList.selection_set(0)
             self._manageSelection()
