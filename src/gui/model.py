@@ -21,7 +21,7 @@ class CellSource(Enum):
 class AppModel:
 
     def __init__(self):
-        self._filename = None
+        self.filename = None
         self.selectedSection: Optional[SectionModel] = None
         self.cell = CellModel()
         # Cell to use for plotting and simulation
@@ -63,33 +63,9 @@ class AppModel:
     def hasHocFile(self):
         return self.filename is not None
 
-    @property
-    def sectionNames(self) -> List[str]:
-        source = self.cellSource
-        if source is CellSource.BUILDER:
-            return self.cell.getSimpleNames()
-        else:
-            return [sec.hname() for sec in section_util.fileSections()]
-
-    @property
-    def sections(self) -> List['SectionModel']:
-        return self.cell.sections
-
-    @property
-    def filename(self) -> str:
-        """
-        Returns name of file.
-        """
-        return self._filename
-
-    @filename.setter
-    def filename(self, name):
-        # Remove existing file sections if present
-        for sec in h.allsec():
-            if sec.cell() is None:
-                h.delete_section(sec=sec)
-
-        self._filename = name
+    @staticmethod
+    def _loadFileIntoMemory(name):
+        section_util.clearAllSec()
         if name:
             print('loading file', name)
             try:
@@ -101,8 +77,23 @@ class AppModel:
             except RuntimeError as e:
                 print('define_shape:', e)
 
+    @property
+    def sectionNames(self) -> List[str]:
+        source = self.cellSource
+        if source is CellSource.BUILDER:
+            return self.cell.getNames()
+        else:
+            sectionList = self.toSectionList()
+            return [sec.hname() for sec in sectionList]
+
     def toSectionList(self) -> h.SectionList:
-        return self.cell.toSectionList()
+        section_util.clearAllSec()
+        source = self.cellSource
+        if source is CellSource.BUILDER:
+            return self.cell.toSectionList()
+        else:
+            AppModel._loadFileIntoMemory(self.filename)
+            return h.allsec()
 
     def hasMorphology(self) -> bool:
         source = self.cellSource
@@ -116,7 +107,7 @@ class AppModel:
             return self.cell.toLFPyCell()
         else:
             cell_parameters = {
-                'morphology': self._filename,
+                'morphology': self.filename,
                 'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
                 'passive': True,  # Passive mechanisms are initialized if True
                 'passive_parameters': {'g_pas': 1. / 30000, 'e_pas': -65},
@@ -137,9 +128,6 @@ class AppModel:
             cell = self.toLFPyCell()
             props = section_util.getBSProperties(cell.allseclist)
             demo.executeDemo(cell=cell, props=props)
-
-
-Connection = Tuple[int, Optional['SectionModel'], int]
 
 
 class SectionModel:
@@ -173,13 +161,11 @@ class SectionModel:
 
 class CellModel:
     _instancesCount = 0
-    _lastInstanceCreated: Optional['CellModel'] = None
 
     def __init__(self):
         self.sections: List[SectionModel] = []
         self.displayName = f'cell[{CellModel._instancesCount}]'
         CellModel._instancesCount += 1
-        CellModel._lastInstanceCreated = self
         # Maintains a reference to created nrn.Section(s)
         self._nrnSectionsCache = []
 
@@ -199,10 +185,10 @@ class CellModel:
         return section
 
     def _isInvalidName(self, name):
-        return name == '' or name in self.getSimpleNames() \
+        return name == '' or name in self.getNames() \
                or '(' in name or ')' in name or '.' in name
 
-    def getSimpleNames(self) -> List[str]:
+    def getNames(self) -> List[str]:
         return [sec.name for sec in self.sections]
 
     def toSectionList(self) -> h.SectionList:
@@ -217,12 +203,15 @@ class CellModel:
         self._nrnSectionsCache = nrnSections
         return secList
 
+    @staticmethod
+    def _findSimilarSection(secList: List[nrn.Section], section: SectionModel) -> Optional[nrn.Section]:
+        for s in secList:
+            if s.hname() == section.name:
+                return s
+        return None
+
     def toLFPyCell(self) -> LFPy.Cell:
         sectionList = self.toSectionList()
-        print('sectionList')
-        for s in sectionList:
-            print(s)
-        print('-----------')
         cell_parameters = {
             'morphology': sectionList,
             'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
@@ -239,47 +228,6 @@ class CellModel:
             # 'verbose': True
         }
         return LFPy.Cell(**cell_parameters)
-
-    # def clone(self) -> 'CellModel':
-    #     copy = CellModel()
-    #     copy.sections = [CellModel._cloneSection(sec, copy) for sec in self.sections]
-    #     # same connections
-    #     for clonedSec, sec in zip(copy.sections, self.sections):
-    #         parentConnection = section_util.getParent(sec)
-    #         if parentConnection is not None:
-    #             childEnd, parent, parentEnd = parentConnection
-    #             clonedParent = CellModel._findSimilarSection(copy.sections, parent)
-    #             section_util.setParent(clonedSec, (childEnd, clonedParent, parentEnd))
-    #     return copy
-
-    # @staticmethod
-    # def _cloneSection(section: nrn.Section, cellName: 'CellModel') -> nrn.Section:
-    #     name = section_util.simpleName(section)
-    #     clone = h.Section(name=name, cell=cellName)
-    #     clone.nseg = section.nseg
-    #     clone.diam = section.diam
-    #     clone.L = section.L
-    #     section_util.setMechanism(clone, section_util.getMechanism(section))
-    #     return clone
-
-    @staticmethod
-    def _findSimilarSection(secList: h.SectionList, section: SectionModel) -> Optional[nrn.Section]:
-        for s in secList:
-            if s.name() == section.name:
-                return s
-        return None
-
-    def printDebug(self):
-        print(f'-----{self.displayName}-----')
-        for section in self.sections:
-            print('name:', section.name)
-            print('orientation:', section.childEnd)
-            print('parentSec:', section.parentSec)
-            print('nseg:', section.nseg)
-            print('diam:', section.diam)
-            print('L:', section.L)
-            print('mechanism:', section.mechanism)
-            print('-----')
 
     def __str__(self):
         return self.displayName

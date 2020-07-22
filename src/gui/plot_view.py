@@ -9,10 +9,8 @@ Created on Fri Jun 26 16:08:39 2020
 from tkinter import *
 from tkinter.ttk import *
 
-from neuron import h
-
-from src.gui import section_util
-from src.gui.model import AppModel, CellSource
+from plotting import plot3DCell, plot2DCell
+from src.gui.model import AppModel
 from src.gui.plotting import plot2DCell, plot3DCell
 
 
@@ -22,32 +20,20 @@ class PlotView(Frame):
         super().__init__(master)
         self.model = model
 
-        self.buttonVar = IntVar(value=1)
+        self.buttonVar = StringVar(value='2D')
         self.figures = []
-        optButton0 = Radiobutton(self, text="3D View", variable=self.buttonVar, value=1)
-        optButton1 = Radiobutton(self, text="2D View", variable=self.buttonVar, value=2)
+        optButton0 = Radiobutton(self, text="3D View", variable=self.buttonVar, value='3D')
+        optButton1 = Radiobutton(self, text="2D View", variable=self.buttonVar, value='2D')
         printButton = Button(self, text="Display", command=self._display)
         optButton0.grid(row=0, column=0)
         optButton1.grid(row=1, column=0, pady=4)
         printButton.grid(row=2, column=0, padx=8)
 
     def _display(self):
-        source = self.model.cellSource
-        if source is CellSource.HOC_FILE:
-            if section_util.hasFileSections():
-                fileSections = section_util.fileSections()
-                self._displayCell(fileSections)
-            else:
-                print('No sections from a file in memory')
-        elif source is CellSource.BUILDER:
-            if self.model.hasSections():
-                sectionList = self.model.toSectionList()
-                self._displayCell(sectionList)
-
-    def _displayCell(self, sections):
-        value = self.buttonVar.get()
-        # Do we need a h.SectionList for the plots or is a list of Sections okay?
-        if value == 1:
-            plot3DCell(sections)
-        elif value == 2:
-            plot2DCell(sections)
+        if self.model.hasMorphology():
+            sectionList = self.model.toSectionList()
+            dim = self.buttonVar.get()
+            if dim == '3D':
+                plot3DCell(sectionList)
+            elif dim == '2D':
+                plot2DCell(sectionList)
