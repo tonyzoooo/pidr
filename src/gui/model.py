@@ -83,13 +83,12 @@ class AppModel:
         if source is CellSource.BUILDER:
             return self.cell.getNames()
         else:
+            assert False
             sectionList = self.toSectionList()
             return [sec.hname() for sec in sectionList]
 
     def toSectionList(self) -> h.SectionList:
-        section_util.clearAllSec()
-        source = self.cellSource
-        if source is CellSource.BUILDER:
+        if self.cellSource is CellSource.BUILDER:
             return self.cell.toSectionList()
         else:
             AppModel._loadFileIntoMemory(self.filename)
