@@ -9,7 +9,6 @@ Created on Fri Jun 26 16:08:39 2020
 from tkinter import *
 from tkinter.ttk import *
 
-from plotting import plot3DCell, plot2DCell
 from src.gui.model import AppModel
 from src.gui.plotting import plot2DCell, plot3DCell
 
@@ -20,7 +19,7 @@ class PlotView(Frame):
         super().__init__(master)
         self.model = model
 
-        self.buttonVar = StringVar(value='2D')
+        self.buttonVar = StringVar(value='3D')
         self.figures = []
         optButton0 = Radiobutton(self, text="3D View", variable=self.buttonVar, value='3D')
         optButton1 = Radiobutton(self, text="2D View", variable=self.buttonVar, value='2D')

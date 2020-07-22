@@ -1,9 +1,12 @@
 from tkinter import *
 from tkinter.ttk import *
+from typing import Optional
+
+import LFPy
 
 from src.gui import section_util
 from src.gui.model import AppModel, IdxMode
-from src.gui.number_validation import addFloatValidation, addIntValidation, safeFloat
+from src.gui.number_validation import addFloatValidation, addIntValidation, safeFloat, safeInt
 
 
 class StimView(Frame):
@@ -11,6 +14,7 @@ class StimView(Frame):
     def __init__(self, master, model: AppModel):
         super().__init__(master, padding=4)
         self.model = model
+        self._cell: Optional[LFPy.Cell] = None
 
         pad = {'padx': 4, 'pady': 4}
 
@@ -29,10 +33,12 @@ class StimView(Frame):
             spinBox.bind('<FocusOut>', lambda e: self.saveStim())
             addFloatValidation(spinBox)
 
-        self.section = Combobox(self, values=['soma', 'dend', 'axon'], state='readonly', width=12)
+        self.section = Combobox(self, state='readonly', width=12)
         self.section.grid(row=2, column=1, columnspan=2, **pad, sticky='ew')
-        self.segIdx = Spinbox(self, width=5)
+        self.section.bind('<<ComboboxSelected>>', lambda e: self._refreshSegIndices())
+        self.segIdx = Combobox(self, state='readonly', width=5)
         self.segIdx.grid(row=2, column=3, **pad)
+        self.segIdx.bind('<<ComboboxSelected>>', lambda e: self.saveStim())
         addIntValidation(self.segIdx)
 
         self.amp, self.dur, self.delay = DoubleVar(value=0), DoubleVar(value=0), DoubleVar(value=0)
@@ -46,25 +52,35 @@ class StimView(Frame):
             addFloatValidation(spinBox)
 
     def refreshView(self):
-        # Should be trigered each time we switch to the stimulation tab
-        # Fills the entries depending on the morphology
-        cell = self.model.toLFPyCell()
-        stim = self.model.stim
-        names = self.model.sectionNames
-
+        section_util.clearAllSec()
+        if not self.model.hasMorphology():
+            print('no morphology')
+            return
+        self._cell = self.model.toLFPyCell()
+        names = self._cell.allsecnames
+        actualSec = self.section.get()
+        if actualSec not in names:
+            self.section.set('')
         self.section.configure(values=names)
-        if cell is not None:
-            indices = cell.get_idx(self.section.get())
-            self.segIdx.configure(values=indices)
+        self._refreshSegIndices()
+
+    def _refreshSegIndices(self):
+        section = self.section.get()
+        indices = list(self._cell.get_idx(section)) if section else []
+        actualIdx = safeInt(self.segIdx.get, orElse=-1)
+        if actualIdx not in indices:
+            self.segIdx.set('')
+        self.segIdx.configure(values=indices)
 
     def saveStim(self):
-        cell = self.model.toLFPyCell()
         stim = self.model.stim
 
         stim.idxMode = IdxMode.CLOSEST if self.idxMode.get() == 1 else IdxMode.SECTION
         stim.closestIdx = (safeFloat(self.xCoord.get, orElse=stim.closestIdx[0]),
                            safeFloat(self.yCoord.get, orElse=stim.closestIdx[1]),
                            safeFloat(self.zCoord.get, orElse=stim.closestIdx[2]))
+
+        stim.sectionIdx = safeInt(self.segIdx.get, orElse=None)
 
         stim.amp = safeFloat(self.amp.get, orElse=stim.amp)
         stim.dur = safeFloat(self.dur.get, orElse=stim.dur)
