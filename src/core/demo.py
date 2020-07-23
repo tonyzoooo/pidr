@@ -10,7 +10,7 @@ from src.core.lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulat
 from src.core.morphofiltd import morphofiltd
 
 
-def executeDemo(cell: LFPy.Cell, props=None):
+def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, props=None):
     # -----------------------------------------------------------
     # HH (Hodgkin–Huxley model)
     # -----------------------------------------------------------
@@ -62,7 +62,7 @@ def executeDemo(cell: LFPy.Cell, props=None):
     # load LFPy simulation result
     # -----------------------------------------------------------
 
-    result = runLfpySimulation(cell)
+    result = runLfpySimulation(cell=cell, stim=stim)
 
     Vlfpy = result.Vlfpy
     Vmlfpy = result.Vmlfpy
@@ -104,8 +104,7 @@ def executeDemo(cell: LFPy.Cell, props=None):
     order = int(AL / dk + 1)
     r0 = np.array([0, 0, 0])  # soma position
     r1 = np.array([SL / 2, 0, 0])  # axon start position
-    # axon stop position (start of the last segment)
-    rN = np.array([SL / 2 + AL - dk, 0, 0])
+    rN = np.array([SL / 2 + AL - dk, 0, 0])  # axon stop position (start of the last segment)
     rd = norm(r1 - r0) * np.array([
         np.sin(phi) * np.cos(theta),
         np.sin(phi) * np.sin(theta),
@@ -231,7 +230,18 @@ def main():
         'delete_sections': False,
     }
     cell = LFPy.Cell(**cell_parameters)
-    executeDemo(cell=cell)
+
+    stim_parameters = {
+        'idx': cell.get_closest_idx(x=0, y=0, z=0),
+        'record_current': True,
+        'pptype': 'IClamp',  # Type of point process: VClamp / SEClamp / ICLamp.
+        'amp': 0.2,
+        'dur': 10,  # 0.01
+        'delay': 1,  # 5
+    }
+    stim = LFPy.StimIntElectrode(cell, **stim_parameters)
+
+    executeDemo(cell=cell, stim=stim)
 
 
 if __name__ == '__main__':

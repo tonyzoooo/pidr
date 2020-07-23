@@ -126,7 +126,8 @@ class AppModel:
         if self.hasMorphology():
             cell = self.toLFPyCell()
             props = section_util.getBSProperties(cell.allseclist)
-            demo.executeDemo(cell=cell, props=props)
+            stim = self.stim.toLFPyStimIntElectrode(cell)
+            demo.executeDemo(cell=cell, stim=stim, props=props)
 
 
 class SectionModel:

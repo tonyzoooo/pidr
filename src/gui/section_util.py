@@ -10,7 +10,7 @@ def fileSections():
     return [sec for sec in h.allsec() if sec.cell() is None]
 
 
-def getBSProperties(sections) -> dict:
+def getBSProperties(sections: h.SectionList) -> dict:
     props = {}
     for sec in sections:
         name: str = sec.name()
