@@ -36,31 +36,17 @@ def plotNeuron(cell, fig):
     return fig
 
 
-def runLfpySimulation(cell: LFPy.Cell = None):
+def runLfpySimulation(cell: LFPy.Cell, stim: LFPy.StimIntElectrode):
     st = 1 / 1000
 
     # =============================================================================
     # ================================= stimulation parameters================================
     # =============================================================================
 
-    amp = 0.2
-    dur = 10
-    delay = 1
     # if cell_parameters["passive"]==False:
     #     amp=1.95**(int(ida)/1.95)/30+1.6*int(ila)/10000+int(ild)/5000*int(idd)*1.5
     # else:
     #     amp=1.65**(int(ida)/1.95)/30+0.805*int(ila)/10000+int(ild)/5000*int(idd)*1.1 #-0.4 for Mainen equivalent
-
-    stim = {
-        'idx': cell.get_closest_idx(x=0, y=0, z=0),
-        'record_current': True,
-        'pptype': 'IClamp',  # Type of point process: VClamp / SEClamp / ICLamp.
-        'amp': amp,
-        'dur': dur,  # 0.01
-        'delay': delay,  # 5
-    }
-
-    stimulus = LFPy.StimIntElectrode(cell, **stim)
 
     # =============================================================================
     # ================================= SIMULATION  ===============================
@@ -120,7 +106,7 @@ def runLfpySimulation(cell: LFPy.Cell = None):
     res.Imlfpy = Imlfpy
     res.cell = cell
     res.timeind = timeind
-    res.stimulus = stimulus
+    res.stimulus = stim
     res.meshgrid_electrodes = meshgrid_electrodes
     return res
 
