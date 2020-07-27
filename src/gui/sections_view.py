@@ -9,7 +9,10 @@ class SectionsView(Frame):
 
     def __init__(self, master, model: AppModel):
         """
-        self for the list of sections
+        Container for the list of sections
+
+        :param master: parent container
+        :param model: app model
         """
         super().__init__(master)
         self.model = model

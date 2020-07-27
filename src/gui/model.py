@@ -27,6 +27,7 @@ class AppModel:
         # Cell to use for plotting and simulation
         self.cellSource = CellSource.BUILDER
         self.stim = StimModel()
+        h.load_file('stdlib.hoc')
 
     @property
     def selectedSectionName(self) -> Optional[str]:
@@ -82,10 +83,6 @@ class AppModel:
         source = self.cellSource
         if source is CellSource.BUILDER:
             return self.cell.getNames()
-        else:
-            assert False
-            sectionList = self.toSectionList()
-            return [sec.hname() for sec in sectionList]
 
     def toSectionList(self) -> h.SectionList:
         if self.cellSource is CellSource.BUILDER:
@@ -125,9 +122,9 @@ class AppModel:
         from src.core import demo
         if self.hasMorphology():
             cell = self.toLFPyCell()
-            props = section_util.getBSProperties(cell.allseclist)
+            dims = section_util.getCellDimensions(cell.allseclist)
             stim = self.stim.toLFPyStimIntElectrode(cell)
-            demo.executeDemo(cell=cell, stim=stim, props=props)
+            demo.executeDemo(cell=cell, stim=stim, dims=dims)
 
 
 class SectionModel:
@@ -135,8 +132,8 @@ class SectionModel:
     def __init__(self, name):
         self.name = name
         self.nseg = 1
-        self.L = 1
-        self.diam = 1
+        self.L = 1  # µm
+        self.diam = 1  # µm
         self.mechanism = None
         self.parentSec = None
         self.childEnd = 0  # orientation
@@ -244,19 +241,19 @@ class StimModel:
     def __init__(self):
         # Cell segment index where the stimulation electrode is placed
         self.idxMode = IdxMode.CLOSEST
-        self.closestIdx = (0, 0, 0)
+        self.closestIdx = (0.0, 0.0, 0.0)
         self.sectionIdx = 0
         # Type of point process:
         # - ICLamp: Single pulse current clamp point process
         # - VClamp: Two electrode voltage clamp with three levels
         # - SEClamp: Single electrode voltage clamp with three levels
         self.pptype = 'IClamp'
-        self.amp = 0
-        self.dur = 0
-        self.delay = 0
+        self.amp = 0.2  # nA
+        self.dur = 10.0  # ms
+        self.delay = 1.0  # ms
 
     def toLFPyStimIntElectrode(self, cell: LFPy.Cell) -> LFPy.StimIntElectrode:
-        stim = {
+        stim_parameters = {
             'idx': self._getIdx(cell),
             'record_current': True,
             'pptype': self.pptype,
@@ -264,7 +261,11 @@ class StimModel:
             'dur': self.dur,
             'delay': self.delay,
         }
-        return LFPy.StimIntElectrode(cell, **stim)
+        stim = LFPy.StimIntElectrode(cell, **stim_parameters)
+        stim.amp = self.amp
+        stim.dur = self.dur
+        stim.delay = self.delay
+        return stim
 
     def _getIdx(self, cell: LFPy.Cell) -> int:
         if self.idxMode is IdxMode.CLOSEST:

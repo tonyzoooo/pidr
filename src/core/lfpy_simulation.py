@@ -37,8 +37,6 @@ def plotNeuron(cell, fig):
 
 
 def runLfpySimulation(cell: LFPy.Cell, stim: LFPy.StimIntElectrode):
-    st = 1 / 1000
-
     # =============================================================================
     # ================================= stimulation parameters================================
     # =============================================================================
@@ -83,6 +81,7 @@ def runLfpySimulation(cell: LFPy.Cell, stim: LFPy.StimIntElectrode):
     # ================================= plot and save  ===============================
     # =============================================================================
 
+    st = cell.dt  # simulation timestep
     timeind = (cell.tvec > np.argmax(cell.somav) * st -
                3) & (cell.tvec <= np.argmax(cell.somav) * st + 5)
 
@@ -104,9 +103,7 @@ def runLfpySimulation(cell: LFPy.Cell, stim: LFPy.StimIntElectrode):
     res.Vlfpy = Vlfpy
     res.Vmlfpy = Vmlfpy
     res.Imlfpy = Imlfpy
-    res.cell = cell
     res.timeind = timeind
-    res.stimulus = stim
     res.meshgrid_electrodes = meshgrid_electrodes
     return res
 
@@ -115,9 +112,7 @@ class StimulationResult:
     Vlfpy: np.ndarray = None
     Vmlfpy: np.ndarray = None
     Imlfpy: np.ndarray = None
-    cell: LFPy.Cell = None
     timeind: float = None
-    stimulus: LFPy.StimIntElectrode = None
     meshgrid_electrodes: LFPy.RecExtElectrode = None
 
 

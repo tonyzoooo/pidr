@@ -16,6 +16,12 @@ from src.gui.plotting import plot2DCell, plot3DCell
 class PlotView(Frame):
 
     def __init__(self, master, model: AppModel):
+        """
+        Container for selecting desired plot parameters
+
+        :param master: parent container
+        :param model: app model
+        """
         super().__init__(master)
         self.model = model
 

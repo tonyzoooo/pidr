@@ -29,20 +29,26 @@ def readMatrix(file: str):
 
 
 def reshapeMeshgrid(lst: list):
-    if len(lst) == 0:
-        raise ValueError('list lst cannot be empty')
     rows = len(lst)
     cols = lst[0].size
     result = np.empty((rows, cols))
     for i in range(rows):
         result[i] = np.reshape(lst[i], cols)
-    return result
+    return result.transpose()
+
+
+def closed_range(start: float, stop: float, step: float = 1) -> np.ndarray:
+    """
+    Closed range, equivalent to a MATLAB(R) range (start:step:stop)
+    """
+    return np.arange(start, stop + step, step)
 
 
 def auto_str(cls):
     """
     Decorator which adds a default implementation for the __str__ method of a class.
     """
+
     def __str__(self):
         return '%s(%s)' % (
             type(self).__name__,
