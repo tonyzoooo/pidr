@@ -11,6 +11,9 @@ class ConfigView(Frame):
     def __init__(self, master, model: AppModel):
         """
         Container for the configuration of the selected section
+
+        :param master: parent container
+        :param model: app model
         """
         super().__init__(master)
         self.model = model
@@ -36,6 +39,7 @@ class ConfigView(Frame):
             spinBox = Spinbox(self, textvariable=var, **floatSpinArgs)
             spinBox.grid(row=row, column=1, columnspan=2, **entryArgs)
             spinBox.bind('<FocusOut>', lambda e: self.saveCurrentSection())
+            Label(self, text='µm').grid(row=row, column=3, padx=4, pady=4, sticky='w')
             addFloatValidation(spinBox, from_=1e-9)
 
         Label(self, text='parent').grid(row=4, **labelArgs)

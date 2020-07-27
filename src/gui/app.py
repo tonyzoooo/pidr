@@ -46,7 +46,7 @@ class App(Frame):
         self.sectionsView.grid(row=0, column=0, rowspan=2, **pad)
         self.configView = ConfigView(self.builderFrame, model)
         self.configView.grid(row=0, column=1, columnspan=2, **pad)
-        ballstickButton = Button(self.builderFrame, text='Create ball & stick', command=self.fillBallStick)
+        ballstickButton = Button(self.builderFrame, text='Example', command=self.fillBallStick)
         ballstickButton.grid(row=1, column=1, **pad)
         useFileButton = Button(self.builderFrame, text='Use HOC file', command=self.switchToFile)
         useFileButton.grid(row=1, column=2, **pad)

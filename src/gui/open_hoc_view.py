@@ -10,6 +10,9 @@ class OpenHocView(Frame):
     def __init__(self, master, model: AppModel):
         """
         Container for file selection
+
+        :param master: parent container
+        :param model: app model
         """
         super().__init__(master)
         self.model = model

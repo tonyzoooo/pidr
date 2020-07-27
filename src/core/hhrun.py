@@ -4,7 +4,28 @@ from numpy import exp, zeros
 from numpy.core.multiarray import ndarray
 
 
-def hhrun(I, t) -> Tuple[ndarray, ...]:
+def hhrun(I: ndarray, t: ndarray) -> Tuple[ndarray, ...]:
+    """
+    Performs Hodgkin–Huxley algorithm
+
+    Returns
+        - V:    membrane voltage (mV)
+        - m:    ?
+        - n:    ?
+        - h:    ?
+        - INa:  sodium ionic currents
+        - IK:   potassium ionic currents
+        - Il:   leakage currents
+
+    :param I:   stimulation intensity vector
+    :param t:   time vector
+    :return (V, m, n, h, INa, IK, Il)
+    """
+
+    print('I', I)
+    for i in I:
+        print(i)
+
     # def am(v):
     #     # Alpha for Variable m
     #     a = 0.1*(v+35)/(1-exp(-(v+35)/10))
@@ -90,14 +111,14 @@ def hhrun(I, t) -> Tuple[ndarray, ...]:
     dt = t[1]-t[0]
 
     # Array initializations
-    arraySize = len(t)
-    V = zeros(arraySize)
-    m = zeros(arraySize)
-    n = zeros(arraySize)
-    h = zeros(arraySize)
-    INa = zeros(arraySize)
-    IK = zeros(arraySize)
-    Il = zeros(arraySize)
+    length = len(t)
+    V = zeros(length)
+    m = zeros(length)
+    n = zeros(length)
+    h = zeros(length)
+    INa = zeros(length)
+    IK = zeros(length)
+    Il = zeros(length)
 
     # Cm = 0.01       # Membrane Capcitance uF/cm**2
     # ENa = 55.17     # mv Na reversal potential
@@ -131,7 +152,7 @@ def hhrun(I, t) -> Tuple[ndarray, ...]:
     m[0] = am(V[0]) / (am(V[0]) + bm(V[0]))  # Initial m-value
     n[0] = an(V[0]) / (an(V[0]) + bn(V[0]))  # Initial n-value
     h[0] = ah(V[0]) / (ah(V[0]) + bh(V[0]))  # Initial h-value
-    for i in range(len(t) - 1):
+    for i in range(length - 1):
         # Euler method to find the next m/n/h value
         m[i + 1] = m[i] + dt * ((am(V[i]) * (1 - m[i])) - (bm(V[i]) * m[i]))
         n[i + 1] = n[i] + dt * ((an(V[i]) * (1 - n[i])) - (bn(V[i]) * n[i]))
@@ -148,9 +169,4 @@ def hhrun(I, t) -> Tuple[ndarray, ...]:
     IK[i + 1] = gK * (V[i + 1] - EK)
     Il[i + 1] = gl * (V[i + 1] - El)
 
-    # # Store variables for graphing later
-    # FE = V
-    # FEm = m
-    # FEn = n
-    # FEh = h
     return V, m, n, h, INa, IK, Il

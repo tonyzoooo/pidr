@@ -11,10 +11,11 @@ pip install -r requirements.txt
 ## Usage
 
 ```bash
+export PYTHONPATH=.
 # Run gui
-python -m src.gui.app
-# Run simulation only
-python -m src.core.demo
+python src/gui/app.py
+# Run simulation script only
+python src/core/demo.py
 ```
 
 After executing this command, your can load a `.hoc` file for the morphology of the cell. You can find examples in the `resources` directory.

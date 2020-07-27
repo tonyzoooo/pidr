@@ -10,56 +10,19 @@ from src.core.lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulat
 from src.core.morphofiltd import morphofiltd
 
 
-def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, props=None):
-    # -----------------------------------------------------------
-    # HH (Hodgkin–Huxley model)
-    # -----------------------------------------------------------
+def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, dims=None):
+    """
+    Executes the demo comparing LFPy's simulation and Tran's fast simulation
+    based on a morphological filtering approximation.
 
-    inmvm = 3000  # index max on Vm in LFPy (3000 for synchronisation)
-    lVLFPy = 8000  # signal length in LFPy
-    dt = 10 ** (-3)  # in ms
-    Nt = 2 ** 15
-    D = Nt * dt
-    t = np.arange(dt, D + dt, dt) - dt
-
-    fe = 1 / dt
-    f = np.arange(0, fe / 2, fe / Nt)
-
-    I = (
-            (np.heaviside(t - 1, 1 / 2) - np.heaviside(t - 31, 1 / 2))
-            * 0.044 / (2 * pi * 12.5 * 25) * 10 ** 8 * 10 ** -3
-        # * 5.093 # 0.15/(pi*12.5*12.5*2+2*pi*12.5*25)*10**8
-    )
-    icur = 1
-
-    # pot membrane, proportional to ion channels electric current
-    # (http://www.bem.fi/book/03/03.htm, 3.14)
-    Vm, m, n, h, INa, IK, Il = hhrun(I, t)
-
-    Im = (INa + IK + Il) * (2 * pi * 12.5 * 25) / 10 ** 8 * 10 ** 3
-    inMVm = np.argmax(Vm)
-    MVm = Vm[inMVm]
+    :param cell:    LFPy.Cell object
+    :param stim:    LFPy.StimIntElectrode object
+    :param dims:    ball & stick moprholopy dimensions as a dictionary
+        (see getCellDimensions function in module src.gui.section_util)
+    """
 
     # -----------------------------------------------------------
-    # BS neuron morphology
-    # -----------------------------------------------------------
-
-    if props is None:
-        props = {}
-    print('props:', props)
-
-    SL = props.get('SL', 25)  # soma length (cylinder with the same diameter)
-
-    AL = props.get('AL', 1000)  # axon length
-    AD = props.get('AD', 2)  # axon diameter
-
-    LD = props.get('LD', 200)  # dendrite length
-    DD = props.get('DD', 2)  # dendrite diameter
-    phi = pi / 2  # angle avec Oz
-    theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
-
-    # -----------------------------------------------------------
-    # load LFPy simulation result
+    # run LFPy simulation
     # -----------------------------------------------------------
 
     result = runLfpySimulation(cell=cell, stim=stim)
@@ -68,10 +31,54 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, props=None):
     Vmlfpy = result.Vmlfpy
     Imlfpy = result.Imlfpy
 
-    cell = result.cell
     timeind = result.timeind
-    stimulus = result.stimulus
     meshgrid_electrodes = result.meshgrid_electrodes
+
+    # -----------------------------------------------------------
+    # HH (Hodgkin–Huxley model)
+    # -----------------------------------------------------------
+
+    inmvm = np.argmax(Vmlfpy)  # index max on Vm in LFPy (3000 for synchronisation)
+    lVLFPy = len(Vlfpy)  # signal length in LFPy
+    dt = 10 ** -3  # in ms
+    Nt = 2 ** 15
+    D = Nt * dt
+    t = util.closed_range(dt, D, dt) - dt
+
+    # fe = 1 / dt
+    # f = np.arange(0, fe / 2, fe / Nt)
+
+    I = (
+            (np.heaviside(t - 1, 1 / 2) - np.heaviside(t - 31, 1 / 2))
+            * 0.044 / (2 * pi * 12.5 * 25) * 10 ** 8 * 10 ** -3
+        # * 5.093 # 0.15 / (pi * 12.5 * 12.5 * 2 + 2 * pi * 12.5 * 25) * 10 ** 8
+    )
+    # icur = 1
+
+    # pot membrane, proportional to ion channels electric current
+    # (http://www.bem.fi/book/03/03.htm, 3.14)
+    Vm, m, n, h, INa, IK, Il = hhrun(I, t)
+
+    Im = (INa + IK + Il) * (2 * pi * 12.5 * 25) / 10 ** 8 * 10 ** 3
+    inMVm = np.argmax(Vm)
+
+    # -----------------------------------------------------------
+    # BS neuron morphology
+    # -----------------------------------------------------------
+
+    if dims is None:
+        dims = {}
+    print('picked up dimensions:', dims)
+
+    SL = dims.get('SL', 25)  # soma length (cylinder with the same diameter)
+
+    AL = dims.get('AL', 1000)  # axon length
+    AD = dims.get('AD', 2)  # axon diameter
+
+    LD = dims.get('LD', 200)  # dendrite length
+    DD = dims.get('DD', 2)  # dendrite diameter
+    phi = pi / 2  # angle avec Oz
+    theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
 
     # -----------------------------------------------------------
     # figure check
@@ -110,18 +117,18 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, props=None):
         np.sin(phi) * np.sin(theta),
         np.cos(phi)
     ])  # dendrite end position, normalized
-    Cs = 2  # somatic equivalent dipole amplitude
+    Cs = stim.amp * 10  # somatic equivalent dipole amplitude
     taus = 23  # subsampling of the membrane current dk/taus = speed v)
 
     # -----------------------------------------------------------
     # electrodes
     # -----------------------------------------------------------
 
-    X = np.arange(-250, 1250 + 125, 125)
-    Y = np.arange(250, 50 - 50, -50)
+    X = util.closed_range(-250, 1250, 125)
+    Y = util.closed_range(250, 50, -50)
     Z = 0
 
-    elpos = util.reshapeMeshgrid(np.meshgrid(X, Y, Z)).transpose()
+    elpos = util.reshapeMeshgrid(np.meshgrid(X, Y, Z))
 
     # -----------------------------------------------------------
     # simulation
@@ -136,9 +143,9 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, props=None):
         Vel[iel] = np.convolve(Im, wup[iel], 'same')
 
     # cut
-    rangeStart = inMVm - inmvm - int(np.fix(wup.shape[1] / 2)) + 1
-    rangeEnd = rangeStart - 1 + lVLFPy
-    intervVm = np.arange(rangeStart, rangeEnd + 1)
+    rangeStart = inMVm - inmvm - int(np.fix(wup.shape[1] / 2))
+    rangeEnd = rangeStart + lVLFPy - 1
+    intervVm = util.closed_range(rangeStart, rangeEnd)
     Vel2 = Vel[:, intervVm]
 
     # normalize
@@ -150,7 +157,7 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, props=None):
     # -----------------------------------------------------------
 
     cc = np.zeros((1, elpos.shape[0]))
-    t = np.arange(0, dt * Vel2.shape[1], dt)
+    t = util.closed_range(dt, dt * Vel2.shape[1], dt)
 
     fig = plt.figure('Simulation & Neuron Morphology')
     gs = fig.add_gridspec(5, 13)
@@ -158,7 +165,7 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, props=None):
     plotNeuron(cell, fig)
 
     cmap = plt.cm.get_cmap('jet')
-    line_labels = ["Cell", "Tran", "LFPy"]
+    line_labels = ["Tran", "LFPy"]
     line_obj = []
     ifil = 0
 
@@ -166,16 +173,13 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, props=None):
         for j in range(13):
             ax = fig.add_subplot(gs[i, j])
             ax.axis('off')
-            l1 = ax.plot(t, Vel2[ifil] - Vel2[ifil, 0], linewidth=2)[0]
-            l2 = ax.plot(t, Vlfpy[:, ifil] - Vlfpy[0, ifil], linewidth=2)[0]
+            l1 = ax.plot(t, Vel2[ifil, :] - Vel2[ifil, 0], linewidth=2)
+            l2 = ax.plot(t, Vlfpy[:, ifil] - Vlfpy[0, ifil], linewidth=2)
             if len(line_obj) < 2:
-                line_obj.append(l1)
-                line_obj.append(l2)
+                line_obj.append(l1[0])
+                line_obj.append(l2[0])
             res = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
-            if res <= 0:
-                cc[0, ifil] = 0
-            else:
-                cc[0, ifil] = res
+            cc[0, ifil] = max(0, res)
             rgba = cmap(cc[0, ifil])
             color = np.array([[rgba[n] for n in range(3)]])
             plt.scatter(4, -2e-3, 50, color, 'o', cmap)
@@ -209,14 +213,17 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, props=None):
     # plot stimulation
     # -----------------------------------------------------------
 
-    plotStimulation(cell, timeind, stimulus, meshgrid_electrodes)
+    plotStimulation(cell, timeind, stim, meshgrid_electrodes)
 
     plt.show()
 
 
 def main():
+    """
+    Executes the simulation with the following parameters
+    """
     cell_parameters = {
-        'morphology': '../../resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc',
+        'morphology': 'resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc',
         'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
         'passive': True,  # Passive mechanisms are initialized if True
         'passive_parameters': {'g_pas': 1. / 30000, 'e_pas': -65},
@@ -235,9 +242,9 @@ def main():
         'idx': cell.get_closest_idx(x=0, y=0, z=0),
         'record_current': True,
         'pptype': 'IClamp',  # Type of point process: VClamp / SEClamp / ICLamp.
-        'amp': 0.2,
-        'dur': 10,  # 0.01
-        'delay': 1,  # 5
+        'amp': 0.2,  # nA
+        'dur': 10,  # ms
+        'delay': 1,  # ms
     }
     stim = LFPy.StimIntElectrode(cell, **stim_parameters)
 
