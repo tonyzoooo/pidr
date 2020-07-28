@@ -22,10 +22,6 @@ def hhrun(I: ndarray, t: ndarray) -> Tuple[ndarray, ...]:
     :return (V, m, n, h, INa, IK, Il)
     """
 
-    print('I', I)
-    for i in I:
-        print(i)
-
     # def am(v):
     #     # Alpha for Variable m
     #     a = 0.1*(v+35)/(1-exp(-(v+35)/10))

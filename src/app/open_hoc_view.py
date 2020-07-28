@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import *
 
-from src.gui.model import AppModel
+from src.app.model import AppModel
 
 
 class OpenHocView(Frame):

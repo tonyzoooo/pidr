@@ -11,12 +11,12 @@ from tkinter.ttk import *
 
 from ttkthemes import ThemedTk
 
-from src.gui.config_view import ConfigView
-from src.gui.model import AppModel, CellSource
-from src.gui.open_hoc_view import OpenHocView
-from src.gui.plot_view import PlotView
-from src.gui.sections_view import SectionsView
-from src.gui.stim_view import StimView
+from src.app.config_view import ConfigView
+from src.app.model import AppModel, CellSource
+from src.app.open_hoc_view import OpenHocView
+from src.app.plot_view import PlotView
+from src.app.sections_view import SectionsView
+from src.app.stim_view import StimView
 
 
 class App(Frame):

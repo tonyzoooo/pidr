@@ -4,9 +4,9 @@ from typing import Optional, Iterable
 
 import LFPy
 
-from src.gui import section_util
-from src.gui.model import AppModel, IdxMode
-from src.gui.number_validation import addFloatValidation, addIntValidation, safeFloat, safeInt
+from src.app import section_util
+from src.app.model import AppModel, IdxMode
+from src.app.number_validation import addFloatValidation, addIntValidation, safeFloat, safeInt
 
 
 class StimView(Frame):

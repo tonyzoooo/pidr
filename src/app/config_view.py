@@ -2,8 +2,8 @@ from tkinter import *
 from tkinter.ttk import *
 from typing import Iterable, Tuple, List
 
-from src.gui.model import AppModel, SectionModel
-from src.gui.number_validation import safeFloat, addFloatValidation, addIntValidation, safeInt
+from src.app.model import AppModel, SectionModel
+from src.app.number_validation import safeFloat, addFloatValidation, addIntValidation, safeInt
 
 
 class ConfigView(Frame):

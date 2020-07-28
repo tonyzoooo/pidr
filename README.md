@@ -13,7 +13,7 @@ pip install -r requirements.txt
 ```bash
 export PYTHONPATH=.
 # Run gui
-python src/gui/app.py
+python src/app/main.py
 # Run simulation script only
 python src/core/demo.py
 ```

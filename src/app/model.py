@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-@author: Loïc Bertrand
-"""
 from enum import Enum
 from typing import List, Optional, Tuple
 
@@ -10,12 +5,16 @@ import LFPy
 from neuron import h, nrn
 
 from src.core.util import auto_str
-from src.gui import section_util
+from src.app import section_util
 
 
 class CellSource(Enum):
-    BUILDER = 1
-    HOC_FILE = 2
+    """
+    Enumeration to specify which source to use to create a morphology
+    which will be used to plot the cell and to make the simulation.
+    """
+    BUILDER = 1  # Use moprhology created with the builder
+    HOC_FILE = 2  # Use morphology from selected HOC file
 
 
 class AppModel:
@@ -24,7 +23,6 @@ class AppModel:
         self.filename = None
         self.selectedSection: Optional[SectionModel] = None
         self.cell = CellModel()
-        # Cell to use for plotting and simulation
         self.cellSource = CellSource.BUILDER
         self.stim = StimModel()
         h.load_file('stdlib.hoc')
@@ -123,8 +121,8 @@ class AppModel:
         if self.hasMorphology():
             cell = self.toLFPyCell()
             dims = section_util.getCellDimensions(cell.allseclist)
-            stim = self.stim.toLFPyStimIntElectrode(cell)
-            demo.executeDemo(cell=cell, stim=stim, dims=dims)
+            stim, stimParams = self.stim.toLFPyStimIntElectrode(cell)
+            demo.executeDemo(cell, stim, stimParams, dims)
 
 
 class SectionModel:
@@ -163,8 +161,7 @@ class CellModel:
         self.sections: List[SectionModel] = []
         self.displayName = f'cell[{CellModel._instancesCount}]'
         CellModel._instancesCount += 1
-        # Maintains a reference to created nrn.Section(s)
-        self._nrnSectionsCache = []
+        self._nrnSectionsCache = []  # important, see self.toSectionList
 
     def getSection(self, name: str) -> Optional[SectionModel]:
         for sec in self.sections:
@@ -189,6 +186,15 @@ class CellModel:
         return [sec.name for sec in self.sections]
 
     def toSectionList(self) -> h.SectionList:
+        """
+        Creates a ``h.SectionList`` object from this model. All ``nrn.Section``
+        objects created are stored in ``self._nrnSectionsCache`` to avoid them
+        being garbage collected and freed from NEURON's memory. (see
+        https://github.com/neuronsimulator/nrn/issues/632 for a more detailed
+        explanation)
+
+        :return: a ``h.SectionList`` object corresponding to this cell model
+        """
         nrnSections = [sec.toNrnSection() for sec in self.sections]
         secList = h.SectionList(nrnSections)
         # Same connections
@@ -231,8 +237,12 @@ class CellModel:
 
 
 class IdxMode(Enum):
-    CLOSEST = 1
-    SECTION = 2
+    """
+    Enumeration to specify the way to select a segment to be the
+    source of a stimulation.
+    """
+    CLOSEST = 1  # Segment closest to a point in 3D space
+    SECTION = 2  # Specific segment of a given section
 
 
 @auto_str
@@ -252,8 +262,19 @@ class StimModel:
         self.dur = 10.0  # ms
         self.delay = 1.0  # ms
 
-    def toLFPyStimIntElectrode(self, cell: LFPy.Cell) -> LFPy.StimIntElectrode:
-        stim_parameters = {
+    def toLFPyStimIntElectrode(self, cell: LFPy.Cell) -> (LFPy.StimIntElectrode, dict):
+        stim_parameters = self.getParams(cell)
+        stim = LFPy.StimIntElectrode(cell, **stim_parameters)
+        return stim, stim_parameters
+
+    def _getIdx(self, cell: LFPy.Cell) -> int:
+        if self.idxMode is IdxMode.CLOSEST:
+            return cell.get_closest_idx(*self.closestIdx)
+        elif self.idxMode is IdxMode.SECTION:
+            return self.sectionIdx
+
+    def getParams(self, cell: LFPy.Cell):
+        return {
             'idx': self._getIdx(cell),
             'record_current': True,
             'pptype': self.pptype,
@@ -261,14 +282,3 @@ class StimModel:
             'dur': self.dur,
             'delay': self.delay,
         }
-        stim = LFPy.StimIntElectrode(cell, **stim_parameters)
-        stim.amp = self.amp
-        stim.dur = self.dur
-        stim.delay = self.delay
-        return stim
-
-    def _getIdx(self, cell: LFPy.Cell) -> int:
-        if self.idxMode is IdxMode.CLOSEST:
-            return cell.get_closest_idx(*self.closestIdx)
-        elif self.idxMode is IdxMode.SECTION:
-            return self.sectionIdx

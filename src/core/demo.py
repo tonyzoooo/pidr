@@ -10,15 +10,17 @@ from src.core.lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulat
 from src.core.morphofiltd import morphofiltd
 
 
-def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, dims=None):
+def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode,
+                stimParams: dict, dims: dict = None):
     """
     Executes the demo comparing LFPy's simulation and Tran's fast simulation
     based on a morphological filtering approximation.
 
-    :param cell:    LFPy.Cell object
-    :param stim:    LFPy.StimIntElectrode object
-    :param dims:    ball & stick moprholopy dimensions as a dictionary
-        (see getCellDimensions function in module src.gui.section_util)
+    :param cell:        LFPy.Cell object
+    :param stim:        LFPy.StimIntElectrode object
+    :param stimParams:  parameters of the stimulation as a dictionary
+    :param dims:        ball & stick morpholopy dimensions as a dictionary
+        (see ``getCellDimensions`` function in module ``src.app.section_util``)
     """
 
     # -----------------------------------------------------------
@@ -30,7 +32,6 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, dims=None):
     Vlfpy = result.Vlfpy
     Vmlfpy = result.Vmlfpy
     Imlfpy = result.Imlfpy
-
     timeind = result.timeind
     meshgrid_electrodes = result.meshgrid_electrodes
 
@@ -38,9 +39,9 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, dims=None):
     # HH (Hodgkin–Huxley model)
     # -----------------------------------------------------------
 
-    inmvm = np.argmax(Vmlfpy)  # index max on Vm in LFPy (3000 for synchronisation)
+    inmvm = np.argmax(Vmlfpy)  # index max on Vm in LFPy
     lVLFPy = len(Vlfpy)  # signal length in LFPy
-    dt = 10 ** -3  # in ms
+    dt = 1 / 1000  # sampling period in ms
     Nt = 2 ** 15
     D = Nt * dt
     t = util.closed_range(dt, D, dt) - dt
@@ -48,8 +49,9 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, dims=None):
     # fe = 1 / dt
     # f = np.arange(0, fe / 2, fe / Nt)
 
+    delay = stimParams.get('delay', 1)
     I = (
-            (np.heaviside(t - 1, 1 / 2) - np.heaviside(t - 31, 1 / 2))
+            (np.heaviside(t - delay, 1 / 2) - np.heaviside(t - 30 - delay, 1 / 2))
             * 0.044 / (2 * pi * 12.5 * 25) * 10 ** 8 * 10 ** -3
         # * 5.093 # 0.15 / (pi * 12.5 * 12.5 * 2 + 2 * pi * 12.5 * 25) * 10 ** 8
     )
@@ -63,12 +65,13 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, dims=None):
     inMVm = np.argmax(Vm)
 
     # -----------------------------------------------------------
-    # BS neuron morphology
+    # Ball & Stick neuron morphology
     # -----------------------------------------------------------
 
     if dims is None:
         dims = {}
-    print('picked up dimensions:', dims)
+    else:
+        print('dimensions:', dims)
 
     SL = dims.get('SL', 25)  # soma length (cylinder with the same diameter)
 
@@ -77,7 +80,7 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, dims=None):
 
     LD = dims.get('LD', 200)  # dendrite length
     DD = dims.get('DD', 2)  # dendrite diameter
-    phi = pi / 2  # angle avec Oz
+    phi = pi / 2  # angle with Oz
     theta = pi  # angle with Ox (phi=pi/2,theta=pi) indicates opposite to the axon
 
     # -----------------------------------------------------------
@@ -117,8 +120,15 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, dims=None):
         np.sin(phi) * np.sin(theta),
         np.cos(phi)
     ])  # dendrite end position, normalized
-    Cs = stim.amp * 10  # somatic equivalent dipole amplitude
+    amp = stimParams.get('amp', 0.2)
+    Cs = amp * 10  # somatic equivalent dipole amplitude
     taus = 23  # subsampling of the membrane current dk/taus = speed v)
+
+    """
+                     ----
+            -rd'----| r0 |r1-----------------------rN-
+                     ----
+    """
 
     # -----------------------------------------------------------
     # electrodes
@@ -203,8 +213,6 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, dims=None):
     plt.colorbar(plt.cm.ScalarMappable(cmap=cmap),
                  cax=pos, orientation='horizontal')
 
-    # plt.show()
-
     print('Mean correlation = ' + '{0:.2f}'.format(np.mean(cc)))
     print('Min correlation = ' + '{0:.2f}'.format(np.min(cc)))
     print('Max correlation = ' + '{0:.2f}'.format(np.max(cc)))
@@ -244,11 +252,11 @@ def main():
         'pptype': 'IClamp',  # Type of point process: VClamp / SEClamp / ICLamp.
         'amp': 0.2,  # nA
         'dur': 10,  # ms
-        'delay': 1,  # ms
+        'delay': 5,  # ms
     }
     stim = LFPy.StimIntElectrode(cell, **stim_parameters)
 
-    executeDemo(cell=cell, stim=stim)
+    executeDemo(cell, stim, stim_parameters)
 
 
 if __name__ == '__main__':

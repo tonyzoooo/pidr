@@ -9,8 +9,8 @@ Created on Fri Jun 26 16:08:39 2020
 from tkinter import *
 from tkinter.ttk import *
 
-from src.gui.model import AppModel
-from src.gui.plotting import plot2DCell, plot3DCell
+from src.app.model import AppModel
+from src.app.plotting import plot2DCell, plot3DCell
 
 
 class PlotView(Frame):
