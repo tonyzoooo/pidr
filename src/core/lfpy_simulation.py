@@ -37,25 +37,25 @@ def plotNeuron(cell, fig):
 
 
 def runLfpySimulation(cell: LFPy.Cell, stim: LFPy.StimIntElectrode):
-    # =============================================================================
-    # ================================= stimulation parameters================================
-    # =============================================================================
+    # -----------------------------------------------------------
+    # stimulation parameters
+    # -----------------------------------------------------------
 
     # if cell_parameters["passive"]==False:
     #     amp=1.95**(int(ida)/1.95)/30+1.6*int(ila)/10000+int(ild)/5000*int(idd)*1.5
     # else:
     #     amp=1.65**(int(ida)/1.95)/30+0.805*int(ila)/10000+int(ild)/5000*int(idd)*1.1 #-0.4 for Mainen equivalent
 
-    # =============================================================================
-    # ================================= SIMULATION  ===============================
-    # =============================================================================
+    # -----------------------------------------------------------
+    # Simulation
+    # -----------------------------------------------------------
 
     cell.simulate(rec_imem=True)
     # cell.imem[np.isnan(cell.imem)]=0.0
 
-    # =============================================================================
-    # ================================= electrodes ================================
-    # =============================================================================
+    # -----------------------------------------------------------
+    # Electrodes
+    # -----------------------------------------------------------
 
     hstep = np.array(range(-250, 1251, 125))
     vstep = np.array(range(250, 49, -50))
@@ -77,9 +77,9 @@ def runLfpySimulation(cell: LFPy.Cell, stim: LFPy.StimIntElectrode):
     meshgrid_electrodes = LFPy.RecExtElectrode(cell, **meshgrid)
     meshgrid_electrodes.calc_lfp()
 
-    # =============================================================================
-    # ================================= plot and save  ===============================
-    # =============================================================================
+    # -----------------------------------------------------------
+    # Plot and save
+    # -----------------------------------------------------------
 
     st = cell.dt  # simulation timestep
     timeind = (cell.tvec > np.argmax(cell.somav) * st -
@@ -119,13 +119,13 @@ class StimulationResult:
 def plotStimulation(cell, timeind, stimulus, meshgrid_electrodes):
     fig = plt.figure('Stimulation')
 
-    # ================= STIMULATION PLOT ==========================================
+    # ================= STIMULATION PLOT =================================
     plt.subplot(411)
     plt.plot(cell.tvec[timeind], stimulus.i[timeind])
     plt.axis('tight')
     plt.ylabel(r'$I_s$ (nA)', va='center')
     plt.grid(True)
-    # ================= SOMA PLOT =================================================
+    # ================= SOMA PLOT ========================================
     plt.subplot(412)
     plt.plot(cell.tvec[timeind], cell.somav[timeind], lw=1)
     plt.axis('tight')
@@ -140,11 +140,12 @@ def plotStimulation(cell, timeind, stimulus, meshgrid_electrodes):
     plt.ylabel(r'$I_m$ (nA)', va='center')
     plt.grid(True)
 
-    # ================= ELECTRODE LFP  ============================================
+    # ================= ELECTRODE LFP  ===================================
     plt.subplot(414)
     # ,label='x='+str(elec_parameters["x"])+' - y='+str(elec_parameters["y"]))
     plt.plot(cell.tvec[timeind], meshgrid_electrodes.LFP.T[timeind], lw=1)
     plt.ylabel(r'$V_e$ (mV)', va='center')
     plt.xlabel('time (ms)')
     plt.grid(True)
+
     return fig
