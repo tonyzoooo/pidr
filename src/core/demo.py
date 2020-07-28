@@ -49,9 +49,10 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode,
     # fe = 1 / dt
     # f = np.arange(0, fe / 2, fe / Nt)
 
+    dur = stimParams.get('dur', 30)
     delay = stimParams.get('delay', 1)
     I = (
-            (np.heaviside(t - delay, 1 / 2) - np.heaviside(t - 30 - delay, 1 / 2))
+            (np.heaviside(t - delay, 1 / 2) - np.heaviside(t - dur - delay, 1 / 2))
             * 0.044 / (2 * pi * 12.5 * 25) * 10 ** 8 * 10 ** -3
         # * 5.093 # 0.15 / (pi * 12.5 * 12.5 * 2 + 2 * pi * 12.5 * 25) * 10 ** 8
     )
@@ -250,9 +251,10 @@ def main():
         'idx': cell.get_closest_idx(x=0, y=0, z=0),
         'record_current': True,
         'pptype': 'IClamp',  # Type of point process: VClamp / SEClamp / ICLamp.
+        # These parameters depend on the type of point process:
         'amp': 0.2,  # nA
         'dur': 10,  # ms
-        'delay': 5,  # ms
+        'delay': 1,  # ms
     }
     stim = LFPy.StimIntElectrode(cell, **stim_parameters)
 
