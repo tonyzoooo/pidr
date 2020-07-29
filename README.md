@@ -14,9 +14,9 @@ Note: you may have to install some of the required packages through your package
 
 ```bash
 export PYTHONPATH=.
-# Run gui
+# Running gui
 python src/app/main.py
-# Run simulation script only
+# Running simulation script only
 python src/core/demo.py
 ```
 

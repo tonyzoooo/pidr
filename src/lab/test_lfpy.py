@@ -1,4 +1,13 @@
+import pprint
+
 import LFPy
+
+
+def get_by_name(sections, name):
+    for sec in sections:
+        if sec.hname().find(name) >= 0:
+            return sec
+
 
 morphology = '../../resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc'
 st = 1 / 1000
@@ -43,5 +52,8 @@ stimulus = LFPy.StimIntElectrode(cell, **stim)
 print(cell.allsecnames)
 print(cell.allseclist)
 
-for s in cell.allseclist:
-    print(s)
+soma = get_by_name(cell.allseclist, 'soma')
+
+properties = soma.psection()
+pp = pprint.PrettyPrinter(indent=4)
+pp.pprint(properties)
