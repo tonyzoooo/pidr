@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import numpy as np
 import tkinter as tk
-import matplotlib.pyplot as plt
-from matplotlib.collections import LineCollection
-from neuron import h
-from mayavi import mlab
-from vtk import vtkObject
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from typing import Iterable, Tuple
 
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.collections import LineCollection
+from mayavi import mlab
+from neuron import h, nrn
+from vtk import vtkObject
 
 
 def getCoordinates(section):
@@ -27,6 +28,7 @@ def getCoordinates(section):
         y.append(section.y3d(i))
         z.append(section.z3d(i))
     return np.array(x), np.array(y), np.array(z)
+
 
 def getDiameters(section):
     """
@@ -53,27 +55,29 @@ def createSegments(array1, array2):
         - list(list(tuple), ...)
     """
     segments = []
-    for i in range(len(array1)-1):
+    for i in range(len(array1) - 1):
         start = (array1[i], array2[i])
-        end = (array1[i+1], array2[i+1])
+        end = (array1[i + 1], array2[i + 1])
         segment = [start, end]
         segments.append(segment)
     return segments
 
-def buildTree(sectionlist):
+
+def buildTree(sectionlist: Iterable[nrn.Section]):
     """
     Inpired from:https://senselab.med.yale.edu/modeldb/ShowModel?model=153196&file=/FoutzEtAl2012/classes.py#tabs-2
     and https://docs.enthought.com/mayavi/mayavi/auto/example_plotting_many_lines.html#example-plotting-many-lines
     """
+
     def append_data(section, xyzd, connections, parent_id):
         for i in range(int(h.n3d(sec=section))):
-            x = h.x3d(i,sec=section)
-            y = h.y3d(i,sec=section)
-            z = h.z3d(i,sec=section)
-            d = h.diam3d(i,sec=section)
+            x = h.x3d(i, sec=section)
+            y = h.y3d(i, sec=section)
+            z = h.z3d(i, sec=section)
+            d = h.diam3d(i, sec=section)
             xyzd.append([x, y, z, d])
-            child_id = len(xyzd)-1
-            if len(xyzd)>1:
+            child_id = len(xyzd) - 1
+            if len(xyzd) > 1:
                 connections.append([child_id, parent_id])
             parent_id = child_id
         return xyzd, connections
@@ -81,32 +85,33 @@ def buildTree(sectionlist):
     def append_children_data(parent, parent_id, xyzd, connections):
         sref = h.SectionRef(sec=parent)
         if sref.child:
-             for child in sref.child:
-                 xyzd, connections = append_data(child, xyzd, connections, parent_id)
-                 xyzd, connections = append_children_data(parent=child,
-                                                          parent_id=len(xyzd)-1,
-                                                          xyzd=xyzd,
-                                                          connections=connections)
+            for child in sref.child:
+                xyzd, connections = append_data(child, xyzd, connections, parent_id)
+                xyzd, connections = append_children_data(parent=child,
+                                                         parent_id=len(xyzd) - 1,
+                                                         xyzd=xyzd,
+                                                         connections=connections)
         return xyzd, connections
 
     assert sum(1 for _ in sectionlist) > 0, 'sectionList is empty'
     first_section = next(iter(sectionlist))
     root_section = h.SectionRef(sec=first_section).root
-    xyzd = [[h.x3d(0, sec=root_section),h.y3d(0, sec=root_section),
-             h.z3d(0, sec=root_section),h.diam3d(0, sec=root_section)]]
+    xyzd = [[h.x3d(0, sec=root_section), h.y3d(0, sec=root_section),
+             h.z3d(0, sec=root_section), h.diam3d(0, sec=root_section)]]
     xyzd, connections = append_data(root_section, xyzd, [], 0)
-    xyzd, connections = append_children_data(root_section, len(xyzd)-1, xyzd, connections)
+    xyzd, connections = append_children_data(root_section, len(xyzd) - 1, xyzd, connections)
     xyzd = np.array(xyzd)
     connections = np.array(connections)
     return xyzd, connections
 
-def plot2DCell(sectionlist):
+
+def plot2DCell(sectionlist: Iterable[nrn.Section], stimpoint: Tuple[int, ...] = None):
     """
-    Returns collections of lines for different 2d views of cell.
-    Args:
-        - sectionList:
-    Return:
-        - None
+    Plots a 2D view of a cell, specified as a NEURON SectionList
+    or any iterable of ``nrn.Section`` objects
+
+    :param sectionlist:     iterable of nrn.Section
+    :param stimpoint:       stimulation (x, y) or (x, y, z) point (optionnal)
     """
     window = tk.Tk()
     fig = plt.figure()
@@ -118,25 +123,31 @@ def plot2DCell(sectionlist):
 
     colormap = plt.get_cmap('jet')
     N = sum(1 for s in sectionlist)
-    i=0
+    i = 0
     for section in sectionlist:
         x, y, z = getCoordinates(section)
         d = getDiameters(section)
 
-        #XY face
+        # XY face
         segments = createSegments(x, y)
-        lc = LineCollection(segments, linewidths=d, color=colormap(i/N))
+        lc = LineCollection(segments, linewidths=d, color=colormap(i / N))
         ax.add_collection(lc)
         ax.axis('equal')
         ax.margins(0.05)
-        ax.set_xlabel("X (µm)")
-        ax.set_ylabel("Y (µm)")
-        ax.set_title("XY plan")
+        ax.set_xlabel('X (µm)')
+        ax.set_ylabel('Y (µm)')
+        ax.set_title('XY plan')
         ax.grid(True)
-        i+=1
+        i += 1
+
+    if stimpoint is not None:
+        x = stimpoint[0]
+        y = stimpoint[1]
+        ax.plot(x, y, 'ro')
 
     canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
     plt.close(fig)
+    window.eval('tk::PlaceWindow %s center' % window.winfo_pathname(window.winfo_id()))
     window.mainloop()
 
 
@@ -147,12 +158,13 @@ def getSectionData(sectionlist):
         names.append(section.name())
         if indexes == []:
             indexes = [0]
-        else :
-            indexes.append(indexes[-1]+section.n3d())
+        else:
+            indexes.append(indexes[-1] + section.n3d())
         names.append(section.name())
     return indexes, names
 
-def plot3DCell(sectionlist):
+
+def plot3DCell(sectionlist: Iterable[nrn.Section], stimpoint: Tuple[int, ...] = None):
     """
     Returns collections of lines for different 2d views of cell.
     Args:
@@ -160,19 +172,19 @@ def plot3DCell(sectionlist):
     Return:
         - LineCollection, LineCollection, LineCollection
     """
-    #hide warnings
-    #mlab.options.backend = 'envisage'
+    # hide warnings
+    # mlab.options.backend = 'envisage'
     o = vtkObject
     o.GetGlobalWarningDisplay()
-    o.SetGlobalWarningDisplay(0) # Turn it off.
+    o.SetGlobalWarningDisplay(0)  # Turn it off.
 
     mlab.figure(1)
     mlab.clf()
     xyzd, connections = buildTree(sectionlist)
-    x = xyzd[:,0]
-    y = xyzd[:,1]
-    z = xyzd[:,2]
-    d = xyzd[:,3]
+    x = xyzd[:, 0]
+    y = xyzd[:, 1]
+    z = xyzd[:, 2]
+    d = xyzd[:, 3]
     connections = np.vstack(connections)
 
     # Create the points
@@ -184,50 +196,45 @@ def plot3DCell(sectionlist):
     dataset.point_data.update()
     src = mlab.pipeline.set_active_attribute(points, point_scalars='diameter')
     stripper = mlab.pipeline.stripper(src)
-    tube = mlab.pipeline.tube(stripper, tube_sides = 6, tube_radius = 1)
+    tube = mlab.pipeline.tube(stripper, tube_sides=6, tube_radius=1)
     tube.filter.capping = True
-    #tube.filter.use_default_normal = False
+    # tube.filter.use_default_normal = False
     tube.filter.vary_radius = 'vary_radius_by_absolute_scalar'
     src2 = mlab.pipeline.set_active_attribute(tube)
     mlab.pipeline.surface(src2, colormap='jet')
 
     # Connect them
 
-    #src.mlab_source.dataset.lines = connections
+    # src.mlab_source.dataset.lines = connections
 
-    #src.update()
+    # src.update()
 
     # The stripper filter cleans up connected lines
-    #lines = mlab.pipeline.stripper(src)
+    # lines = mlab.pipeline.stripper(src)
     # Finally, display the set of lines
-    #mlab.pipeline.surface(lines, colormap='jet', line_width=1, opacity=.4)
+    # mlab.pipeline.surface(lines, colormap='jet', line_width=1, opacity=.4)
 
-    #labels
-#    indexes, names = getSectionData(sectionlist)
-#    for i in range(len(indexes)):
-#        index = indexes[i]
-#        name = names[i]
-#        label = mlab.text(x[index], y[index], name ,z[index],width=0.016 * len(name),
-#                          name=name)
-#        label.property.shadow = True
+    # labels
+    #    indexes, names = getSectionData(sectionlist)
+    #    for i in range(len(indexes)):
+    #        index = indexes[i]
+    #        name = names[i]
+    #        label = mlab.text(x[index], y[index], name ,z[index],width=0.016 * len(name),
+    #                          name=name)
+    #        label.property.shadow = True
 
+    if stimpoint is not None:
+        mlab.points3d(*stimpoint, mode='sphere', scale_factor=10, color=(.9, .2, .2))
 
     mlab.show()
-
-
-
-
-
-
-
 
 # =============================================================================
 # Old version with matplolib
 # =============================================================================
-#from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-#from mpl_toolkits.mplot3d import Axes3D
+# from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+# from mpl_toolkits.mplot3d import Axes3D
 
-#def defCylinder(x0, x1, diam):
+# def defCylinder(x0, x1, diam):
 #    """
 #    Calcule les coordonnées d'un cylindre étant donnés son origine, son sommet 
 #    et son diamètre.
@@ -262,7 +269,7 @@ def plot3DCell(sectionlist):
 #    return X, Y, Z, X2, Y2, Z2, X3, Y3, Z3
 #
 #
-#def getAllPoints(sectionlist):
+# def getAllPoints(sectionlist):
 #    """
 #    Calcule toutes les coordonnées de la cellule pour un maillage simple.
 #    Args:
@@ -290,7 +297,7 @@ def plot3DCell(sectionlist):
 #
 #
 #
-#def plot2DCell(sectionlist):
+# def plot2DCell(sectionlist):
 #    """
 #    Trace des graphes de la cellule étant données sa SectionList.
 #    Args:
@@ -337,7 +344,7 @@ def plot3DCell(sectionlist):
 #    window.mainloop()
 #
 #
-#def plot3DCell(sectionlist):
+# def plot3DCell(sectionlist):
 #    """
 #    Dessine une cellule neuronale. Nécessite un objet SectionList.
 #    Spécifier la vue souhaitée.

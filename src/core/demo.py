@@ -146,7 +146,7 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode,
     # -----------------------------------------------------------
 
     w = morphofiltd(elpos, order, r0, r1, rN, rd, Cs)
-    wup = util.upsample(w.transpose(), taus).transpose()
+    wup = util.upsample(w.T, taus).T
 
     Vel = np.zeros((len(w), len(Im)))
 
@@ -155,8 +155,7 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode,
 
     # cut
     rangeStart = inMVm - inmvm - int(np.fix(wup.shape[1] / 2))
-    rangeEnd = rangeStart + lVLFPy - 1
-    intervVm = util.closed_range(rangeStart, rangeEnd)
+    intervVm = np.arange(rangeStart, rangeStart + lVLFPy)
     Vel2 = Vel[:, intervVm]
 
     # normalize
@@ -189,7 +188,7 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode,
             if len(line_obj) < 2:
                 line_obj.append(l1[0])
                 line_obj.append(l2[0])
-            res = np.corrcoef(Vel2[ifil].transpose(), Vlfpy[:, ifil])[0][1]
+            res = np.corrcoef(Vel2[ifil].T, Vlfpy[:, ifil])[0][1]
             cc[0, ifil] = max(0, res)
             rgba = cmap(cc[0, ifil])
             color = np.array([[rgba[n] for n in range(3)]])

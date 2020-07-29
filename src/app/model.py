@@ -4,8 +4,8 @@ from typing import List, Optional, Tuple
 import LFPy
 from neuron import h, nrn
 
-from src.core.util import auto_str
 from src.app import section_util
+from src.core.util import auto_str
 
 
 class CellSource(Enum):
@@ -64,6 +64,12 @@ class AppModel:
 
     @staticmethod
     def _loadFileIntoMemory(name):
+        """
+        Load an HOC file into the HOC interpreter's memory. This will clear
+        any pre-existing section from the HOC interpreter's memory.
+
+        :param name:    an HOC file path
+        """
         section_util.clearAllSec()
         if name:
             print('loading file', name)
@@ -76,30 +82,39 @@ class AppModel:
             except RuntimeError as e:
                 print('define_shape:', e)
 
-    @property
-    def sectionNames(self) -> List[str]:
-        source = self.cellSource
-        if source is CellSource.BUILDER:
-            return self.cell.getNames()
-
     def toSectionList(self) -> h.SectionList:
+        """
+        Converts this model into a NEURON ``SectionList``. This will clear
+        any pre-existing section from the HOC interpreter's memory.
+
+        :return:    a NEURON ``SectionList``
+        """
         if self.cellSource is CellSource.BUILDER:
             return self.cell.toSectionList()
-        else:
+        else:  # CellSource.HOC_FILE
             AppModel._loadFileIntoMemory(self.filename)
             return h.allsec()
 
     def hasMorphology(self) -> bool:
+        """
+        :return:    ``True`` if any section is present in the selected ``CellSource``
+        """
         source = self.cellSource
         return (source is CellSource.BUILDER and self.hasSections()
                 or source is CellSource.HOC_FILE and self.hasHocFile())
 
     def toLFPyCell(self) -> Optional[LFPy.Cell]:
+        """
+        Converts this model into an ``LFPy.Cell`` using the selected ``CellSource``.
+        This will clear any pre-existing section from the HOC interpreter's memory.
+
+        :return:    an ``LFPy.Cell`` object or None is the model has no morphology
+        """
         if not self.hasMorphology():
             return None
         if self.cellSource is CellSource.BUILDER:
             return self.cell.toLFPyCell()
-        else:
+        else:  # CellSource.HOC_FILE
             cell_parameters = {
                 'morphology': self.filename,
                 'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
@@ -114,9 +129,15 @@ class AppModel:
                 'lambda_f': 100.,  # frequency where length constants are computed
                 'delete_sections': False,
             }
-            return LFPy.Cell(**cell_parameters)
+            try:
+                return LFPy.Cell(**cell_parameters)
+            except RuntimeError:
+                return None
 
     def doSimulation(self):
+        """
+        Launches the simulation using the selected ``CellSource`` and stimulation parameters
+        """
         from src.core import demo
         if self.hasMorphology():
             cell = self.toLFPyCell()
@@ -193,7 +214,7 @@ class CellModel:
         https://github.com/neuronsimulator/nrn/issues/632 for a more detailed
         explanation)
 
-        :return: a ``h.SectionList`` object corresponding to this cell model
+        :return:    a ``h.SectionList`` object corresponding to this cell model
         """
         nrnSections = [sec.toNrnSection() for sec in self.sections]
         secList = h.SectionList(nrnSections)
@@ -263,6 +284,15 @@ class StimModel:
         self.delay = 1.0  # ms
 
     def toLFPyStimIntElectrode(self, cell: LFPy.Cell) -> (LFPy.StimIntElectrode, dict):
+        """
+        Converts this StimModel into an ``LFPy.StimIntElectrode`` object and also
+        returns the parameters used for it's construction
+
+        :param cell:    the ``LFPy.Cell`` object associated with this
+            stimulation electrode
+        :return:        a tuple consisting of the stimulation object
+            and the dictionnary of parameters used for it's consruction
+        """
         stim_parameters = self.getParams(cell)
         stim = LFPy.StimIntElectrode(cell, **stim_parameters)
         return stim, stim_parameters
@@ -277,8 +307,9 @@ class StimModel:
         return {
             'idx': self._getIdx(cell),
             'record_current': True,
-            'pptype': self.pptype,
-            'amp': self.amp,
-            'dur': self.dur,
-            'delay': self.delay,
+            'pptype': self.pptype,  # Type of point process: VClamp / SEClamp / ICLamp.
+            # These parameters depend on the type of point process:
+            'amp': self.amp,  # Na
+            'dur': self.dur,  # ms
+            'delay': self.delay,  # ms
         }

@@ -35,10 +35,34 @@ class PlotView(Frame):
         printButton.grid(row=2, column=0, padx=8)
 
     def _display(self):
-        if self.model.hasMorphology():
-            sectionList = self.model.toSectionList()
-            dim = self.buttonVar.get()
-            if dim == '3D':
-                plot3DCell(sectionList)
-            elif dim == '2D':
-                plot2DCell(sectionList)
+        """
+        Plots the selected morphology (from builder or from file), in 2D or 3D,
+        depending on the selected mode. Tries to create an ``LFPy.Cell`` and an
+        LFPy Electrode object to plot the exact position of the stimulation. If
+        the creation fails, it creates a simple ``h.SectionList`` and does not
+        plot the electrode position.
+
+        TODO: To be able to plot the stimulation point without creating an LFPy.Cell
+            (which fails for some HOC files), I must find a way to calculate the
+            actual position of the stimulation myself (maybe I could take a look
+            at LFPy's code for doing so).
+        """
+        if not self.model.hasMorphology():
+            return
+
+        cell = self.model.toLFPyCell()
+        if cell is not None:
+            sections = cell.allseclist
+            stim, _ = self.model.stim.toLFPyStimIntElectrode(cell)
+            stimpoint = (stim.x, stim.y, stim.z)
+        else:
+            # Cell construction failed => no stim point plot possible
+            sections = self.model.toSectionList()
+            stimpoint = None
+
+        dim = self.buttonVar.get()
+        if dim == '3D':
+            plot3DCell(sections, stimpoint)
+        elif dim == '2D':
+            plot2DCell(sections, stimpoint)
+

@@ -25,7 +25,7 @@ def morphofiltd(re: ndarray, order: int, r0: ndarray, r1: ndarray,
         linspace(r1[0], rN[0], order - 1),
         linspace(r1[1], rN[1], order - 1),
         linspace(r1[2], rN[2], order - 1)
-    ]).transpose()
+    ]).T
     w = zeros([M, order])
     for iel in range(M):
         for ik in range(1, order - 1):
