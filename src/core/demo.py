@@ -4,6 +4,7 @@ import numpy as np
 from numpy import pi
 from numpy.linalg import norm
 
+from src.app import section_util
 from src.core import util
 from src.core.hhrun import hhrun
 from src.core.lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulation
@@ -11,7 +12,7 @@ from src.core.morphofiltd import morphofiltd
 
 
 def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode,
-                stimParams: dict, dims: dict = None):
+                stimParams: dict):
     """
     Executes the demo comparing LFPy's simulation and Tran's fast simulation
     based on a morphological filtering approximation.
@@ -69,10 +70,8 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode,
     # Ball & Stick neuron morphology
     # -----------------------------------------------------------
 
-    if dims is None:
-        dims = {}
-    else:
-        print('dimensions:', dims)
+    dims = section_util.computeDimensions(cell.allseclist)
+    print('dimensions:', dims)
 
     SL = dims.get('SL', 25)  # soma length (cylinder with the same diameter)
 
@@ -231,7 +230,9 @@ def main():
     Executes the simulation with the following parameters
     """
     cell_parameters = {
-        'morphology': 'resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc',
+        # 'morphology': 'resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc',
+        'morphology': 'resources/L5_Mainen_ax600_phi1.hoc',
+        # 'morphology': 'resources/stel_Mainen_ax200.hoc',
         'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
         'passive': True,  # Passive mechanisms are initialized if True
         'passive_parameters': {'g_pas': 1. / 30000, 'e_pas': -65},

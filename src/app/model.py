@@ -18,6 +18,9 @@ class CellSource(Enum):
 
 
 class AppModel:
+    """
+    Class to store and manage the application's state and data
+    """
 
     def __init__(self):
         self.filename = None
@@ -132,6 +135,7 @@ class AppModel:
             try:
                 return LFPy.Cell(**cell_parameters)
             except RuntimeError:
+                print(f'Error during LFPy.Cell creation using file {self.filename} (AppModel::toLFPyCell)')
                 return None
 
     def doSimulation(self):
@@ -141,12 +145,18 @@ class AppModel:
         from src.core import demo
         if self.hasMorphology():
             cell = self.toLFPyCell()
-            dims = section_util.getCellDimensions(cell.allseclist)
-            stim, stimParams = self.stim.toLFPyStimIntElectrode(cell)
-            demo.executeDemo(cell, stim, stimParams, dims)
+            if cell is not None:
+                stim, stimParams = self.stim.toLFPyStimIntElectrode(cell)
+                demo.executeDemo(cell, stim, stimParams)
 
 
 class SectionModel:
+    """
+    Class to record all the information of a section and its connections with other sections.
+    This class has been created to decouple the application model from NEURON objects, since
+    NEURON objects do not act like typical objects (they become unusable if we remove
+    ``nrn.Section`` references via ``h.delete_section(sec=sec)``.
+    """
 
     def __init__(self, name):
         self.name = name
@@ -201,7 +211,7 @@ class CellModel:
 
     def _isInvalidName(self, name):
         return name == '' or name in self.getNames() \
-               or '(' in name or ')' in name or '.' in name
+               or '(' in name or ')' in name
 
     def getNames(self) -> List[str]:
         return [sec.name for sec in self.sections]
@@ -268,6 +278,9 @@ class IdxMode(Enum):
 
 @auto_str
 class StimModel:
+    """
+    Class to store information about the stimulation.
+    """
 
     def __init__(self):
         # Cell segment index where the stimulation electrode is placed

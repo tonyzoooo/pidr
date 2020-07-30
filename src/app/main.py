@@ -9,6 +9,7 @@ Created on Tue May  5 21:54:28 2020
 from tkinter import *
 from tkinter.ttk import *
 
+import matplotlib
 from ttkthemes import ThemedTk
 
 from src.app.config_view import ConfigView
@@ -22,13 +23,19 @@ from src.app.stim_view import StimView
 class App(Frame):
 
     def __init__(self, root: Tk, model: AppModel):
+        """
+        Application's main panel
+
+        :param root:    ``Tk`` root
+        :param model:   application model reference
+        """
         super().__init__(root)
         self.root = root
         self.model = model
 
         root.configure(padx=8, pady=8)
         root.geometry('')  # auto-size
-        root.title('Simulator :)')
+        root.title('Simulation comparator')
         root.bind('<Escape>', lambda e: root.destroy())
         root.protocol("WM_DELETE_WINDOW", lambda: root.destroy())
 
@@ -74,8 +81,8 @@ class App(Frame):
         simuButton.grid(row=1, column=1, **pad)
 
         # Event handlers
-        self.sectionsView.beforeSelection(self.configView.saveCurrentSection)
-        self.sectionsView.afterSelection(self.configView.refreshView)
+        self.sectionsView.beforeSectionSelected(self.configView.saveCurrentSection)
+        self.sectionsView.afterSectionSelected(self.configView.refreshView)
         self.tabs.bind('<<NotebookTabChanged>>', self.onTabChanged)
 
     def switchToFile(self):
