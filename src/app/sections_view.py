@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter.ttk import *
-from typing import Optional
+from typing import Optional, Callable
 
 from src.app.model import AppModel
 
@@ -33,15 +33,21 @@ class SectionsView(Frame):
         self.sectionList.grid(row=3, column=0, columnspan=2, pady=4)
         self.sectionList.bind('<<ListboxSelect>>', lambda e: self._manageSelection())
 
-    def beforeSelection(self, callback):
+    def beforeSectionSelected(self, callback: Callable[[], None]):
         """
         Registers a callback which will be called before the selection changes
+
+        :param callback: function with no arguments and no return value
+            to be called just before a section is selected
         """
         self._beforeSelectionCallbacks.append(callback)
 
-    def afterSelection(self, callback):
+    def afterSectionSelected(self, callback: Callable[[], None]):
         """
-        Registers a callback which will be called after the selection changes
+        Registers a callback which will be called after the selection has changed
+
+        :param callback: function with no arguments and no return value
+            to be called just after a section has been selected
         """
         self._afterSelectionCallbacks.append(callback)
 
