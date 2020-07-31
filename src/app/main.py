@@ -9,7 +9,6 @@ Created on Tue May  5 21:54:28 2020
 from tkinter import *
 from tkinter.ttk import *
 
-import matplotlib
 from ttkthemes import ThemedTk
 
 from src.app.config_view import ConfigView

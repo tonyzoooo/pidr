@@ -41,11 +41,6 @@ class PlotView(Frame):
         LFPy Electrode object to plot the exact position of the stimulation. If
         the creation fails, it creates a simple ``h.SectionList`` and does not
         plot the electrode position.
-
-        TODO: To be able to plot the stimulation point without creating an LFPy.Cell
-            (which fails for some HOC files), I must find a way to calculate the
-            actual position of the stimulation myself (maybe I could take a look
-            at LFPy's code for doing so).
         """
         if not self.model.hasMorphology():
             return
@@ -65,4 +60,3 @@ class PlotView(Frame):
             plot3DCell(sections, stimpoint)
         elif dim == '2D':
             plot2DCell(sections, stimpoint)
-

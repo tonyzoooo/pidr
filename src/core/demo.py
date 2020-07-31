@@ -11,8 +11,7 @@ from src.core.lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulat
 from src.core.morphofiltd import morphofiltd
 
 
-def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode,
-                stimParams: dict):
+def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, stimParams: dict):
     """
     Executes the demo comparing LFPy's simulation and Tran's fast simulation
     based on a morphological filtering approximation.
@@ -20,8 +19,6 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode,
     :param cell:        LFPy.Cell object
     :param stim:        LFPy.StimIntElectrode object
     :param stimParams:  parameters of the stimulation as a dictionary
-    :param dims:        ball & stick morpholopy dimensions as a dictionary
-        (see ``getCellDimensions`` function in module ``src.app.section_util``)
     """
 
     # -----------------------------------------------------------

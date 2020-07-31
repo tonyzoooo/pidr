@@ -8,9 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.collections import LineCollection
-from mayavi import mlab
 from neuron import h, nrn
-from vtk import vtkObject
 
 
 def getCoordinates(section):
@@ -174,6 +172,9 @@ def plot3DCell(sectionlist: Iterable[nrn.Section], stimpoint: Tuple[int, ...] = 
     """
     # hide warnings
     # mlab.options.backend = 'envisage'
+    from mayavi import mlab
+    from vtk import vtkObject
+
     o = vtkObject
     o.GetGlobalWarningDisplay()
     o.SetGlobalWarningDisplay(0)  # Turn it off.
