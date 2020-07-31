@@ -11,8 +11,8 @@ class SectionsView(Frame):
         """
         Container for the list of sections
 
-        :param master: parent container
-        :param model: app model
+        :param master:  parent container
+        :param model:   app model
         """
         super().__init__(master)
         self.model = model
@@ -52,6 +52,10 @@ class SectionsView(Frame):
         self._afterSelectionCallbacks.append(callback)
 
     def _manageSelection(self):
+        """
+        Updates the current selected section by looking at which name
+        is selected in the list
+        """
         for callback in self._beforeSelectionCallbacks:
             callback()
         name = self._getSelectedSectionName()

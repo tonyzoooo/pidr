@@ -90,7 +90,7 @@ class ConfigView(Frame):
 
     def saveCurrentSection(self):
         """
-        Saves the current section's data
+        Saves the current section's data into the model
         """
         section = self.model.selectedSection
         if section is None:

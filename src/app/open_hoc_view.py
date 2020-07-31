@@ -25,14 +25,22 @@ class OpenHocView(Frame):
         self.fileLabel.pack(padx=8, pady=8)
 
     def _openFile(self):
+        """
+        Prompts the user to select a HOC file and updates the filename in
+        the model accordingly
+        """
         name = filedialog.askopenfilename(
             initialdir='../../resources',
             title='Select file',
             filetypes=(('hoc files', '*.hoc'), ('all files', '*.*'))
         )
-        self.model.filename = name if name != '' else None
+        if name != '':
+            self.model.filename = name
         self.refreshView()
 
     def refreshView(self):
+        """
+        Refreshes the name of the selected file in the gui
+        """
         text = self.model.filename or 'No file selected'
         self.fileLabel.configure(text=text)
