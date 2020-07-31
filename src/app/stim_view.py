@@ -63,6 +63,9 @@ class StimView(Frame):
             addFloatValidation(spinBox)
 
     def refreshView(self):
+        """
+        Fills the fields with the values of the model
+        """
         # Refresh cell-independant fields
         stim = self.model.stim
         self.xCoord.set(stim.closestIdx[0])
@@ -82,23 +85,31 @@ class StimView(Frame):
 
         # Refresh cell-dependant fields
         names = self._cell.allsecnames
-        actualSec = self.section.get()
-        if actualSec not in names:
+        currentSec = self.section.get()
+        if currentSec not in names:
             self.section.set('')
         self.section.configure(values=names)
         self._refreshSegIndices()
 
     def _refreshSegIndices(self):
+        """
+        Fills the fields related to the segment selection.
+        """
         if self._cell is None or isEmpty(self._cell.allseclist):
+            # Recreate an LFPy.Cell object if it was destroyed
             self._cell = self.model.toLFPyCell()
         section = self.section.get()
+        # Get segment indices from the selected section
         indices = list(self._cell.get_idx(section)) if section else []
-        actualIdx = safeInt(self.segIdx.get, orElse=-1)
-        if actualIdx not in indices:
+        currentIdx = safeInt(self.segIdx.get, orElse=-1)
+        if currentIdx not in indices:
             self.segIdx.set('')
         self.segIdx.configure(values=indices)
 
     def saveStim(self):
+        """
+        Saves the values of the fields into the model
+        """
         stim = self.model.stim
 
         stim.idxMode = IdxMode.CLOSEST if self.idxMode.get() == 'closest' else IdxMode.SECTION
@@ -112,10 +123,12 @@ class StimView(Frame):
         stim.dur = safeFloat(self.dur.get, orElse=stim.dur)
         stim.delay = safeFloat(self.delay.get, orElse=stim.delay)
 
-        print(stim)
-
 
 def isEmpty(iterable: Iterable) -> bool:
+    """
+    :param iterable:    iterable object
+    :return:            ``True`` if the iterable object is empty
+    """
     try:
         next(iter(iterable))
         return False

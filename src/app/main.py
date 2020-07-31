@@ -52,16 +52,16 @@ class App(Frame):
         self.sectionsView.grid(row=0, column=0, rowspan=2, **pad)
         self.configView = ConfigView(self.builderFrame, model)
         self.configView.grid(row=0, column=1, columnspan=2, **pad)
-        ballstickButton = Button(self.builderFrame, text='Example', command=self.fillBallStick)
+        ballstickButton = Button(self.builderFrame, text='Example', command=self._fillBallStick)
         ballstickButton.grid(row=1, column=1, **pad)
-        useFileButton = Button(self.builderFrame, text='Use HOC file', command=self.switchToFile)
+        useFileButton = Button(self.builderFrame, text='Use HOC file', command=self._switchToFile)
         useFileButton.grid(row=1, column=2, **pad)
         self.builderFrame.pack()
         # - Hoc file loader
         self.hocFileFrame = Frame(self.morphoTab, padding=8)
         self.openHocView = OpenHocView(self.hocFileFrame, model)
         self.openHocView.grid(row=1, column=0, **pad)
-        useBuilderButton = Button(self.hocFileFrame, text='Use builder', command=self.switchToBuilder)
+        useBuilderButton = Button(self.hocFileFrame, text='Use builder', command=self._switchToBuilder)
         useBuilderButton.grid(row=2, column=0, **pad)
         self.morphoTab.pack()
         self.tabs.add(self.morphoTab, text='Morphology')
@@ -82,26 +82,29 @@ class App(Frame):
         # Event handlers
         self.sectionsView.beforeSectionSelected(self.configView.saveCurrentSection)
         self.sectionsView.afterSectionSelected(self.configView.refreshView)
-        self.tabs.bind('<<NotebookTabChanged>>', self.onTabChanged)
+        self.tabs.bind('<<NotebookTabChanged>>', lambda e: self._onTabChanged)
 
-    def switchToFile(self):
+    def _switchToFile(self):
         self.builderFrame.pack_forget()
         self.hocFileFrame.pack()
         self.model.cellSource = CellSource.HOC_FILE
         self.openHocView.refreshView()
 
-    def switchToBuilder(self):
+    def _switchToBuilder(self):
         self.hocFileFrame.pack_forget()
         self.builderFrame.pack()
         self.model.cellSource = CellSource.BUILDER
         self.sectionsView.refreshView()
 
-    def onTabChanged(self, _):
+    def _onTabChanged(self):
         index = self.tabs.index(self.tabs.select())
         if index == 1:
             self.stimView.refreshView()
 
-    def fillBallStick(self):
+    def _fillBallStick(self):
+        """
+        Creates a ball & stick cell morphology and refreshes the gui
+        """
         self.model.cell.sections.clear()
         soma = self.model.tryAddSection('soma')
         axon = self.model.tryAddSection('axon')
