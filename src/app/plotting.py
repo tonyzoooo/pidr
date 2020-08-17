@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+@author: Tony Zhou
+"""
 
 import tkinter as tk
 from typing import Iterable, Tuple

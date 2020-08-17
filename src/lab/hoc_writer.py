@@ -28,14 +28,14 @@ class Node:
 
 class Connection:
 
-    def __init__(self, nodeA: Node, indexA: int, nodeB: Node, indexB: int):
+    def __init__(self, nodeA: Node, idxA: int, nodeB: Node, idxB: int):
         self.nameA = nodeA.name
-        self.indexA = indexA
+        self.idxA = idxA
         self.nameB = nodeB.name
-        self.indexB = indexB
+        self.idxB = idxB
 
     def __str__(self):
-        return f'{self.nameA}({self.indexA}), {self.nameB}({self.indexB})'
+        return f'{self.nameA}({self.idxA}), {self.nameB}({self.idxB})'
 
 
 class HocWriter:
@@ -47,8 +47,8 @@ class HocWriter:
     def addNode(self, node: Node):
         self.nodes.append(node)
 
-    def connectNodes(self, nodeA: Node, indexA: int, nodeB: Node, indexB: int):
-        self.connections.append(Connection(nodeA, indexA, nodeB, indexB))
+    def connectNodes(self, nodeA: Node, idxA: int, nodeB: Node, idxB: int):
+        self.connections.append(Connection(nodeA, idxA, nodeB, idxB))
 
     def addConnection(self, connection: Connection):
         self.connections.append(connection)
@@ -67,15 +67,8 @@ class HocWriter:
 # Example
 if __name__ == '__main__':
 
-    axonSpec = {
-        'nseg': 100,
-        'length': 1000,
-        'diam': 2,
-        'algorithm': 'pas'
-    }
-
     soma = Node('soma', nseg=1, length=25, diam=25, algorithm='hh')
-    axon = Node('axon', **axonSpec)
+    axon = Node('axon', nseg=100, length=1000, diam=2, algorithm='pas')
     dend = Node('dendrite', nseg=5, length=50, diam=2, algorithm='pas')
 
     hw = HocWriter()

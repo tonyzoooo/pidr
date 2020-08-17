@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+@author: Loïc Bertrand, Tony Zhou
+"""
+
 from enum import Enum
 from typing import List, Optional, Tuple
 
@@ -148,6 +154,29 @@ class AppModel:
             if cell is not None:
                 stim, stimParams = self.stim.toLFPyStimIntElectrode(cell)
                 demo.executeDemo(cell, stim, stimParams)
+
+    def fillBallStick(self):
+        """
+        Creates a ball & stick cell morphology
+        """
+        self.cell.sections.clear()
+        soma = self.tryAddSection('soma')
+        axon = self.tryAddSection('axon')
+        dend = self.tryAddSection('dend')
+        soma.nseg = 1
+        soma.L = 25
+        soma.diam = 25
+        soma.insert('hh')
+        axon.nseg = 100
+        axon.L = 1000
+        axon.diam = 2
+        axon.insert('hh')
+        dend.nseg = 5
+        dend.L = 50
+        dend.diam = 2
+        dend.insert('pas')
+        axon.connect(soma, 1, 0)
+        dend.connect(soma, 0, 1)
 
 
 class SectionModel:

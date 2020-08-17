@@ -1,6 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+@author: Loïc Bertrand
+"""
+
 from tkinter import *
 from tkinter.ttk import *
-from typing import Iterable, Tuple, List
+from typing import Iterable, Tuple
 
 from src.app.model import AppModel, SectionModel
 from src.app.number_validation import safeFloat, addFloatValidation, addIntValidation, safeInt
