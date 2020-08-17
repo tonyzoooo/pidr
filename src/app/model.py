@@ -29,7 +29,7 @@ class AppModel:
     """
 
     def __init__(self):
-        self.filename = None
+        self.filename = ''
         self.selectedSection: Optional[SectionModel] = None
         self.cell = CellModel()
         self.cellSource = CellSource.BUILDER
