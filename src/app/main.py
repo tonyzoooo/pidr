@@ -9,9 +9,9 @@ from tkinter.ttk import *
 
 from ttkthemes import ThemedTk
 
-from src.app.morpho_view import MorphologyView
 from src.app.model import AppModel
-from src.app.side_bar_view import PlotView, SideBarView
+from src.app.morpho_view import MorphologyView
+from src.app.side_bar_view import SideBarView
 from src.app.stim_view import StimulationView
 
 
@@ -30,7 +30,7 @@ class App(Frame):
 
         root.configure(padx=8, pady=8)
         root.geometry('')  # adjust window size to fit content
-        root.title('Simulation comparator')
+        root.title('Simulator')
         root.bind('<Escape>', lambda e: root.destroy())
         root.protocol("WM_DELETE_WINDOW", lambda: root.destroy())
 

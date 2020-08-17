@@ -5,6 +5,7 @@
 """
 
 from tkinter import *
+from tkinter import filedialog
 from tkinter.ttk import *
 from typing import Callable, Optional, Tuple, Iterable
 
@@ -321,8 +322,19 @@ class OpenHocView(Frame):
         """
         Refreshes the name of the selected file in the gui
         """
-        text = self.model.filename or 'No file selected'
+        if self.model.filename:
+            text = formatPath(self.model.filename)
+        else:
+            text = 'No file selected'
         self.fileLabel.configure(text=text)
+
+
+def formatPath(path: str):
+    CHEVRON = '  〉  '
+    path = path.replace('/', CHEVRON)
+    if path.startswith(CHEVRON):
+        path = '/' + path
+    return path
 
 
 def _setComboboxValues(combobox: Combobox, values: Iterable):
