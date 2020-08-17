@@ -8,7 +8,25 @@ from tkinter import *
 from tkinter.ttk import *
 
 from src.app.model import AppModel
-from src.app.plotting import plot2DCell, plot3DCell
+from src.app.plotting import plot3DCell, plot2DCell
+
+
+class SideBarView(Frame):
+
+    def __init__(self, master, model: AppModel):
+        """
+        Container for side bar controls
+
+        :param master: parent container
+        :param model: app model
+        """
+        super().__init__(master)
+        self.model = model
+
+        self.plotView = PlotView(self, model)
+        self.plotView.grid(row=0, column=0, padx=8, pady=8)
+        simuButton = Button(self, text='Simulation', command=self.model.doSimulation)
+        simuButton.grid(row=1, column=0, padx=8, pady=(48, 8))
 
 
 class PlotView(Frame):
