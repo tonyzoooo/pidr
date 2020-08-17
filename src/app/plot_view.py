@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri Jun 26 16:08:39 2020
-
-@author: tonyz
+@author: Loïc Bertrand, Tony Zhou
 """
 
 from tkinter import *

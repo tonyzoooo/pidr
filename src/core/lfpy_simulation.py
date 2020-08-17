@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+@author: Loïc Bertrand, Steven Le Cam, Radu Ranta, Tony Zhou
+"""
+
 import LFPy
 import matplotlib.pyplot as plt
 import numpy as np

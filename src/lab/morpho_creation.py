@@ -1,8 +1,13 @@
-# https://neuron.yale.edu/neuron/docs/ball-and-stick-model-part-1
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Based on https://neuron.yale.edu/neuron/docs/ball-and-stick-model-part-1
+
+@author: Loïc Bertrand
+"""
 
 import matplotlib.pyplot as plt
 from neuron import h
-from neuron.units import ms, mV
 
 h.load_file('stdrun.hoc')
 
@@ -21,7 +26,6 @@ class BallAndStick:
         self.sectionList.append(self.soma)
         self.sectionList.append(self.dend)
         # self.sectionList.printnames()
-        connect(self.soma)
         self.soma.L = self.soma.diam = 12.6157
         self.dend.L = 200
         self.dend.diam = 1

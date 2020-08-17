@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+@author: Loïc Bertrand
+"""
+
 from tkinter import *
 from tkinter.ttk import *
 from typing import Optional, Callable

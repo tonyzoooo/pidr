@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+@author: Loïc Bertrand, Tony Zhou
+"""
+
 import matplotlib.pyplot as plt
 
 # dendrite fixée nseg =  5 L =  50 diam =  2 insert pas

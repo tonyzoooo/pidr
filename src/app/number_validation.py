@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+@author: Loïc Bertrand
+"""
+
 import sys
 import tkinter.ttk as ttk
 from tkinter import TclError

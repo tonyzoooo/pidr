@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+@author: Loïc Bertrand
+"""
+
 from tkinter import *
 from tkinter.ttk import *
 from typing import Optional, Iterable
@@ -9,7 +15,7 @@ from src.app.model import AppModel, IdxMode
 from src.app.number_validation import addFloatValidation, addIntValidation, safeFloat, safeInt
 
 
-class StimView(Frame):
+class StimulationView(Frame):
 
     def __init__(self, master, model: AppModel):
         """
@@ -47,7 +53,6 @@ class StimView(Frame):
         self.segIdx = Combobox(self, state='reaonly', width=5)
         self.segIdx.grid(row=2, column=3, **pad)
         self.segIdx.bind('<<ComboboxSelected>>', lambda e: self.saveStim())
-        addIntValidation(self.segIdx)
 
         Label(self, text='IClamp point process parameters').grid(row=3, columnspan=5, pady=(16, 4))
 

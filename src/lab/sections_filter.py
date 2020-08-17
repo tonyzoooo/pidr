@@ -1,9 +1,16 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+This code refers to an old implementation of CellModel that was using
+nrn.Section objects to retain the morphology characteristics.
+
+@author: Loïc Bertrand
+"""
+
 from neuron import h, nrn
 
-from model import CellModel
 
-
-def sectionsFromCell(cell: CellModel):
+def sectionsFromCell(cell: 'CellModel'):
     return [s for s in h.allsec() if s.cell() is cell]
 
 
