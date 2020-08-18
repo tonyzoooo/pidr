@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+This module contains methods for plotting a cell in 2D or 3D
+
 @author: Tony Zhou
 """
 
@@ -64,7 +66,7 @@ def createSegments(array1, array2):
     return segments
 
 
-def buildTree(sectionlist: Iterable[nrn.Section]):
+def buildTree(sectionList: Iterable[nrn.Section]):
     """
     Inpired from:https://senselab.med.yale.edu/modeldb/ShowModel?model=153196&file=/FoutzEtAl2012/classes.py#tabs-2
     and https://docs.enthought.com/mayavi/mayavi/auto/example_plotting_many_lines.html#example-plotting-many-lines
@@ -94,8 +96,8 @@ def buildTree(sectionlist: Iterable[nrn.Section]):
                                                          connections=connections)
         return xyzd, connections
 
-    assert sum(1 for _ in sectionlist) > 0, 'sectionList is empty'
-    first_section = next(iter(sectionlist))
+    assert any(sectionList), 'sectionList is empty'
+    first_section = next(iter(sectionList))
     root_section = h.SectionRef(sec=first_section).root
     xyzd = [[h.x3d(0, sec=root_section), h.y3d(0, sec=root_section),
              h.z3d(0, sec=root_section), h.diam3d(0, sec=root_section)]]
@@ -168,10 +170,9 @@ def getSectionData(sectionlist):
 def plot3DCell(sectionlist: Iterable[nrn.Section], stimpoint: Tuple[int, ...] = None):
     """
     Returns collections of lines for different 2d views of cell.
-    Args:
-        - sectionList:
-    Return:
-        - LineCollection, LineCollection, LineCollection
+
+    :param: sectionList:    iterable of ``nrn.Section`` objects
+    :param: stimpoint:      stimulation point represented as a tuple
     """
     # hide warnings
     # mlab.options.backend = 'envisage'

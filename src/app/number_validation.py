@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+This module contains helper functions to validate ``int`` of ``float``
+values from a ``ttk.Spinbox`` or any string value.
+
 @author: Loïc Bertrand
 """
 

@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+This module contains view classes related to the 'Stimulation' tab.
+
 @author: Loïc Bertrand
 """
 
 from tkinter import *
 from tkinter.ttk import *
-from typing import Optional, Iterable
+from typing import Optional
 
 import LFPy
 
 from src.app import section_util
 from src.app.model import AppModel, IdxMode
-from src.app.number_validation import addFloatValidation, addIntValidation, safeFloat, safeInt
+from src.app.number_validation import addFloatValidation, safeFloat, safeInt
 
 
 class StimulationView(Frame):
@@ -20,7 +22,7 @@ class StimulationView(Frame):
     def __init__(self, master, model: AppModel):
         """
         Container for stimulation parameters
-        
+
         :param master: parent container
         :param model: app model
         """
@@ -82,9 +84,9 @@ class StimulationView(Frame):
         self.idxMode.set('closest' if stim.idxMode == IdxMode.CLOSEST else 'section')
 
         # Create cell from specified morphology
-        section_util.clearAllSec()
+        # section_util.deleteAllSections()
         if not self.model.hasMorphology():
-            print('no morphology')
+            print('Warning: no morphology')
             return
         self._cell = self.model.toLFPyCell()
 
@@ -100,7 +102,7 @@ class StimulationView(Frame):
         """
         Fills the fields related to the segment selection.
         """
-        if self._cell is None or isEmpty(self._cell.allseclist):
+        if self._cell is None or not any(self._cell.allseclist):
             # Recreate an LFPy.Cell object if it was destroyed
             self._cell = self.model.toLFPyCell()
         section = self.section.get()
@@ -127,15 +129,3 @@ class StimulationView(Frame):
         stim.amp = safeFloat(self.amp.get, orElse=stim.amp)
         stim.dur = safeFloat(self.dur.get, orElse=stim.dur)
         stim.delay = safeFloat(self.delay.get, orElse=stim.delay)
-
-
-def isEmpty(iterable: Iterable) -> bool:
-    """
-    :param iterable:    iterable object
-    :return:            ``True`` if the iterable object is empty
-    """
-    try:
-        next(iter(iterable))
-        return False
-    except StopIteration:
-        return True
