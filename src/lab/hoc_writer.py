@@ -54,7 +54,7 @@ class HocWriter:
         self.connections.append(connection)
 
     def __str__(self):
-        nodeNames = map(lambda n: n.name, self.nodes)
+        nodeNames = [n.name for n in self.nodes]
         s = 'create ' + ', '.join(nodeNames) + '\n'
         for conn in self.connections:
             s += 'connect ' + str(conn) + '\n'

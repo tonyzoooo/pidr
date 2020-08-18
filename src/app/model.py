@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+This module contains classes related to the storing of the application's state.
+This includes the cell morphology created with the builder, the filename of the
+selected HOC file and the stimulation parameters. This also provides methods
+related to the features of the application.
+
 @author: Loïc Bertrand, Tony Zhou
 """
 
@@ -19,7 +24,7 @@ class CellSource(Enum):
     Enumeration to specify which source to use to create a morphology
     which will be used to plot the cell and to make the simulation.
     """
-    BUILDER = 1  # Use moprhology created with the builder
+    BUILDER = 1  # Use morphology created with the builder
     HOC_FILE = 2  # Use morphology from selected HOC file
 
 
@@ -79,7 +84,7 @@ class AppModel:
 
         :param name:    an HOC file path
         """
-        section_util.clearAllSec()
+        section_util.clearNeuronSections()
         if name:
             print('loading file', name)
             try:
@@ -138,6 +143,7 @@ class AppModel:
                 'lambda_f': 100.,  # frequency where length constants are computed
                 'delete_sections': False,
             }
+            section_util.clearNeuronSections()
             try:
                 return LFPy.Cell(**cell_parameters)
             except RuntimeError:
@@ -192,8 +198,8 @@ class SectionModel:
         self.nseg = 1
         self.L = 1  # µm
         self.diam = 1  # µm
-        self.mechanism = None
-        self.parentSec = None
+        self.mechanism: Optional[str] = None
+        self.parentSec: Optional['SectionModel'] = None
         self.childEnd = 0  # orientation
         self.parentEnd = 0
 
@@ -274,6 +280,7 @@ class CellModel:
         return None
 
     def toLFPyCell(self) -> LFPy.Cell:
+        section_util.clearNeuronSections()
         sectionList = self.toSectionList()
         cell_parameters = {
             'morphology': sectionList,
@@ -291,6 +298,24 @@ class CellModel:
             # 'verbose': True
         }
         return LFPy.Cell(**cell_parameters)
+
+    def toHocFormat(self) -> str:
+        # Create sections
+        res = f"create {', '.join(s.name for s in self.sections)}\n"
+        # Connections
+        for s in self.sections:
+            if s.parentSec:
+                res += f'connect {s.name}({s.childEnd}), {s.parentSec.name}({s.parentEnd})\n'
+        # Section parameters
+        for s in self.sections:
+            res += (f'{s.name} {{\n'
+                    f'    nseg = {s.nseg}\n'
+                    f'    L = {s.L}\n'
+                    f'    diam = {s.diam}\n')
+            if s.mechanism:
+                res += f'    insert {s.mechanism}\n'
+            res += '}\n'
+        return res
 
     def __str__(self):
         return self.displayName

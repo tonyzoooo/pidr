@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+This module contains utility functions related to ``nrn.Section`` objects.
+
 @author: Loïc Bertrand
 """
 
@@ -9,7 +11,7 @@ from typing import List, Iterable, Optional
 from neuron import h, nrn
 
 
-def clearAllSec():
+def clearNeuronSections():
     """
     Deletes all sections from the HOC interpreter's memory.
     If ``nrn.Section`` objects have a Python reference somewhere, they

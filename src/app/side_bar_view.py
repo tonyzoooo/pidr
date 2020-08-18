@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+This module contains view classes related to the side bar controls.
+
 @author: Loïc Bertrand, Tony Zhou
 """
 

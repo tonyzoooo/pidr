@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+This module contains view classes related to the 'Morphology' tab.
+
 @author: Loïc Bertrand, Tony Zhou
 """
 
