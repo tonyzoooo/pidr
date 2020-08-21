@@ -17,61 +17,58 @@ from src.app.side_bar_view import SideBarView
 from src.app.stim_view import StimulationView
 
 
-class App(Frame):
+class App(ThemedTk):
 
-    def __init__(self, root: Tk, model: AppModel):
+    def __init__(self, model: AppModel):
         """
-        Application's main panel
+        Application's root panel
 
-        :param root:    ``Tk`` root
         :param model:   application model reference
         """
-        super().__init__(root)
-        self.root = root
+        super().__init__(background=True)
+        if 'plastik' in self.get_themes():
+            self.set_theme('plastik')
         self.model = model
 
-        root.configure(padx=8, pady=8)
-        root.geometry('')  # adjust window size to fit content
-        root.title('Simulator')
-        root.bind('<Escape>', lambda e: root.destroy())
-        root.protocol("WM_DELETE_WINDOW", lambda: root.destroy())
+        self.configure(padx=8, pady=8)
+        self.geometry('')  # adjust window size to fit content
+        self.title('Simulator')
+        self.bind('<Escape>', lambda e: self.destroy())
+        self.protocol("WM_DELETE_WINDOW", lambda: self.destroy())
 
         # Multitab holder
-        self.tabs = Notebook(root, width=500, height=300)
-        self.tabs.bind('<<NotebookTabChanged>>', lambda e: self._onTabChanged())
-        self.tabs.grid(row=0, column=0)
+        self.notebook = Notebook(self, width=500, height=300)
+        self.notebook.bind('<<NotebookTabChanged>>', lambda e: self._onTabChanged())
+        self.notebook.grid(row=0, column=0)
 
         # Tab 1: Morphology builder/loader
-        morphoTab = Frame(self.tabs)
+        morphoTab = Frame(self.notebook)
+        morphoTab.pack()
         self.morphoView = MorphologyView(morphoTab, model)
         self.morphoView.place(anchor="c", relx=.5, rely=.5)
-        morphoTab.pack()
-        self.tabs.add(morphoTab, text='Morphology')
+        self.notebook.add(morphoTab, text='Morphology')
 
         # Tab 2: Stimulation parameters
-        stimTab = Frame(self.tabs)
+        stimTab = Frame(self.notebook)
+        stimTab.pack()
         self.stimView = StimulationView(stimTab, model)
         self.stimView.place(anchor="c", relx=.5, rely=.5)
-        stimTab.pack()
-        self.tabs.add(stimTab, text='Stimulation')
+        self.notebook.add(stimTab, text='Stimulation')
 
         # Side bar: Plotting and simulation controls
-        sideBar = SideBarView(root, model)
+        sideBar = SideBarView(self, model)
         sideBar.grid(row=0, column=1)
 
     def _onTabChanged(self):
-        tabName = self.tabs.tab(self.tabs.select(), 'text')
+        tabName = self.notebook.tab(self.notebook.select(), 'text')
         if tabName == 'Stimulation':
             self.stimView.refreshView()
 
     @staticmethod
     def launch():
-        root = ThemedTk(background=True)
-        if 'plastik' in root.get_themes():
-            root.set_theme('plastik')
         model = AppModel()
-        App(root, model)
-        root.mainloop()
+        app = App(model)
+        app.mainloop()
         return model
 
 

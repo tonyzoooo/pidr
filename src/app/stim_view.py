@@ -12,7 +12,6 @@ from typing import Optional
 
 import LFPy
 
-from src.app import section_util
 from src.app.model import AppModel, IdxMode
 from src.app.number_validation import addFloatValidation, safeFloat, safeInt
 
@@ -28,6 +27,7 @@ class StimulationView(Frame):
         """
         super().__init__(master, padding=4)
         self.model = model
+        # Cache of the last LFPy.Cell object created
         self._cell: Optional[LFPy.Cell] = None
 
         pad = {'padx': 4, 'pady': 4}
@@ -52,7 +52,7 @@ class StimulationView(Frame):
         self.section = Combobox(self, state='readonly', width=12)
         self.section.grid(row=2, column=1, columnspan=2, **pad, sticky='ew')
         self.section.bind('<<ComboboxSelected>>', lambda e: self._refreshSegIndices())
-        self.segIdx = Combobox(self, state='reaonly', width=5)
+        self.segIdx = Combobox(self, state='readonly', width=5)
         self.segIdx.grid(row=2, column=3, **pad)
         self.segIdx.bind('<<ComboboxSelected>>', lambda e: self.saveStim())
 
@@ -73,7 +73,7 @@ class StimulationView(Frame):
         """
         Fills the fields with the values of the model
         """
-        # Refresh cell-independant fields
+        # Refresh cell-independent fields
         stim = self.model.stim
         self.xCoord.set(stim.closestIdx[0])
         self.yCoord.set(stim.closestIdx[1])
@@ -83,10 +83,9 @@ class StimulationView(Frame):
         self.delay.set(stim.delay)
         self.idxMode.set('closest' if stim.idxMode == IdxMode.CLOSEST else 'section')
 
-        # Create cell from specified morphology
-        # section_util.deleteAllSections()
+        # Create cell from specified morphology each time we switch to this view
         if not self.model.hasMorphology():
-            print('Warning: no morphology')
+            print(f'Warning: no morphology detected from {self.model.cellSource.name}')
             return
         self._cell = self.model.toLFPyCell()
 
@@ -105,6 +104,8 @@ class StimulationView(Frame):
         if self._cell is None or not any(self._cell.allseclist):
             # Recreate an LFPy.Cell object if it was destroyed
             self._cell = self.model.toLFPyCell()
+            if self._cell is None:
+                return
         section = self.section.get()
         # Get segment indices from the selected section
         indices = list(self._cell.get_idx(section)) if section else []
