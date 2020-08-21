@@ -35,11 +35,13 @@ class MorphologyView(Frame):
         self.sectionsView = SectionsView(self.builderFrame, model)
         self.sectionsView.grid(row=0, column=0, rowspan=2, **pad)
         self.configView = ConfigView(self.builderFrame, model)
-        self.configView.grid(row=0, column=1, columnspan=2, **pad)
-        ballstickButton = Button(self.builderFrame, text='Example', command=self._fillBallStick)
-        ballstickButton.grid(row=1, column=1, **pad)
+        self.configView.grid(row=0, column=1, columnspan=3, **pad)
+        ballStickButton = Button(self.builderFrame, text='Autofill', command=self._fillBallStick)
+        ballStickButton.grid(row=1, column=1, **pad)
+        saveHocButton = Button(self.builderFrame, text='Save to file', command=self._saveHoc)
+        saveHocButton.grid(row=1, column=2, **pad)
         useFileButton = Button(self.builderFrame, text='Use HOC file', command=self._switchToFile)
-        useFileButton.grid(row=1, column=2, **pad)
+        useFileButton.grid(row=1, column=3, **pad)
         self.builderFrame.pack()
 
         # Hoc file loader
@@ -59,6 +61,19 @@ class MorphologyView(Frame):
         """
         self.model.fillBallStick()
         self.sectionsView.refreshView()
+
+    def _saveHoc(self):
+        """
+        Saves the morphology specified in the builder to a file in HOC format
+        """
+        if not self.model.hasSections():
+            return
+        file = filedialog.asksaveasfile(mode='w', defaultextension=".hoc")
+        if file is None:
+            return
+        hocAsString = self.model.cell.toHocFormat()
+        file.write(hocAsString)
+        file.close()
 
     def _switchToFile(self):
         """

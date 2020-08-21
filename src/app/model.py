@@ -8,7 +8,6 @@ related to the features of the application.
 
 @author: Loïc Bertrand, Tony Zhou
 """
-
 from enum import Enum
 from typing import List, Optional, Tuple
 
@@ -39,7 +38,9 @@ class AppModel:
         self.cell = CellModel()
         self.cellSource = CellSource.BUILDER
         self.stim = StimModel()
+        self._pc: h.ParallelContext = None
         h.load_file('stdlib.hoc')
+        # h.nrnmpi_init()
 
     @property
     def selectedSectionName(self) -> Optional[str]:
@@ -74,7 +75,7 @@ class AppModel:
         return len(self.cell.sections) != 0
 
     def hasHocFile(self):
-        return self.filename is not None
+        return bool(self.filename)
 
     @staticmethod
     def _loadFileIntoMemory(name):
@@ -86,7 +87,7 @@ class AppModel:
         """
         section_util.clearNeuronSections()
         if name:
-            print('loading file', name)
+            print('Loading file', name, 'manually (CellModel::_loadFileIntoMemory)')
             try:
                 h.load_file(1, name)
             except RuntimeError as e:
@@ -124,6 +125,8 @@ class AppModel:
 
         :return:    an ``LFPy.Cell`` object or None is the model has no morphology
         """
+        section_util.clearNeuronSections()
+
         if not self.hasMorphology():
             return None
         if self.cellSource is CellSource.BUILDER:
@@ -143,7 +146,6 @@ class AppModel:
                 'lambda_f': 100.,  # frequency where length constants are computed
                 'delete_sections': False,
             }
-            section_util.clearNeuronSections()
             try:
                 return LFPy.Cell(**cell_parameters)
             except RuntimeError:
@@ -216,7 +218,8 @@ class SectionModel:
         sec.nseg = self.nseg
         sec.L = self.L
         sec.diam = self.diam
-        sec.insert(self.mechanism)
+        if self.mechanism:
+            sec.insert(self.mechanism)
         return sec
 
 
@@ -227,7 +230,7 @@ class CellModel:
         self.sections: List[SectionModel] = []
         self.displayName = f'cell[{CellModel._instancesCount}]'
         CellModel._instancesCount += 1
-        self._nrnSectionsCache = []  # important, see self.toSectionList
+        self._nrnSectionsCache = []  # important, see CellModel::toSectionList
 
     def getSection(self, name: str) -> Optional[SectionModel]:
         for sec in self.sections:
@@ -237,7 +240,7 @@ class CellModel:
 
     def tryAddSection(self, name: str) -> Optional[SectionModel]:
         if self._isInvalidName(name):
-            print(f"name '{name}' is invalid")
+            print(f"Section name '{name}' is invalid (AppModel::tryAddSection)")
             return None
 
         section = SectionModel(name)
@@ -306,6 +309,7 @@ class CellModel:
         for s in self.sections:
             if s.parentSec:
                 res += f'connect {s.name}({s.childEnd}), {s.parentSec.name}({s.parentEnd})\n'
+        res += '\n'
         # Section parameters
         for s in self.sections:
             res += (f'{s.name} {{\n'
