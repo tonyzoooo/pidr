@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import PolyCollection
 
+from src.core import util
+
 
 def PolyArea(x, y):
     return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
@@ -42,7 +44,7 @@ def plotNeuron(cell, fig):
     return fig
 
 
-def runLfpySimulation(cell: LFPy.Cell, stim: LFPy.StimIntElectrode):
+def runLfpySimulation(cell: LFPy.Cell):
     # -----------------------------------------------------------
     # stimulation parameters
     # -----------------------------------------------------------
@@ -63,8 +65,8 @@ def runLfpySimulation(cell: LFPy.Cell, stim: LFPy.StimIntElectrode):
     # Electrodes
     # -----------------------------------------------------------
 
-    hstep = np.array(range(-250, 1251, 125))
-    vstep = np.array(range(250, 49, -50))
+    hstep = util.closedRange(-250, 1250, 125)
+    vstep = util.closedRange(250, 50, -50)
     N = vstep.shape
     Ny = hstep.shape
 

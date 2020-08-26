@@ -16,8 +16,8 @@ def morphofiltd(re: ndarray, order: int, r0: ndarray, r1: ndarray,
     :param re:      electrode positions (M x 3)
     :param order:   filter length (N+1 = nb of compartments on the axon + soma)
     :param r0:      soma position (1 x 3) (center)
-    :param r1:      axon hillock position (1 x 3) (begining)
-    :param rN:      last axon compartment position (1 x 3) (begining)
+    :param r1:      axon hillock position (1 x 3) (beginning)
+    :param rN:      last axon compartment position (1 x 3) (beginning)
     :param rD:      tip of the equivalent dendrite (default: None)
     :param Cs:      amplitude of the somatic dipole (default: 1)
     :return:        filtered result

@@ -43,11 +43,17 @@ def reshapeMeshgrid(lst: list):
     return result.transpose()
 
 
-def closed_range(start: float, stop: float, step: float = 1) -> np.ndarray:
+def closedRange(start: float, stop: float, step: float = 1) -> np.ndarray:
     """
-    Closed range, equivalent to a MATLAB(R) range (start:step:stop)
+    Closed integer range.
+    Example: closedRange(3, 9, step=2) == array([3, 5, 7, 9])
     """
-    return np.arange(start, stop + step, step)
+    if int is type(start) is type(stop) is type(step):
+        epsilon = 0.5 if step > 0 else -0.5
+        return np.arange(start, stop + epsilon, step, dtype='int64')
+    else:
+        epsilon = 1e-12 if step > 0 else -1e-12
+        return np.arange(start, stop + epsilon, step, dtype='float64')
 
 
 def auto_str(cls):

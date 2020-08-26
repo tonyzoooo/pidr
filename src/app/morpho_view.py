@@ -315,7 +315,7 @@ class OpenHocView(Frame):
         self.model = model
         master.grid_columnconfigure(0, weight=1)  # center horizontally
 
-        openHocButton = Button(self, text='Open .hoc', command=self._openFile)
+        openHocButton = Button(self, text='Select .hoc file', command=self._openFile)
         openHocButton.pack(padx=8)
 
         self.fileLabel = Label(self, text='No file selected', wraplength=400)

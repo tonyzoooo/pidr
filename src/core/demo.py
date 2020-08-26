@@ -31,7 +31,7 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, stimParams: dict):
     # run LFPy simulation
     # -----------------------------------------------------------
 
-    result = runLfpySimulation(cell=cell, stim=stim)
+    result = runLfpySimulation(cell=cell)
 
     Vlfpy = result.Vlfpy
     Vmlfpy = result.Vmlfpy
@@ -48,7 +48,7 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, stimParams: dict):
     dt = 1 / 1000  # sampling period in ms
     Nt = 2 ** 15
     D = Nt * dt
-    t = util.closed_range(dt, D, dt) - dt
+    t = util.closedRange(dt, D, dt) - dt
 
     # fe = 1 / dt
     # f = np.arange(0, fe / 2, fe / Nt)
@@ -137,11 +137,16 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, stimParams: dict):
     # electrodes
     # -----------------------------------------------------------
 
-    X = util.closed_range(-250, 1250, 125)
-    Y = util.closed_range(250, 50, -50)
+    X = util.closedRange(-250, 1250, 125)
+    Y = util.closedRange(250, 50, -50)
     Z = 0
 
     elpos = util.reshapeMeshgrid(np.meshgrid(X, Y, Z))
+
+    nb_rows = Y.shape[0]
+    nb_cols = X.shape[0]
+
+    print(f'{nb_rows=} {nb_cols=}')
 
     # -----------------------------------------------------------
     # simulation
@@ -169,10 +174,10 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, stimParams: dict):
     # -----------------------------------------------------------
 
     cc = np.zeros((1, elpos.shape[0]))
-    t = util.closed_range(dt, dt * Vel2.shape[1], dt)
+    t = util.closedRange(dt, dt * Vel2.shape[1], dt)
 
     fig = plt.figure('Simulation & Neuron Morphology')
-    gs = fig.add_gridspec(5, 13)
+    gs = fig.add_gridspec(nb_rows, nb_cols)
 
     plotNeuron(cell, fig)
 
@@ -181,8 +186,8 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, stimParams: dict):
     line_obj = []
     ifil = 0
 
-    for i in range(5):
-        for j in range(13):
+    for i in range(nb_rows):
+        for j in range(nb_cols):
             ax = fig.add_subplot(gs[i, j])
             ax.axis('off')
             l1 = ax.plot(t, Vel2[ifil, :] - Vel2[ifil, 0], linewidth=2)
@@ -193,7 +198,7 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, stimParams: dict):
             res = np.corrcoef(Vel2[ifil].T, Vlfpy[:, ifil])[0][1]
             cc[0, ifil] = max(0, res)
             rgba = cmap(cc[0, ifil])
-            color = np.array([[rgba[n] for n in range(3)]])
+            color = np.array([rgba[0:3]])
             plt.scatter(4, -2e-3, 50, color, 'o', cmap)
             plt.ylim(np.array([-5, 5]) * 1e-3)
             if i == 0:
