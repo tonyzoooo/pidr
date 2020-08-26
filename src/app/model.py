@@ -9,11 +9,12 @@ related to the features of the application.
 @author: Loïc Bertrand, Tony Zhou
 """
 from enum import Enum
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Literal
 
 import LFPy
 from neuron import h, nrn
 
+from src.app import plotting
 from src.app import section_util
 from src.core.util import auto_str
 
@@ -38,9 +39,7 @@ class AppModel:
         self.cell = CellModel()
         self.cellSource = CellSource.BUILDER
         self.stim = StimModel()
-        self._pc: h.ParallelContext = None
         h.load_file('stdlib.hoc')
-        # h.nrnmpi_init()
 
     @property
     def selectedSectionName(self) -> Optional[str]:
@@ -151,6 +150,34 @@ class AppModel:
             except RuntimeError:
                 print(f'Error during LFPy.Cell creation using file {self.filename} (AppModel::toLFPyCell)')
                 return None
+
+    def plotCell(self, dimension: Literal['2D', '3D']):
+        """
+        Plots the selected morphology (from builder or from file), in 2D or 3D,
+        depending on the selected mode. Tries to create an ``LFPy.Cell`` and an
+        LFPy Electrode object to plot the exact position of the stimulation. If
+        the creation fails, it creates a simple ``h.SectionList`` and does not
+        plot the electrode position.
+        
+        :param dimension: dimension for the plot ('2D' or '3D')
+        """
+        if not self.hasMorphology():
+            return
+
+        cell = self.toLFPyCell()
+        if cell is not None:
+            sections = cell.allseclist
+            stim, _ = self.stim.toLFPyStimIntElectrode(cell)
+            stimpoint = (stim.x, stim.y, stim.z)
+        else:
+            # Cell construction failed => no stim point plot possible
+            sections = self.toSectionList()
+            stimpoint = None
+
+        if dimension == '3D':
+            plotting.plot3DCell(sections, stimpoint)
+        elif dimension == '2D':
+            plotting.plot2DCell(sections, stimpoint)
 
     def doSimulation(self):
         """
@@ -362,7 +389,7 @@ class StimModel:
         :param cell:    the ``LFPy.Cell`` object associated with this
             stimulation electrode
         :return:        a tuple consisting of the stimulation object
-            and the dictionnary of parameters used for it's consruction
+            and the dictionary of parameters used for it's construction
         """
         stim_parameters = self.getParams(cell)
         stim = LFPy.StimIntElectrode(cell, **stim_parameters)
