@@ -71,7 +71,7 @@ class StimulationView(Frame):
 
     def refreshView(self):
         """
-        Fills the fields with the values of the model
+        Fills the fields using the values stored in the model
         """
         # Refresh cell-independent fields
         stim = self.model.stim
@@ -88,6 +88,8 @@ class StimulationView(Frame):
             print(f'Warning: no morphology detected from {self.model.cellSource.name}')
             return
         self._cell = self.model.toLFPyCell()
+        if self._cell is None:
+            return
 
         # Refresh cell-dependant fields
         names = self._cell.allsecnames
