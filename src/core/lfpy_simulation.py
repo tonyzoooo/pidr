@@ -3,7 +3,7 @@
 """
 @author: Loïc Bertrand, Steven Le Cam, Radu Ranta, Tony Zhou
 """
-from typing import Dict
+from dataclasses import dataclass
 
 import LFPy
 import matplotlib.pyplot as plt
@@ -11,13 +11,35 @@ import numpy as np
 from matplotlib.collections import PolyCollection
 
 
+@dataclass
+class ElectrodeGrid:
+    xs: np.ndarray
+    ys: np.ndarray
+
+
+@dataclass
+class StimulationResult:
+    Vlfpy: np.ndarray
+    Vmlfpy: np.ndarray
+    Imlfpy: np.ndarray
+    timeind: float
+    meshgrid_electrodes: LFPy.RecExtElectrode
+
+
 def polyArea(x: np.ndarray, y: np.ndarray):
     return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
 
 
-def plotNeuron(cell: LFPy.Cell, fig: plt.Figure, electrodeRanges: Dict[str, np.ndarray]):
-    Y = electrodeRanges['y']
-    X = electrodeRanges['x']
+def plotNeuron(cell: LFPy.Cell,
+               fig: plt.Figure,
+               electrodeGrid: ElectrodeGrid):
+    """
+    Plot cell morphology on given figure, aligned to the electrode grid
+
+    :param cell:            cell to plot
+    :param fig:             matplotlib figure to plot on
+    :param electrodeGrid:   recording electrode grid coordinates
+    """
 
     # plt.plot(electrode.x, electrode.y, '.',  marker='o',
     #          markersize=3, color='r', zorder=0)
@@ -36,8 +58,8 @@ def plotNeuron(cell: LFPy.Cell, fig: plt.Figure, electrodeRanges: Dict[str, np.n
     polycol.set_clip_on(False)  # draw outside of axes
     ax = fig.add_axes([0.15, 0.35, 0.725, 0.48])
     # align axes to grid :
-    ax.set_xlim(X[0], X[-1])  # (-250, 1250)
-    ax.set_ylim(Y[-1], Y[0])  # (50, 250)
+    ax.set_xlim(electrodeGrid.xs[0], electrodeGrid.xs[-1])  # (-250, 1250)
+    ax.set_ylim(electrodeGrid.ys[-1], electrodeGrid.ys[0])  # (50, 250)
 
     ax.axis('off')
     ax.add_collection(polycol)
@@ -48,13 +70,12 @@ def plotNeuron(cell: LFPy.Cell, fig: plt.Figure, electrodeRanges: Dict[str, np.n
 
 
 def runLfpySimulation(cell: LFPy.Cell,
-                      electrodeRanges: Dict[str, np.ndarray] = None):
+                      electrodeGrid: ElectrodeGrid):
     """
     Executes a simulation with LFPy using the given cell and electrode positions
 
-    :param cell:
-    :param electrodeRanges:
-    :return:
+    :param cell:            cell to use (stimulation must already be added to cell)
+    :param electrodeGrid:   recording electrode grid coordinates
     """
 
     # -----------------------------------------------------------
@@ -81,8 +102,8 @@ def runLfpySimulation(cell: LFPy.Cell,
     # Electrodes
     # -----------------------------------------------------------
 
-    hstep = electrodeRanges['x']
-    vstep = electrodeRanges['y']
+    hstep = electrodeGrid.xs
+    vstep = electrodeGrid.ys
     N = vstep.shape
     Ny = hstep.shape
 
@@ -96,6 +117,9 @@ def runLfpySimulation(cell: LFPy.Cell,
         'y': y_elec,
         'z': z_elec,
     }
+
+    print('x', x_elec)
+    print('y', y_elec)
 
     # Electrodes initialization
     meshgrid_electrodes = LFPy.RecExtElectrode(cell, **meshgrid)
@@ -123,21 +147,14 @@ def runLfpySimulation(cell: LFPy.Cell,
 
     # elpos=(x_elec,y_elec,z_elec)
     # np.savetxt("elpos_demo",elpos)
-    res = StimulationResult()
-    res.Vlfpy = Vlfpy
-    res.Vmlfpy = Vmlfpy
-    res.Imlfpy = Imlfpy
-    res.timeind = timeind
-    res.meshgrid_electrodes = meshgrid_electrodes
-    return res
 
-
-class StimulationResult:
-    Vlfpy: np.ndarray = None
-    Vmlfpy: np.ndarray = None
-    Imlfpy: np.ndarray = None
-    timeind: float = None
-    meshgrid_electrodes: LFPy.RecExtElectrode = None
+    return StimulationResult(
+        Vlfpy=Vlfpy,
+        Vmlfpy=Vmlfpy,
+        Imlfpy=Imlfpy,
+        timeind=timeind,
+        meshgrid_electrodes=meshgrid_electrodes
+    )
 
 
 def plotStimulation(cell: LFPy.Cell,

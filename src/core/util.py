@@ -3,11 +3,30 @@
 """
 @author: Loïc Bertrand, Tony Zhou
 """
+from typing import List
 
 import numpy as np
 
 
 def upsample(arr: np.array, n: int) -> np.array:
+    """
+    Increase sample rate by integer factor (based on the MATLAB(R)
+    function of the same name).
+
+    :param arr:     source array
+    :param n:       integer factor
+    :return:        resulting array
+
+    Examples
+    --------
+    >>> upsample(np.array([1, 2, 3]), 3)
+    array([1, 0, 0, 2, 0, 0, 3, 0, 0])
+    >>> upsample(np.array([[1, 2], [3, 4]]), 2)
+    array([[1, 2],
+           [0, 0],
+           [3, 4],
+           [0, 0]])
+    """
     if n <= 0:
         raise ValueError('value n must be positive: ' + str(n))
     if arr.ndim == 2:
@@ -20,7 +39,7 @@ def upsample(arr: np.array, n: int) -> np.array:
                 result[i * n + j] = np.zeros(cols, dtype=arr.dtype)
         return result
     elif arr.ndim == 1:
-        result = np.zeros(len(arr) * n)
+        result = np.zeros(len(arr) * n, dtype=arr.dtype)
         for i in range(len(arr)):
             result[i * n] = arr[i]
         return result
@@ -29,12 +48,25 @@ def upsample(arr: np.array, n: int) -> np.array:
 
 
 def readMatrix(file: str):
+    """
+    Read a space-separated file containing numbers and converts it to
+    a numpy 2D array.
+
+    :param file:    file path
+    :return:        numpy array
+    """
     with open(file, "r") as f:
         M = np.array([[float(num) for num in line.split(" ")] for line in f])
     return M
 
 
-def reshapeMeshgrid(lst: list):
+def reshapeMeshgrid(lst: List[np.ndarray]) -> np.ndarray:
+    """
+    Reshapes the result of np.meshgrid(X, Y, Z) to get expected shape.
+
+    :param lst:     list of numpy arrays
+    :return:        reshaped array
+    """
     rows = len(lst)
     cols = lst[0].size
     result = np.empty((rows, cols))
@@ -45,8 +77,14 @@ def reshapeMeshgrid(lst: list):
 
 def closedRange(start: float, stop: float, step: float = 1) -> np.ndarray:
     """
-    Closed integer range.
-    Example: closedRange(3, 9, step=2) == np.array([3, 5, 7, 9])
+    Creates a closed range of numbers as a numpy array.
+
+    Examples
+    --------
+    >>> closedRange(3, 9, step=2)
+    array([3, 5, 7, 9])
+    >>> closedRange(1.1, 6, 1.2)
+    array([1.1, 2.3, 3.5, 4.7, 5.9])
     """
     if int is type(start) is type(stop) is type(step):
         epsilon = 0.5 if step > 0 else -0.5

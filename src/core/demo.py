@@ -14,7 +14,7 @@ from numpy.linalg import norm
 from src.app import section_util
 from src.core import util
 from src.core.hhrun import hhrun
-from src.core.lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulation
+from src.core.lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulation, ElectrodeGrid
 from src.core.morphofiltd import morphofiltd
 
 
@@ -38,8 +38,6 @@ def executeDemo(cell: LFPy.Cell,
     Y = util.closedRange(250, 50, -50)
     Z = 0
 
-    electrodeRanges = {'x': X, 'y': Y}
-
     elpos = util.reshapeMeshgrid(np.meshgrid(X, Y, Z))
 
     nb_rows = Y.shape[0]
@@ -49,7 +47,8 @@ def executeDemo(cell: LFPy.Cell,
     # run LFPy simulation
     # -----------------------------------------------------------
 
-    result = runLfpySimulation(cell, electrodeRanges)
+    electrodeGrid = ElectrodeGrid(X, Y)
+    result = runLfpySimulation(cell, electrodeGrid)
 
     Vlfpy = result.Vlfpy
     Vmlfpy = result.Vmlfpy
@@ -182,7 +181,7 @@ def executeDemo(cell: LFPy.Cell,
     fig = plt.figure('Simulation comparison & Neuron Morphology')
     gs = fig.add_gridspec(nb_rows, nb_cols)
 
-    plotNeuron(cell, fig, electrodeRanges)
+    plotNeuron(cell, fig, electrodeGrid)
 
     cmap = plt.cm.get_cmap('jet')
     legend_labels = ["Tran", "LFPy"]
