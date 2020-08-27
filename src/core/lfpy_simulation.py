@@ -3,20 +3,22 @@
 """
 @author: Loïc Bertrand, Steven Le Cam, Radu Ranta, Tony Zhou
 """
+from typing import Dict
 
 import LFPy
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.collections import PolyCollection
 
-from src.core import util
 
-
-def PolyArea(x, y):
+def polyArea(x: np.ndarray, y: np.ndarray):
     return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
 
 
-def plotNeuron(cell, fig):
+def plotNeuron(cell: LFPy.Cell, fig: plt.Figure, electrodeRanges: Dict[str, np.ndarray]):
+    Y = electrodeRanges['y']
+    X = electrodeRanges['x']
+
     # plt.plot(electrode.x, electrode.y, '.',  marker='o',
     #          markersize=3, color='r', zorder=0)
     # rotation = {'x' : 0, 'y' : math.pi, 'z' : 0} #-math.pi/9 # Mainen
@@ -26,25 +28,35 @@ def plotNeuron(cell, fig):
         # PATCH Radu do not plot big boxes
         #        tmp=list(zip(x,y))
         #        if not 250 in tmp[1]:
-        if PolyArea(x, y) < 10000:
+        if polyArea(x, y) < 10000:
             zips.append(list(zip(x, y)))
         # END PATCH
     polycol = PolyCollection(zips, edgecolors='#999999',
                              facecolors='#666666', linewidths=1.7)
     polycol.set_clip_on(False)  # draw outside of axes
-    ax = fig.add_axes([0.15, 0.35, 0.725, 0.48])  # match sensors grid
-    ax.set_xlim(-250, 1250)
-    ax.set_ylim(50, 250)
+    ax = fig.add_axes([0.15, 0.35, 0.725, 0.48])
+    # align axes to grid :
+    ax.set_xlim(X[0], X[-1])  # (-250, 1250)
+    ax.set_ylim(Y[-1], Y[0])  # (50, 250)
 
     ax.axis('off')
     ax.add_collection(polycol)
-    plt.xlabel(r'Distance $\mu$m - (Ox)')
-    plt.ylabel(r'Distance $\mu$m - (0y)')
+    plt.xlabel('Distance μm - (Ox)')
+    plt.ylabel('Distance μm - (Oy)')
 
     return fig
 
 
-def runLfpySimulation(cell: LFPy.Cell):
+def runLfpySimulation(cell: LFPy.Cell,
+                      electrodeRanges: Dict[str, np.ndarray] = None):
+    """
+    Executes a simulation with LFPy using the given cell and electrode positions
+
+    :param cell:
+    :param electrodeRanges:
+    :return:
+    """
+
     # -----------------------------------------------------------
     # stimulation parameters
     # -----------------------------------------------------------
@@ -58,6 +70,10 @@ def runLfpySimulation(cell: LFPy.Cell):
     # Simulation
     # -----------------------------------------------------------
 
+    # The constructor of LFPy.StimIntElectrode objects takes the LFPy.Cell
+    # as an argument. This has the effect to bind this electrode to the
+    # cell. That's why we don't need to parameterize the stimulation here.
+
     cell.simulate(rec_imem=True)
     # cell.imem[np.isnan(cell.imem)]=0.0
 
@@ -65,8 +81,8 @@ def runLfpySimulation(cell: LFPy.Cell):
     # Electrodes
     # -----------------------------------------------------------
 
-    hstep = util.closedRange(-250, 1250, 125)
-    vstep = util.closedRange(250, 50, -50)
+    hstep = electrodeRanges['x']
+    vstep = electrodeRanges['y']
     N = vstep.shape
     Ny = hstep.shape
 
@@ -124,7 +140,10 @@ class StimulationResult:
     meshgrid_electrodes: LFPy.RecExtElectrode = None
 
 
-def plotStimulation(cell, timeind, stimulus, meshgrid_electrodes):
+def plotStimulation(cell: LFPy.Cell,
+                    timeind: int,
+                    stimulus: LFPy.StimIntElectrode,
+                    meshgrid_electrodes: LFPy.RecExtElectrode):
     fig = plt.figure('Stimulation')
 
     # ================= STIMULATION PLOT =================================
