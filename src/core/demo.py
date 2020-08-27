@@ -3,6 +3,7 @@
 """
 @author: Loïc Bertrand, Steven Le Cam, Radu Ranta, Tony Zhou
 """
+from typing import Dict
 
 import LFPy
 import matplotlib.pyplot as plt
@@ -17,7 +18,9 @@ from src.core.lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulat
 from src.core.morphofiltd import morphofiltd
 
 
-def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, stimParams: dict):
+def executeDemo(cell: LFPy.Cell,
+                stim: LFPy.StimIntElectrode,
+                stimParams: Dict[str, float]):
     """
     Executes the demo comparing LFPy's simulation and Tran's fast simulation
     based on a morphological filtering approximation.
@@ -28,10 +31,25 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, stimParams: dict):
     """
 
     # -----------------------------------------------------------
+    # electrodes
+    # -----------------------------------------------------------
+
+    X = util.closedRange(-250, 1250, 125)
+    Y = util.closedRange(250, 50, -50)
+    Z = 0
+
+    electrodeRanges = {'x': X, 'y': Y}
+
+    elpos = util.reshapeMeshgrid(np.meshgrid(X, Y, Z))
+
+    nb_rows = Y.shape[0]
+    nb_cols = X.shape[0]
+
+    # -----------------------------------------------------------
     # run LFPy simulation
     # -----------------------------------------------------------
 
-    result = runLfpySimulation(cell=cell)
+    result = runLfpySimulation(cell, electrodeRanges)
 
     Vlfpy = result.Vlfpy
     Vmlfpy = result.Vmlfpy
@@ -134,21 +152,6 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, stimParams: dict):
     """
 
     # -----------------------------------------------------------
-    # electrodes
-    # -----------------------------------------------------------
-
-    X = util.closedRange(-250, 1250, 125)
-    Y = util.closedRange(250, 50, -50)
-    Z = 0
-
-    elpos = util.reshapeMeshgrid(np.meshgrid(X, Y, Z))
-
-    nb_rows = Y.shape[0]
-    nb_cols = X.shape[0]
-
-    print(f'{nb_rows=} {nb_cols=}')
-
-    # -----------------------------------------------------------
     # simulation
     # -----------------------------------------------------------
 
@@ -166,7 +169,7 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, stimParams: dict):
     Vel2 = Vel[:, intervVm]
 
     # normalize
-    elsync = 55
+    elsync = elpos.shape[0] - 10  # value was 55
     Vel2 = Vel2 / norm(Vel2[elsync, :]) * norm(Vlfpy[:, elsync])
 
     # -----------------------------------------------------------
@@ -176,14 +179,14 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, stimParams: dict):
     cc = np.zeros((1, elpos.shape[0]))
     t = util.closedRange(dt, dt * Vel2.shape[1], dt)
 
-    fig = plt.figure('Simulation & Neuron Morphology')
+    fig = plt.figure('Simulation comparison & Neuron Morphology')
     gs = fig.add_gridspec(nb_rows, nb_cols)
 
-    plotNeuron(cell, fig)
+    plotNeuron(cell, fig, electrodeRanges)
 
     cmap = plt.cm.get_cmap('jet')
-    line_labels = ["Tran", "LFPy"]
-    line_obj = []
+    legend_labels = ["Tran", "LFPy"]
+    legend_handles = []
     ifil = 0
 
     for i in range(nb_rows):
@@ -192,24 +195,24 @@ def executeDemo(cell: LFPy.Cell, stim: LFPy.StimIntElectrode, stimParams: dict):
             ax.axis('off')
             l1 = ax.plot(t, Vel2[ifil, :] - Vel2[ifil, 0], linewidth=2)
             l2 = ax.plot(t, Vlfpy[:, ifil] - Vlfpy[0, ifil], linewidth=2)
-            if len(line_obj) < 2:
-                line_obj.append(l1[0])
-                line_obj.append(l2[0])
+            if len(legend_handles) < 2:
+                legend_handles.append(l1[0])
+                legend_handles.append(l2[0])
             res = np.corrcoef(Vel2[ifil].T, Vlfpy[:, ifil])[0][1]
             cc[0, ifil] = max(0, res)
             rgba = cmap(cc[0, ifil])
-            color = np.array([rgba[0:3]])
+            color = np.array([rgba])
             plt.scatter(4, -2e-3, 50, color, 'o', cmap)
             plt.ylim(np.array([-5, 5]) * 1e-3)
-            if i == 0:
-                plt.text(1, 6e-3, rf'{j * 125 - 250}$\mu$m')
-            if j == 0:
-                plt.text(-10, -2e-3, rf'{-i * 50 + 250}$\mu$m')
+            if i == 0:  # bottom graduations
+                plt.text(2, nb_rows * 1.5e-3, f'{X[j]}μm')
+            if j == 0:  # left graduations
+                plt.text(-nb_cols * 1.1, -2e-3, f'{Y[i]}μm')
             ifil += 1
 
     fig.legend(
-        handles=line_obj,  # The line objects
-        labels=line_labels,  # The labels for each line
+        handles=legend_handles,  # The line objects
+        labels=legend_labels,  # The labels for each line
         loc="lower left",  # Position of legend
         bbox_to_anchor=(0.1, 0),  # Anchor
         borderaxespad=0.1,  # Small spacing around legend box
@@ -238,8 +241,8 @@ def main():
     Executes the simulation with the following parameters
     """
     cell_parameters = {
-        # 'morphology': 'resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc',
-        'morphology': 'resources/L5_Mainen_ax600_phi1.hoc',
+        'morphology': 'resources/BSR_LA1000_DA2_LD50_DD2_demo.hoc',
+        # 'morphology': 'resources/L5_Mainen_ax600_phi1.hoc',
         # 'morphology': 'resources/stel_Mainen_ax200.hoc',
         'v_init': -65,  # Initial membrane potential. Defaults to -70 mV
         'passive': True,  # Passive mechanisms are initialized if True
