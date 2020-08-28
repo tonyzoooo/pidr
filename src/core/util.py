@@ -81,10 +81,12 @@ def closedRange(start: float, stop: float, step: float = 1) -> np.ndarray:
 
     Examples
     --------
-    >>> closedRange(3, 9, step=2)
-    array([3, 5, 7, 9])
-    >>> closedRange(1.1, 6, 1.2)
+    >>> closedRange(1.1, 5.9, 1.2)
     array([1.1, 2.3, 3.5, 4.7, 5.9])
+    >>> closedRange(6, 2, -2)
+    array([6, 4, 2])
+    >>> closedRange(4.5, 2.31, -1.1)
+    array([4.5, 3.4])
     """
     if int is type(start) is type(stop) is type(step):
         epsilon = 0.5 if step > 0 else -0.5

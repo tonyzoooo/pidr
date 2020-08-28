@@ -92,7 +92,7 @@ def executeDemo(cell: LFPy.Cell,
     # -----------------------------------------------------------
 
     dims = section_util.computeDimensions(cell.allseclist)
-    print('dimensions:', dims)
+    print('picked up dimensions:', dims)
 
     SL = dims.get('SL', 25)  # soma length (cylinder with the same diameter)
 

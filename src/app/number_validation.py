@@ -15,7 +15,7 @@ from typing import Callable
 
 def safeFloat(getter: Callable[[], str], orElse: float, from_=-sys.maxsize, to=sys.maxsize) -> float:
     """
-    Tries to convert the value supplied by the ``getter`` to an int or as a float,
+    Tries to convert the value supplied by the ``getter`` to an int or to a float,
     contained in the (optionally) given range or returns the ``orElse`` default
     value if any error occurred.
 
@@ -24,18 +24,29 @@ def safeFloat(getter: Callable[[], str], orElse: float, from_=-sys.maxsize, to=s
     :param from_:   minimum value (optional)
     :param to:      maximum value (optional)
     :return:        a valid ``float`` value
+
+    Examples
+    --------
+    >>> safeFloat(lambda: '0.2', orElse=12)
+    0.2
+    >>> safeFloat(lambda: '', orElse=42)
+    42
+    >>> safeFloat(lambda: '0', orElse=100.0, from_=10)
+    100.0
     """
     try:
         value = getter()
     except (TclError, RuntimeError):
         return orElse
-    try:
-        value = int(value)
-    except (ValueError, RuntimeError):
+
+    if type(value) not in [int, float]:
         try:
-            value = float(value)
+            value = int(value)
         except (ValueError, RuntimeError):
-            return orElse
+            try:
+                value = float(value)
+            except (ValueError, RuntimeError):
+                return orElse
 
     return value if from_ <= value <= to else orElse
 
