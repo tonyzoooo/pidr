@@ -13,7 +13,7 @@ from ttkthemes import ThemedTk
 
 from src.app.model import AppModel
 from src.app.morpho_view import MorphologyView
-from src.app.elec_grid_view import RecordView
+from src.app.record_view import RecordView
 from src.app.side_bar_view import SideBarView
 from src.app.stim_view import StimulationView
 
