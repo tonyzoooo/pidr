@@ -42,14 +42,13 @@ class PlotView(Frame):
         super().__init__(master)
         self.model = model
 
-        self.buttonVar = StringVar(value='3D')
-        self.figures = []
-        optButton0 = Radiobutton(self, text="3D View", variable=self.buttonVar, value='3D')
-        optButton1 = Radiobutton(self, text="2D View", variable=self.buttonVar, value='2D')
-        printButton = Button(self, text="Display", command=self._display)
-        optButton0.grid(row=0, column=0)
-        optButton1.grid(row=1, column=0, pady=4)
-        printButton.grid(row=2, column=0, padx=8)
+        self.buttonVar = StringVar(value='2D')
+        radio2D = Radiobutton(self, text="2D View", variable=self.buttonVar, value='2D')
+        radio3D = Radiobutton(self, text="3D View", variable=self.buttonVar, value='3D')
+        displayBtn = Button(self, text="Display", command=self._display)
+        radio2D.grid(row=0, column=0)
+        radio3D.grid(row=1, column=0, pady=4)
+        displayBtn.grid(row=2, column=0, padx=8)
 
     def _display(self):
         """

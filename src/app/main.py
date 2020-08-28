@@ -13,6 +13,7 @@ from ttkthemes import ThemedTk
 
 from src.app.model import AppModel
 from src.app.morpho_view import MorphologyView
+from src.app.elec_grid_view import ElecGridView
 from src.app.side_bar_view import SideBarView
 from src.app.stim_view import StimulationView
 
@@ -54,6 +55,13 @@ class App(ThemedTk):
         self.stimView = StimulationView(stimTab, model)
         self.stimView.place(anchor="c", relx=.5, rely=.5)
         self.notebook.add(stimTab, text='Stimulation')
+
+        # Tab 3: Recording electrodes parameters
+        recordTab = Frame(self.notebook)
+        recordTab.pack()
+        self.recordView = ElecGridView(recordTab, model)
+        self.recordView.place(anchor="c", relx=.5, rely=.5)
+        self.notebook.add(recordTab, text='Recording')
 
         # Side bar: Plotting and simulation controls
         sideBar = SideBarView(self, model)

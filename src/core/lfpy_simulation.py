@@ -12,12 +12,6 @@ from matplotlib.collections import PolyCollection
 
 
 @dataclass
-class ElectrodeGrid:
-    xs: np.ndarray
-    ys: np.ndarray
-
-
-@dataclass
 class StimulationResult:
     Vlfpy: np.ndarray
     Vmlfpy: np.ndarray
@@ -26,13 +20,19 @@ class StimulationResult:
     meshgrid_electrodes: LFPy.RecExtElectrode
 
 
+@dataclass
+class ElectrodeRanges:
+    xs: np.ndarray
+    ys: np.ndarray
+
+
 def polyArea(x: np.ndarray, y: np.ndarray):
     return 0.5 * np.abs(np.dot(x, np.roll(y, 1)) - np.dot(y, np.roll(x, 1)))
 
 
 def plotNeuron(cell: LFPy.Cell,
                fig: plt.Figure,
-               electrodeGrid: ElectrodeGrid):
+               electrodeGrid: ElectrodeRanges):
     """
     Plot cell morphology on given figure, aligned to the electrode grid
 
@@ -70,12 +70,12 @@ def plotNeuron(cell: LFPy.Cell,
 
 
 def runLfpySimulation(cell: LFPy.Cell,
-                      electrodeGrid: ElectrodeGrid):
+                      elecRanges: ElectrodeRanges):
     """
     Executes a simulation with LFPy using the given cell and electrode positions
 
-    :param cell:            cell to use (stimulation must already be added to cell)
-    :param electrodeGrid:   recording electrode grid coordinates
+    :param cell:        cell to use (stimulation must already be added to cell)
+    :param elecRanges:  recording electrode grid coordinates
     """
 
     # -----------------------------------------------------------
@@ -102,8 +102,8 @@ def runLfpySimulation(cell: LFPy.Cell,
     # Electrodes
     # -----------------------------------------------------------
 
-    hstep = electrodeGrid.xs
-    vstep = electrodeGrid.ys
+    hstep = elecRanges.xs
+    vstep = elecRanges.ys
     N = vstep.shape
     Ny = hstep.shape
 
@@ -117,9 +117,6 @@ def runLfpySimulation(cell: LFPy.Cell,
         'y': y_elec,
         'z': z_elec,
     }
-
-    print('x', x_elec)
-    print('y', y_elec)
 
     # Electrodes initialization
     meshgrid_electrodes = LFPy.RecExtElectrode(cell, **meshgrid)

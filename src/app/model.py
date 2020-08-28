@@ -14,8 +14,9 @@ from typing import List, Optional, Tuple, Literal
 import LFPy
 from neuron import h, nrn
 
-from src.app import plotting
-from src.app import section_util
+from core import lfpy_simulation
+from src.app import plotting, section_util
+from src.core import util
 from src.core.util import auto_str
 
 
@@ -36,9 +37,10 @@ class AppModel:
     def __init__(self):
         self.filename = ''
         self.selectedSection: Optional[SectionModel] = None
-        self.cell = CellModel()
         self.cellSource = CellSource.BUILDER
+        self.cell = CellModel()
         self.stim = StimModel()
+        self.elecGrid = ElecGridModel()
         h.load_file('stdlib.hoc')
 
     @property
@@ -188,7 +190,8 @@ class AppModel:
             cell = self.toLFPyCell()
             if cell is not None:
                 stim, stimParams = self.stim.toLFPyStimIntElectrode(cell)
-                demo.executeDemo(cell, stim, stimParams)
+                elecGrid = self.elecGrid.toNumpyRanges()
+                demo.executeDemo(cell, stim, stimParams, elecGrid)
 
     def fillBallStick(self):
         """
@@ -411,3 +414,25 @@ class StimModel:
             'dur': self.dur,  # ms
             'delay': self.delay,  # ms
         }
+
+
+class ElecGridModel:
+    """
+    Class to store recording electrode positions as a grid
+    """
+
+    def __init__(self):
+        # Electrode positions are defined on a grid
+        # by two closed ranges (start, stop, step)
+        self.xs = (-250, 1250, 125)
+        self.ys = (250, 50, -50)
+
+    def toNumpyRanges(self) -> lfpy_simulation.ElectrodeRanges:
+        """
+        Converts this grid specification to numpy ranges.
+
+        :return:    electrode grid as numpy arrays
+        """
+        xs = util.closedRange(*self.xs)
+        xy = util.closedRange(*self.ys)
+        return lfpy_simulation.ElectrodeRanges(xs, xy)

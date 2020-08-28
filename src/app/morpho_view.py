@@ -52,7 +52,7 @@ class MorphologyView(Frame):
         useBuilderButton.grid(row=2, column=0, **pad)
         self.pack()
 
-        self.sectionsView.beforeSectionSelected(self.configView.saveCurrentSection)
+        self.sectionsView.beforeSectionSelected(self.configView.saveValues)
         self.sectionsView.afterSectionSelected(self.configView.refreshView)
 
     def _fillBallStick(self):
@@ -215,7 +215,7 @@ class ConfigView(Frame):
         self.nsegVar = IntVar(value=1)
         nsegEntry = Spinbox(self, textvariable=self.nsegVar, **intSpinArgs)
         nsegEntry.grid(row=1, column=1, columnspan=2, **entryArgs)
-        nsegEntry.bind('<FocusOut>', lambda e: self.saveCurrentSection())
+        nsegEntry.bind('<FocusOut>', lambda e: self.saveValues())
         addIntValidation(nsegEntry, from_=1, to=32767)
 
         self.lengthVar, self.diamVar = (DoubleVar(value=1.0) for _ in [1, 2])
@@ -223,7 +223,7 @@ class ConfigView(Frame):
             Label(self, text=lbl).grid(row=row, **labelArgs)
             spinBox = Spinbox(self, textvariable=var, **floatSpinArgs)
             spinBox.grid(row=row, column=1, columnspan=2, **entryArgs)
-            spinBox.bind('<FocusOut>', lambda e: self.saveCurrentSection())
+            spinBox.bind('<FocusOut>', lambda e: self.saveValues())
             Label(self, text='µm').grid(row=row, column=3, padx=4, pady=4, sticky='w')
             addFloatValidation(spinBox, from_=1e-9)
 
@@ -231,10 +231,10 @@ class ConfigView(Frame):
         self.endMenu = Combobox(self, values=[0, 1], width=1, state="readonly")
         self.endMenu.current(0)
         self.endMenu.grid(row=4, column=1, **entryArgs)
-        self.endMenu.bind('<<ComboboxSelected>>', lambda e: self.saveCurrentSection())
+        self.endMenu.bind('<<ComboboxSelected>>', lambda e: self.saveValues())
         self.parentMenu = Combobox(self, values=[''], width=10, state="readonly")
         self.parentMenu.grid(row=4, column=2, **entryArgs)
-        self.parentMenu.bind('<<ComboboxSelected>>', lambda e: self.saveCurrentSection())
+        self.parentMenu.bind('<<ComboboxSelected>>', lambda e: self.saveValues())
 
         Label(self, text='mechanism').grid(row=5, **labelArgs)
         self.mechMenu = Combobox(self, values=['', 'hh', 'pas'], state="readonly")
@@ -273,7 +273,7 @@ class ConfigView(Frame):
 
         self.mechMenu.set(section.mechanism or '')
 
-    def saveCurrentSection(self):
+    def saveValues(self):
         """
         Saves the current section's data into the model
         """
