@@ -13,7 +13,7 @@ from src.app.model import AppModel
 from src.app.number_validation import addFloatValidation, safeFloat
 
 
-class ElecGridView(Frame):
+class RecordView(Frame):
 
     def __init__(self, master, model: AppModel):
         """
@@ -54,27 +54,27 @@ class ElecGridView(Frame):
         """
         Fills the fields using the values stored in the model
         """
-        self.xStart.set(self.model.elecGrid.xs[0])
-        self.xStop.set(self.model.elecGrid.xs[1])
-        self.xStep.set(self.model.elecGrid.xs[2])
+        self.xStart.set(self.model.record.xs[0])
+        self.xStop.set(self.model.record.xs[1])
+        self.xStep.set(self.model.record.xs[2])
 
-        self.yStart.set(self.model.elecGrid.ys[0])
-        self.yStop.set(self.model.elecGrid.ys[1])
-        self.yStep.set(self.model.elecGrid.ys[2])
+        self.yStart.set(self.model.record.ys[0])
+        self.yStop.set(self.model.record.ys[1])
+        self.yStep.set(self.model.record.ys[2])
 
     def saveValues(self):
         """
         Saves the values of the fields into the model
         """
-        grid = self.model.elecGrid
+        elecCoords = self.model.record
 
-        grid.xs = (
-            safeFloat(self.xStart.get, orElse=grid.xs[0]),
-            safeFloat(self.xStop.get, orElse=grid.xs[1]),
-            safeFloat(self.xStep.get, orElse=grid.xs[2]),
+        elecCoords.xs = (
+            safeFloat(self.xStart.get, orElse=elecCoords.xs[0]),
+            safeFloat(self.xStop.get, orElse=elecCoords.xs[1]),
+            safeFloat(self.xStep.get, orElse=elecCoords.xs[2]),
         )
-        grid.ys = (
-            safeFloat(self.yStart.get, orElse=grid.ys[0]),
-            safeFloat(self.yStop.get, orElse=grid.ys[1]),
-            safeFloat(self.yStep.get, orElse=grid.ys[2]),
+        elecCoords.ys = (
+            safeFloat(self.yStart.get, orElse=elecCoords.ys[0]),
+            safeFloat(self.yStop.get, orElse=elecCoords.ys[1]),
+            safeFloat(self.yStep.get, orElse=elecCoords.ys[2]),
         )

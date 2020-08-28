@@ -39,7 +39,7 @@ class AppModel:
         self.cellSource = CellSource.BUILDER
         self.cell = CellModel()
         self.stim = StimModel()
-        self.elecGrid = ElecGridModel()
+        self.record = RecordModel()
         h.load_file('stdlib.hoc')
 
     @property
@@ -189,7 +189,7 @@ class AppModel:
             cell = self.toLFPyCell()
             if cell is not None:
                 stim, stimParams = self.stim.toLFPyStimIntElectrode(cell)
-                elecGrid = self.elecGrid.toNumpyRanges()
+                elecGrid = self.record.toNumpyRanges()
                 demo.executeDemo(cell, stim, stimParams, elecGrid)
 
     def fillBallStick(self):
@@ -415,7 +415,7 @@ class StimModel:
         }
 
 
-class ElecGridModel:
+class RecordModel:
     """
     Class to store recording electrode positions as a grid
     """
