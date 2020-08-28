@@ -15,9 +15,9 @@ from typing import Callable
 
 def safeFloat(getter: Callable[[], str], orElse: float, from_=-sys.maxsize, to=sys.maxsize) -> float:
     """
-    Returns the value provided by the ``getter`` callable, converted to a ``float``.
-    If it cannot be converted to a ``float``, if it isn't contained into the given range
-    or if the getter throws an exception, the ``orElse`` value is returned instead.
+    Tries to convert the value supplied by the ``getter`` to an int or as a float,
+    contained in the (optionally) given range or returns the ``orElse`` default
+    value if any error occurred.
 
     :param getter:  callable returning a string
     :param orElse:  fallback value
@@ -26,17 +26,25 @@ def safeFloat(getter: Callable[[], str], orElse: float, from_=-sys.maxsize, to=s
     :return:        a valid ``float`` value
     """
     try:
-        floatValue = float(getter())
-    except (TclError, ValueError, RuntimeError):
+        value = getter()
+    except (TclError, RuntimeError):
         return orElse
-    return floatValue if from_ <= floatValue <= to else orElse
+    try:
+        value = int(value)
+    except (ValueError, RuntimeError):
+        try:
+            value = float(value)
+        except (ValueError, RuntimeError):
+            return orElse
+
+    return value if from_ <= value <= to else orElse
 
 
 def safeInt(getter: Callable[[], str], orElse: int, from_=-sys.maxsize, to=sys.maxsize) -> int:
     """
-    Returns the value provided by the ``getter`` callable, converted to an ``int``.
-    If it cannot be converted to a ``int``, if it isn't contained into the given range
-    or if the getter throws an exception, the ``orElse`` value is returned instead.
+    Tries to convert the value supplied by the ``getter`` to an int, contained
+    in the (optionally) given range or returns the ``orElse`` default value if
+    any error occurred.
 
     :param getter:  callable returning a string
     :param orElse:  fallback value

@@ -14,13 +14,14 @@ from numpy.linalg import norm
 from src.app import section_util
 from src.core import util
 from src.core.hhrun import hhrun
-from src.core.lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulation, ElectrodeGrid
+from src.core.lfpy_simulation import plotNeuron, plotStimulation, runLfpySimulation, ElectrodeRanges
 from src.core.morphofiltd import morphofiltd
 
 
 def executeDemo(cell: LFPy.Cell,
                 stim: LFPy.StimIntElectrode,
-                stimParams: Dict[str, float]):
+                stimParams: Dict[str, float],
+                elecRanges: ElectrodeRanges):
     """
     Executes the demo comparing LFPy's simulation and Tran's fast simulation
     based on a morphological filtering approximation.
@@ -28,14 +29,15 @@ def executeDemo(cell: LFPy.Cell,
     :param cell:        LFPy.Cell object
     :param stim:        LFPy.StimIntElectrode object
     :param stimParams:  parameters of the stimulation as a dictionary
+    :param elecRanges:  electrode grid as numpy arrays
     """
 
     # -----------------------------------------------------------
     # electrodes
     # -----------------------------------------------------------
 
-    X = util.closedRange(-250, 1250, 125)
-    Y = util.closedRange(250, 50, -50)
+    X = elecRanges.xs
+    Y = elecRanges.ys
     Z = 0
 
     elpos = util.reshapeMeshgrid(np.meshgrid(X, Y, Z))
@@ -47,8 +49,7 @@ def executeDemo(cell: LFPy.Cell,
     # run LFPy simulation
     # -----------------------------------------------------------
 
-    electrodeGrid = ElectrodeGrid(X, Y)
-    result = runLfpySimulation(cell, electrodeGrid)
+    result = runLfpySimulation(cell, elecRanges)
 
     Vlfpy = result.Vlfpy
     Vmlfpy = result.Vmlfpy
@@ -181,7 +182,7 @@ def executeDemo(cell: LFPy.Cell,
     fig = plt.figure('Simulation comparison & Neuron Morphology')
     gs = fig.add_gridspec(nb_rows, nb_cols)
 
-    plotNeuron(cell, fig, electrodeGrid)
+    plotNeuron(cell, fig, elecRanges)
 
     cmap = plt.cm.get_cmap('jet')
     legend_labels = ["Tran", "LFPy"]
@@ -268,7 +269,12 @@ def main():
     }
     stim = LFPy.StimIntElectrode(cell, **stim_parameters)
 
-    executeDemo(cell, stim, stim_parameters)
+    elecRanges = ElectrodeRanges(
+        xs=util.closedRange(-250, 1250, 125),
+        ys=util.closedRange(250, 50, -50),
+    )
+
+    executeDemo(cell, stim, stim_parameters, elecRanges)
 
 
 if __name__ == '__main__':

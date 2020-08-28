@@ -34,7 +34,7 @@ class StimulationView(Frame):
         floatSpinArgs = {'from_': 0, 'to': 1e10, 'increment': 0.1, 'validate': 'focusout'}
 
         self.idxMode = StringVar(value='closest')
-        self.idxMode.trace_add('write', lambda a, b, c: self.saveStim())
+        self.idxMode.trace_add('write', lambda a, b, c: self.saveValues())
         Radiobutton(self, text='closest idx', variable=self.idxMode, value='closest').grid(row=1, **pad)
         Radiobutton(self, text='section idx', variable=self.idxMode, value='section').grid(row=2, **pad)
 
@@ -45,7 +45,7 @@ class StimulationView(Frame):
             Label(self, text=lbl).grid(row=0, column=col)
             spinBox = Spinbox(self, textvariable=var, width=5, **floatSpinArgs)
             spinBox.grid(row=1, column=col, **pad)
-            spinBox.bind('<FocusOut>', lambda e: self.saveStim())
+            spinBox.bind('<FocusOut>', lambda e: self.saveValues())
             addFloatValidation(spinBox)
         Label(self, text='µm').grid(row=1, column=4, **pad, sticky='w')
 
@@ -54,7 +54,7 @@ class StimulationView(Frame):
         self.section.bind('<<ComboboxSelected>>', lambda e: self._refreshSegIndices())
         self.segIdx = Combobox(self, state='readonly', width=5)
         self.segIdx.grid(row=2, column=3, **pad)
-        self.segIdx.bind('<<ComboboxSelected>>', lambda e: self.saveStim())
+        self.segIdx.bind('<<ComboboxSelected>>', lambda e: self.saveValues())
 
         Label(self, text='IClamp point process parameters').grid(row=3, columnspan=5, pady=(16, 4))
 
@@ -65,7 +65,7 @@ class StimulationView(Frame):
             Label(self, text=lbl).grid(row=row, **pad, sticky='e')
             spinBox = Spinbox(self, textvariable=var, width=5, **floatSpinArgs)
             spinBox.grid(row=row, column=1, columnspan=3, **pad, sticky='ew')
-            spinBox.bind('<FocusOut>', lambda e: self.saveStim())
+            spinBox.bind('<FocusOut>', lambda e: self.saveValues())
             Label(self, text=unit).grid(row=row, column=4, **pad, sticky='w')
             addFloatValidation(spinBox)
 
@@ -116,7 +116,7 @@ class StimulationView(Frame):
             self.segIdx.set('')
         self.segIdx.configure(values=indices)
 
-    def saveStim(self):
+    def saveValues(self):
         """
         Saves the values of the fields into the model
         """
