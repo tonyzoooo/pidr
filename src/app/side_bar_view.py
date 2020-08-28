@@ -9,6 +9,7 @@ This module contains view classes related to the side bar controls.
 from tkinter import *
 from tkinter.ttk import *
 
+from src.app import config
 from src.app.model import AppModel
 
 
@@ -42,7 +43,8 @@ class PlotView(Frame):
         super().__init__(master)
         self.model = model
 
-        self.buttonVar = StringVar(value='2D')
+        defaultDimension = config.plot['dim']
+        self.buttonVar = StringVar(value=defaultDimension)
         radio2D = Radiobutton(self, text="2D View", variable=self.buttonVar, value='2D')
         radio3D = Radiobutton(self, text="3D View", variable=self.buttonVar, value='3D')
         displayBtn = Button(self, text="Display", command=self._display)
