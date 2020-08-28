@@ -379,9 +379,9 @@ class StimModel:
         # - VClamp: Two electrode voltage clamp with three levels
         # - SEClamp: Single electrode voltage clamp with three levels
         self.pptype = 'IClamp'
-        self.amp = 0.2  # nA
-        self.dur = 10.0  # ms
-        self.delay = 1.0  # ms
+        self.amp: float = config.stimulation['amp']  # nA
+        self.dur: float = config.stimulation['dur']  # ms
+        self.delay: float = config.stimulation['delay']  # ms
 
     def toLFPyStimIntElectrode(self, cell: LFPy.Cell) -> (LFPy.StimIntElectrode, dict):
         """
@@ -423,13 +423,8 @@ class RecordModel:
     def __init__(self):
         # Electrode positions are defined on a grid
         # by two closed ranges (start, stop, step)
-        # try:
-        self.xs = config.electrode_grid['xs']
-        self.ys = config.electrode_grid['ys']
-        # except (AttributeError, KeyError) as e:
-        #     print(f'{type(e).__name__}: {e}')
-        #     self.xs = (-250, 1250, 125)
-        #     self.ys = (250, 50, -50)
+        self.xs: Tuple[float, float, float] = config.electrode_grid['xs']
+        self.ys: Tuple[float, float, float] = config.electrode_grid['ys']
 
     def toNumpyRanges(self) -> lfpy_simulation.ElectrodeRanges:
         """
