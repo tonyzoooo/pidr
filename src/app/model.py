@@ -14,9 +14,8 @@ from typing import List, Optional, Tuple, Literal
 import LFPy
 from neuron import h, nrn
 
-from core import lfpy_simulation
-from src.app import plotting, section_util
-from src.core import util
+from src.app import plotting, section_util, config
+from src.core import util, lfpy_simulation
 from src.core.util import auto_str
 
 
@@ -424,8 +423,13 @@ class ElecGridModel:
     def __init__(self):
         # Electrode positions are defined on a grid
         # by two closed ranges (start, stop, step)
-        self.xs = (-250, 1250, 125)
-        self.ys = (250, 50, -50)
+        # try:
+        self.xs = config.electrode_grid['xs']
+        self.ys = config.electrode_grid['ys']
+        # except (AttributeError, KeyError) as e:
+        #     print(f'{type(e).__name__}: {e}')
+        #     self.xs = (-250, 1250, 125)
+        #     self.ys = (250, 50, -50)
 
     def toNumpyRanges(self) -> lfpy_simulation.ElectrodeRanges:
         """

@@ -66,13 +66,15 @@ class ElecGridView(Frame):
         """
         Saves the values of the fields into the model
         """
-        self.model.elecGrid.xs = (
-            safeFloat(self.xStart.get, orElse=self.model.elecGrid.xs[0]),
-            safeFloat(self.xStop.get, orElse=self.model.elecGrid.xs[1]),
-            safeFloat(self.xStep.get, orElse=self.model.elecGrid.xs[2]),
+        grid = self.model.elecGrid
+
+        grid.xs = (
+            safeFloat(self.xStart.get, orElse=grid.xs[0]),
+            safeFloat(self.xStop.get, orElse=grid.xs[1]),
+            safeFloat(self.xStep.get, orElse=grid.xs[2]),
         )
-        self.model.elecGrid.ys = (
-            safeFloat(self.yStart.get, orElse=self.model.elecGrid.ys[0]),
-            safeFloat(self.yStop.get, orElse=self.model.elecGrid.ys[1]),
-            safeFloat(self.yStep.get, orElse=self.model.elecGrid.ys[2]),
+        grid.ys = (
+            safeFloat(self.yStart.get, orElse=grid.ys[0]),
+            safeFloat(self.yStop.get, orElse=grid.ys[1]),
+            safeFloat(self.yStep.get, orElse=grid.ys[2]),
         )
