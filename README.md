@@ -18,6 +18,8 @@ export PYTHONPATH=.
 python src/app/main.py
 # Running simulation script only
 python src/core/demo.py
+# Running simulation script (NetPyNE)
+python src/core/demo2.py
 ```
 
 ## GUI guide
