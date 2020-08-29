@@ -109,3 +109,17 @@ def auto_str(cls):
 
     cls.__str__ = __str__
     return cls
+
+def retrieveNetpyneData(filename):
+    data = list()
+    with open(filename) as f:
+        lines = f.readline()
+        lines = lines.lstrip('[').rstrip(']')
+        lines = lines.split('][')
+        for line in lines:
+            sublist = list()
+            line = line.split(', ')
+            for element in line:
+                sublist.append(float(element))
+            data.append(sublist)
+    return np.array(data)
