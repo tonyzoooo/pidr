@@ -48,7 +48,7 @@ This tab is used to set the position of the recording electrodes. They are arang
 ```
         start  stop  step
     xs [ -10 ][ 30 ][ 10 ] μm
-    ys [ 200 ][150 ][-50 ] μm
+    ys [ 150 ][ 50 ][-50 ] μm
 
     -10    0   10   20   30  
 150   ·    ·    ·    ·    ·    ^ y
