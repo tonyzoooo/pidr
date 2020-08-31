@@ -11,6 +11,7 @@ import numpy as np
 from numpy import pi
 from numpy.linalg import norm
 
+from src.core.lfpy_simulation import ElectrodeRanges
 from src.app import section_util
 from src.core import util
 from src.core.hhrun import hhrun
@@ -38,7 +39,7 @@ def executeDemo(cell: LFPy.Cell,
     Y = util.closedRange(250, 50, -50)
     Z = 0
 
-    electrodeRanges = {'x': X, 'y': Y}
+    electrodeRanges = ElectrodeRanges(X, Y)
 
     elpos = util.reshapeMeshgrid(np.meshgrid(X, Y, Z))
 
@@ -193,9 +194,9 @@ def executeDemo(cell: LFPy.Cell,
     plt.colorbar(plt.cm.ScalarMappable(cmap=cmap),
                  cax=pos, orientation='horizontal')
 
-    print('Mean correlation = ' + '{0:.2f}'.format(np.mean(cc)))
-    print('Min correlation = ' + '{0:.2f}'.format(np.min(cc)))
-    print('Max correlation = ' + '{0:.2f}'.format(np.max(cc)))
+    print(f'Mean correlation = {np.mean(cc):.2f}')
+    print(f'Min correlation = {np.min(cc):.2f}')
+    print(f'Max correlation = {np.max(cc):.2f}')
 
 
     plt.show()

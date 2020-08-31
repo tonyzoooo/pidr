@@ -225,9 +225,9 @@ def executeDemo(cell: LFPy.Cell,
     plt.colorbar(plt.cm.ScalarMappable(cmap=cmap),
                  cax=pos, orientation='horizontal')
 
-    print('Mean correlation = ' + '{0:.2f}'.format(np.mean(cc)))
-    print('Min correlation = ' + '{0:.2f}'.format(np.min(cc)))
-    print('Max correlation = ' + '{0:.2f}'.format(np.max(cc)))
+    print(f'Mean correlation = {np.mean(cc):.2f}')
+    print(f'Min correlation = {np.min(cc):.2f}')
+    print(f'Max correlation = {np.max(cc):.2f}')
 
     # -----------------------------------------------------------
     # plot stimulation
