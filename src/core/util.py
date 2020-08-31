@@ -110,7 +110,8 @@ def auto_str(cls):
     cls.__str__ = __str__
     return cls
 
-def retrieveNetpyneData(filename):
+
+def retrieveNetpyneData(filename: str):
     data = list()
     with open(filename) as f:
         lines = f.readline()
