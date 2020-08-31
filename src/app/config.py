@@ -29,5 +29,5 @@ Initially selected dimension for cell visualisations.
 Possible values for 'dim' are : '2D', '3D'
 """
 plot = {
-    'dim': '3D'
+    'dim': '2D',
 }

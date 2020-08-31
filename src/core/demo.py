@@ -62,9 +62,7 @@ def executeDemo(cell: LFPy.Cell,
     # -----------------------------------------------------------
 
     inmvm = np.argmax(Vmlfpy)  # index max on Vm in LFPy
-    print(inmvm)
     lVLFPy = len(Vlfpy)  # signal length in LFPy
-    print(lVLFPy)
     dt = 1 / 1000  # sampling period in ms
     Nt = 2 ** 15
     D = Nt * dt
@@ -190,7 +188,6 @@ def executeDemo(cell: LFPy.Cell,
     legend_labels = ["Tran", "LFPy"]
     legend_handles = []
     ifil = 0
-    print(Vlfpy.shape)
     for i in range(nb_rows):
         for j in range(nb_cols):
             ax = fig.add_subplot(gs[i, j])

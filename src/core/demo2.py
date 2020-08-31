@@ -11,11 +11,10 @@ import numpy as np
 from numpy import pi
 from numpy.linalg import norm
 
-from src.core.lfpy_simulation import ElectrodeRanges
 from src.app import section_util
 from src.core import util
 from src.core.hhrun import hhrun
-from src.core.lfpy_simulation import plotNeuron
+from src.core.lfpy_simulation import ElectrodeRanges, plotNeuron
 from src.core.morphofiltd import morphofiltd
 
 
@@ -159,7 +158,6 @@ def executeDemo(cell: LFPy.Cell,
     legend_labels = ["Tran", "NetPyNE"]
     legend_handles = []
     ifil = 0
-    print(result.shape)
     for i in range(nb_rows):
         for j in range(nb_cols):
             ax = fig.add_subplot(gs[i, j])
@@ -197,7 +195,6 @@ def executeDemo(cell: LFPy.Cell,
     print(f'Mean correlation = {np.mean(cc):.2f}')
     print(f'Min correlation = {np.min(cc):.2f}')
     print(f'Max correlation = {np.max(cc):.2f}')
-
 
     plt.show()
 
