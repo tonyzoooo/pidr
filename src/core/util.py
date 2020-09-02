@@ -124,3 +124,21 @@ def retrieveNetpyneData(filename: str):
                 sublist.append(float(element))
             data.append(sublist)
     return np.array(data)
+
+
+def findClosestPointIndex(points: np.ndarray, target: np.ndarray) -> int:
+    """
+    Finds the index of the point which is closest to a given target point.
+
+    :param points:  array of points
+    :param target:  point to be closest to
+    :return:        index of the point which is closest to ``point``
+    """
+    shortestDist = np.finfo(points.dtype).max
+    shortestDistIdx = 0
+    for index, point in enumerate(points):
+        dist = np.linalg.norm(point - target)
+        if dist < shortestDist:
+            shortestDistIdx = index
+            shortestDist = dist
+    return shortestDistIdx

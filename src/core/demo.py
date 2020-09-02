@@ -169,7 +169,9 @@ def executeDemo(cell: LFPy.Cell,
     Vel2 = Vel[:, intervVm]
 
     # normalize
-    elsync = elpos.shape[0] - 10  # value was 55
+    stim_point = np.array([stim.x, stim.y, stim.z])
+    # index of the electrode that's closest to the stimulation point
+    elsync = util.findClosestPointIndex(elpos, stim_point)
     Vel2 = Vel2 / norm(Vel2[elsync, :]) * norm(Vlfpy[:, elsync])
 
     # -----------------------------------------------------------
