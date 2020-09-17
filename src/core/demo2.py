@@ -152,11 +152,11 @@ def executeDemo(cell: LFPy.Cell,
     fig = plt.figure('Simulation comparison & Neuron Morphology')
     gs = fig.add_gridspec(nb_rows, nb_cols)
 
-    plotNeuron(cell, fig, electrodeRanges)
+    cellLines = plotNeuron(cell, fig, electrodeRanges)
 
     cmap = plt.cm.get_cmap('jet')
     legend_labels = ["Tran", "NetPyNE"]
-    legend_handles = []
+    legend_handles = [cellLines]
     ifil = 0
     for i in range(nb_rows):
         for j in range(nb_cols):
@@ -164,7 +164,7 @@ def executeDemo(cell: LFPy.Cell,
             ax.axis('off')
             l1 = ax.plot(t, Vel2[ifil, :] - Vel2[ifil, 0], linewidth=2)
             l2 = ax.plot(t, result[:, ifil] - result[0, ifil], linewidth=2)
-            if len(legend_handles) < 2:
+            if len(legend_handles) < 3:
                 legend_handles.append(l1[0])
                 legend_handles.append(l2[0])
             res = np.corrcoef(Vel2[ifil].T, result[:, ifil])[0][1]
@@ -183,12 +183,12 @@ def executeDemo(cell: LFPy.Cell,
         handles=legend_handles,  # The line objects
         labels=legend_labels,  # The labels for each line
         loc="lower left",  # Position of legend
-        bbox_to_anchor=(0.1, 0),  # Anchor
+        bbox_to_anchor=(0.05, 0.05),  # Anchor
         borderaxespad=0.1,  # Small spacing around legend box
     )
 
     plt.subplots_adjust(top=0.90, bottom=0.32)
-    pos = fig.add_axes([0.75, 0.1, 0.15, 0.03])
+    pos = fig.add_axes([0.8, 0.1, 0.15, 0.03])
     plt.colorbar(plt.cm.ScalarMappable(cmap=cmap),
                  cax=pos, orientation='horizontal')
 

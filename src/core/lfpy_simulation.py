@@ -32,7 +32,7 @@ def polyArea(x: np.ndarray, y: np.ndarray):
 
 def plotNeuron(cell: LFPy.Cell,
                fig: plt.Figure,
-               electrodeGrid: ElectrodeRanges):
+               electrodeGrid: ElectrodeRanges) -> PolyCollection:
     """
     Plot cell morphology on given figure, aligned to the electrode grid
 
@@ -56,7 +56,7 @@ def plotNeuron(cell: LFPy.Cell,
     polycol = PolyCollection(zips, edgecolors='#999999',
                              facecolors='#666666', linewidths=1.7)
     polycol.set_clip_on(False)  # draw outside of axes
-    ax = fig.add_axes([0.15, 0.35, 0.725, 0.48])
+    ax = fig.add_axes([0.15, 0.35, 0.725, 0.48])  # [left, bottom, width, height]
     # align axes to grid :
     ax.set_xlim(electrodeGrid.xs[0], electrodeGrid.xs[-1])  # (-250, 1250)
     ax.set_ylim(electrodeGrid.ys[-1], electrodeGrid.ys[0])  # (50, 250)
@@ -66,7 +66,7 @@ def plotNeuron(cell: LFPy.Cell,
     plt.xlabel('Distance μm - (Ox)')
     plt.ylabel('Distance μm - (Oy)')
 
-    return fig
+    return polycol
 
 
 def runLfpySimulation(cell: LFPy.Cell,
